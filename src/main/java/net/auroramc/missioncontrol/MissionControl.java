@@ -1,5 +1,6 @@
 package net.auroramc.missioncontrol;
 
+import net.auroramc.missioncontrol.backend.DatabaseManager;
 import org.apache.log4j.Logger;
 
 import java.util.Scanner;
@@ -8,6 +9,7 @@ import java.util.prefs.Preferences;
 public class MissionControl {
 
     private static final Logger logger = Logger.getLogger(MissionControl.class);
+    private static DatabaseManager dbManager;
 
     public static void main(String[] args) {
         Thread.currentThread().setName("Main Thread");
@@ -23,8 +25,9 @@ public class MissionControl {
         String redisAuth = prefs.get("redisAuth", null);
         String ciBaseURL = prefs.get("ciBaseURL", null);
         String panelBaseURL = prefs.get("panelBaseURL", null);
+        String loadBalancerBaseURL = prefs.get("loadBalancerBaseURL", null);
 
-        if (mysqlHost == null || mysqlPort == null || mysqlDb == null || mysqlUsername == null || mysqlPassword == null || redisHost == null || redisAuth == null || ciBaseURL == null || panelBaseURL == null) {
+        if (mysqlHost == null || mysqlPort == null || mysqlDb == null || mysqlUsername == null || mysqlPassword == null || redisHost == null || redisAuth == null || ciBaseURL == null || panelBaseURL == null || loadBalancerBaseURL == null) {
             Scanner scanner = new Scanner(System.in);
             logger.info("\n" +
                     "===================================================\n" +
@@ -52,6 +55,8 @@ public class MissionControl {
             ciBaseURL = scanner.nextLine();
             logger.info("Now, we need the base URL for the Pterodactyl API?\n");
             panelBaseURL = scanner.nextLine();
+            logger.info("Now, we need the base URL for the HaProxy API?\n");
+            loadBalancerBaseURL = scanner.nextLine();
             logger.info("That's now everything! First time setup is complete!\n" +
                     "If the details need to change, you can use the Mission Control\n" +
                     "admin panel to modify them!\n" +
@@ -65,13 +70,19 @@ public class MissionControl {
             prefs.put("redisAuth", redisAuth);
             prefs.put("ciBaseURL", ciBaseURL);
             prefs.put("panelBaseURL", panelBaseURL);
+            prefs.put("loadBalancerBaseURL", loadBalancerBaseURL);
         }
 
+        dbManager = new DatabaseManager(mysqlHost, mysqlPort, mysqlDb, mysqlUsername, mysqlPassword, redisHost, redisAuth);
 
 
     }
 
     public static Logger getLogger() {
         return logger;
+    }
+
+    public static DatabaseManager getDbManager() {
+        return dbManager;
     }
 }

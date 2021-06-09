@@ -1,8 +1,11 @@
 package net.auroramc.missioncontrol.backend;
 
+import net.auroramc.missioncontrol.MissionControl;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.Duration;
 
 public class DatabaseManager {
@@ -11,6 +14,7 @@ public class DatabaseManager {
     private final JedisPool jedis;
 
     public DatabaseManager(String mysqlHost, String mysqlPort, String mysqlDb, String mysqlUsername, String mysqlPassword, String redisHost, String redisAuth) {
+        MissionControl.getLogger().info("Initialising MySQL and Redis database connection pools...");
         //Setting up MySQL connection pool.
         MySQLConnectionPool mysql1;
         try {
@@ -34,6 +38,23 @@ public class DatabaseManager {
         config.setNumTestsPerEvictionRun(3);
         config.setBlockWhenExhausted(true);
         jedis = new JedisPool(config, redisHost, 6379, 2000, redisAuth);
+        MissionControl.getLogger().info("Database connection pools initialised.");
+    }
+
+    public void createServer() {
+        try (Connection connection = mysql.getConnection()) {
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createConnectionNode() {
+        try (Connection connection = mysql.getConnection()) {
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }
