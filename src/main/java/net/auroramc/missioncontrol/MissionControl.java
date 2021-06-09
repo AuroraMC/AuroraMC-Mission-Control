@@ -75,7 +75,7 @@ public class MissionControl {
 
         dbManager = new DatabaseManager(mysqlHost, mysqlPort, mysqlDb, mysqlUsername, mysqlPassword, redisHost, redisAuth);
 
-
+        logger.info("AuroraMC Mission Control successfully started.");
     }
 
     public static Logger getLogger() {
