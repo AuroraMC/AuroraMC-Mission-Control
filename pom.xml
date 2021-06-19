@@ -179,6 +179,122 @@
                             <excludes>
                                 <exclude>META-INF/*.txt</exclude>
                                 <exclude>META-INF/*.MF</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.cdancy:jenkins-rest</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.google.inject:guice</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.google.inject.extensions:guice-assistedinject</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.apache.jclouds:jclouds-core</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.apache.jclouds:jclouds-gson</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.google.auto.service:auto-service-annotations</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.google.auto.value:auto-value-annotations</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.google.errorprone:error_prone_annotations</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.google.guava:guava</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>javax.ws.rs:javax.ws.rs-api</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>javax.annotation:jsr250-api</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>aopalliance:aopalliance</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.mattmalec:Pterodactyl4J</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.squareup.okhttp3:okhttp</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.squareup.okio:okio</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
                             </excludes>
                         </filter>
                     </filters>
@@ -273,6 +389,29 @@
             <artifactId>json</artifactId>
             <version>20190722</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.cdancy</groupId>
+            <artifactId>jenkins-rest</artifactId>
+            <version>0.0.29</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mattmalec</groupId>
+            <artifactId>Pterodactyl4J</artifactId>
+            <version>2.BETA_47</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <url>https://jcenter.bintray.com/</url>
+        </repository>
+        <repository>
+            <id>mattmalec-repo</id>
+            <url>https://repo.mattmalec.com/repository/releases/</url>
+        </repository>
+    </repositories>
 
 </project>
