@@ -8,13 +8,14 @@ public class ProxyInfo {
     private final String ip;
     private final int port;
     private final int protocolPort;
+    private final int buildNumber;
 
-
-    public ProxyInfo(UUID uuid, String ip, int port, int protocolPort) {
+    public ProxyInfo(UUID uuid, String ip, int port, int protocolPort, int buildNumber) {
         this.uuid = uuid;
         this.ip = ip;
         this.port = port;
         this.protocolPort = protocolPort;
+        this.buildNumber = buildNumber;
     }
 
     public UUID getUuid() {
@@ -31,5 +32,9 @@ public class ProxyInfo {
 
     public int getProtocolPort() {
         return protocolPort;
+    }
+
+    public int getBuildNumber() {
+        return buildNumber;
     }
 }

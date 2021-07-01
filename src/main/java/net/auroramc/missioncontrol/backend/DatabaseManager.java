@@ -13,9 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class DatabaseManager {
 
@@ -50,14 +48,14 @@ public class DatabaseManager {
         MissionControl.getLogger().info("Database connection pools initialised.");
     }
 
-    public List<ServerInfo> getAllServers() {
+    public Map<String, ServerInfo> getAllServers() {
         try (Connection connection = mysql.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM servers");
             ResultSet set = statement.executeQuery();
 
-            List<ServerInfo> servers = new ArrayList<>();
+            Map<String, ServerInfo> servers = new HashMap<>();
             while (set.next()) {
-                servers.add(new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), new JSONObject(set.getString(4)), set.getInt(5)));
+                servers.put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), new JSONObject(set.getString(4)), set.getInt(5), set.getInt(6), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10)));
             }
             return servers;
         } catch (SQLException e) {
@@ -66,14 +64,14 @@ public class DatabaseManager {
         }
     }
 
-    public List<ProxyInfo> getAllConnectionNodes() {
+    public Map<UUID, ProxyInfo> getAllConnectionNodes() {
         try (Connection connection = mysql.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM proxies");
             ResultSet set = statement.executeQuery();
 
-            List<ProxyInfo> proxies = new ArrayList<>();
+            Map<UUID, ProxyInfo> proxies = new HashMap<>();
             while (set.next()) {
-                proxies.add(new ProxyInfo(UUID.fromString(set.getString(1)), set.getString(2), set.getInt(3), set.getInt(4)));
+                proxies.put(UUID.fromString(set.getString(1)), new ProxyInfo(UUID.fromString(set.getString(1)), set.getString(2), set.getInt(3), set.getInt(4), set.getInt(5)));
             }
             return proxies;
         } catch (SQLException e) {
@@ -96,6 +94,22 @@ public class DatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public ServerInfo getServerDetailsByName(String name) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM servers WHERE servername = ?");
+            statement.setString(1, name);
+            ResultSet set = statement.executeQuery();
+            if (set.next()) {
+                return new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), new JSONObject(set.getString(4)), set.getInt(5), set.getInt(6), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10));
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }
