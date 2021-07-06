@@ -22,4 +22,8 @@ public enum Protocol {
      * Update map rotation.
      */
     UPDATE_MAPS,
+    /**
+     * Send an update to the daemon with an updated player count.
+     */
+    UPDATE_PLAYER_COUNT
 }

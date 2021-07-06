@@ -1,4 +1,4 @@
-package net.auroramc.missioncontrol.backend;
+package net.auroramc.missioncontrol.backend.managers;
 
 import com.mattmalec.pterodactyl4j.DataType;
 import com.mattmalec.pterodactyl4j.EnvironmentValue;
@@ -6,6 +6,7 @@ import com.mattmalec.pterodactyl4j.PteroBuilder;
 import com.mattmalec.pterodactyl4j.application.entities.ApplicationServer;
 import com.mattmalec.pterodactyl4j.application.entities.PteroApplication;
 import net.auroramc.missioncontrol.MissionControl;
+import net.auroramc.missioncontrol.backend.MemoryAllocation;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 
@@ -61,6 +62,18 @@ public class PanelManager {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        if (serverInfo.getLobbyBuildNumber() != -1) {
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        }
+        if (serverInfo.getBuildBuildNumber() != -1) {
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        }
+        if (serverInfo.getGameBuildNumber() != -1) {
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        }
+        if (serverInfo.getEngineBuildNumber() != -1) {
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
 

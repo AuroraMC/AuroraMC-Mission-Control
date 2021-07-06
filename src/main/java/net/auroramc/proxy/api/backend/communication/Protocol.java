@@ -19,7 +19,7 @@ public enum Protocol {
      */
     UPDATE_RULES,
     /**
-     * Update map rotation.
+     * Send an update to the daemon with an updated player count.
      */
-    UPDATE_MAPS,
+    UPDATE_PLAYER_COUNT
 }

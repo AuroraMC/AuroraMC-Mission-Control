@@ -1,9 +1,11 @@
-package net.auroramc.missioncontrol.backend;
+package net.auroramc.missioncontrol.backend.managers;
 
 import net.auroramc.missioncontrol.MissionControl;
+import net.auroramc.missioncontrol.backend.MySQLConnectionPool;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import org.json.JSONObject;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -80,17 +82,54 @@ public class DatabaseManager {
         }
     }
 
-    public void createServer() {
+    public void createServer(ServerInfo info) {
         try (Connection connection = mysql.getConnection()) {
-
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?)");
+            statement.setString(1, info.getName());
+            statement.setString(2, info.getIp());
+            statement.setInt(3, info.getPort());
+            statement.setString(4, info.getServerType().toString());
+            statement.setInt(5, info.getProtocolPort());
+            statement.setInt(6, info.getBuildNumber());
+            statement.setInt(7, info.getLobbyBuildNumber());
+            statement.setInt(8, info.getEngineBuildNumber());
+            statement.setInt(9, info.getGameBuildNumber());
+            statement.setInt(10, info.getBuildBuildNumber());
+            statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void createConnectionNode() {
+    public void deleteServer(ServerInfo info) {
         try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM servers WHERE servername = ?");
+            statement.setString(1, info.getName());
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public void deleteNode(ProxyInfo info) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM proxies WHERE uuid = ?");
+            statement.setString(1, info.getUuid().toString());
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createConnectionNode(ProxyInfo proxyInfo) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO proxies VALUES (?,?,?,?,?)");
+            statement.setString(1, proxyInfo.getUuid().toString());
+            statement.setString(2, proxyInfo.getIp());
+            statement.setInt(3, proxyInfo.getPort());
+            statement.setInt(4, proxyInfo.getProtocolPort());
+            statement.setInt(5, proxyInfo.getBuildNumber());
+            statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -110,6 +149,72 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public int getCurrentBuildBuildNumber() {
+        try (Jedis connection = jedis.getResource()) {
+            String buildNumber = connection.get("build.build");
+            if (buildNumber != null) {
+                return Integer.parseInt(buildNumber);
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public int getCurrentCoreBuildNumber() {
+        try (Jedis connection = jedis.getResource()) {
+            String buildNumber = connection.get("build.core");
+            if (buildNumber != null) {
+                return Integer.parseInt(buildNumber);
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public int getCurrentEngineBuildNumber() {
+        try (Jedis connection = jedis.getResource()) {
+            String buildNumber = connection.get("build.engine");
+            if (buildNumber != null) {
+                return Integer.parseInt(buildNumber);
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public int getCurrentGameBuildNumber() {
+        try (Jedis connection = jedis.getResource()) {
+            String buildNumber = connection.get("build.game");
+            if (buildNumber != null) {
+                return Integer.parseInt(buildNumber);
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public int getCurrentLobbyBuildNumber() {
+        try (Jedis connection = jedis.getResource()) {
+            String buildNumber = connection.get("build.lobby");
+            if (buildNumber != null) {
+                return Integer.parseInt(buildNumber);
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public int getCurrentProxyBuildNumber() {
+        try (Jedis connection = jedis.getResource()) {
+            String buildNumber = connection.get("build.proxy");
+            if (buildNumber != null) {
+                return Integer.parseInt(buildNumber);
+            } else {
+                return -1;
+            }
+        }
     }
 
 }

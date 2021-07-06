@@ -1,4 +1,4 @@
-package net.auroramc.missioncontrol.backend;
+package net.auroramc.missioncontrol.backend.managers;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.system.SystemInfo;

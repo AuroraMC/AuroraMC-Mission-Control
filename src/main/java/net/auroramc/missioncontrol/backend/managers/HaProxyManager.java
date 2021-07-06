@@ -1,4 +1,4 @@
-package net.auroramc.missioncontrol.backend;
+package net.auroramc.missioncontrol.backend.managers;
 
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
