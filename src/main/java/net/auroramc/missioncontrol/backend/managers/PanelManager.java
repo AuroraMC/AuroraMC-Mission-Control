@@ -2,9 +2,13 @@ package net.auroramc.missioncontrol.backend.managers;
 
 import com.mattmalec.pterodactyl4j.DataType;
 import com.mattmalec.pterodactyl4j.EnvironmentValue;
+import com.mattmalec.pterodactyl4j.PowerAction;
 import com.mattmalec.pterodactyl4j.PteroBuilder;
+import com.mattmalec.pterodactyl4j.application.entities.Allocation;
 import com.mattmalec.pterodactyl4j.application.entities.ApplicationServer;
+import com.mattmalec.pterodactyl4j.application.entities.Node;
 import com.mattmalec.pterodactyl4j.application.entities.PteroApplication;
+import com.mattmalec.pterodactyl4j.client.entities.PteroClient;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.backend.MemoryAllocation;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
@@ -18,13 +22,16 @@ import java.util.stream.Collectors;
 public class PanelManager {
 
     private final PteroApplication api;
+    private final PteroClient apiClient;
     private final String jenkinsApiKey;
+
 
     private final String mysqlHost, mysqlPort, mysqlUsername, mysqlPassword, mysqlDb, redisHost, redisAuth;
 
-    public PanelManager(String baseURL, String apiKey, String jenkinsApiKey, String mysqlHost, String mysqlPort, String mysqlDb, String mysqlUsername, String mysqlPassword, String redisHost, String redisAuth) {
+    public PanelManager(String baseURL, String apiKey, String apiUserKey, String jenkinsApiKey, String mysqlHost, String mysqlPort, String mysqlDb, String mysqlUsername, String mysqlPassword, String redisHost, String redisAuth) {
         MissionControl.getLogger().info("Loading panel manager...");
         api = PteroBuilder.createApplication(baseURL, apiKey);
+        apiClient = PteroBuilder.createClient(baseURL, apiUserKey);
         this.jenkinsApiKey = jenkinsApiKey;
 
         this.mysqlHost = mysqlHost;
@@ -37,7 +44,7 @@ public class PanelManager {
 
         MissionControl.getLogger().info("Sending test API request...");
         try {
-            api.retrieveServers();
+            api.retrieveServers().execute();
             MissionControl.getLogger().info("Test API request succeeded.");
         } catch (Exception e) {
             MissionControl.getLogger().error("Test API request failed. Stack trace:", e);
@@ -52,6 +59,14 @@ public class PanelManager {
 
     public void deleteServer(String name) {
         api.retrieveServersByName(name, false).execute().get(0).getController().delete(true);
+    }
+
+    public List<Allocation> getAvailableAllocations() {
+        return api.retrieveAllocations().execute().stream().filter(allocation -> !allocation.getServer().isPresent()).collect(Collectors.toList());
+    }
+
+    public List<Node> getAllNodes() {
+        return api.retrieveNodes().execute();
     }
 
     public void deleteServer(ApplicationServer server) {
@@ -105,7 +120,7 @@ public class PanelManager {
                 .setOwner(api.retrieveUserById(1).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 16).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "")).collect(Collectors.toList()).get(0))
+                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -114,6 +129,14 @@ public class PanelManager {
                 .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
                 .setEnvironment(environment).execute();
+    }
+
+    public void updateServer(ServerInfo info) {
+        apiClient.retrieveServersByName(info.getName(), false).execute().get(0).getManager().reinstall().execute();
+    }
+
+    public void updateProxy(ProxyInfo info) {
+        apiClient.retrieveServersByName(info.getUuid().toString(), false).execute().get(0).getManager().reinstall().execute();
     }
 
     public void createProxy(ProxyInfo info) {
@@ -139,7 +162,7 @@ public class PanelManager {
                 .setOwner(api.retrieveUserById(1).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 15).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "")).collect(Collectors.toList()).get(0))
+                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)

@@ -217,4 +217,40 @@ public class DatabaseManager {
         }
     }
 
+    public void setCurrentBuildBuildNumber(int buildNumber) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set("build.build", buildNumber + "");
+        }
+    }
+
+    public void setCurrentCoreBuildNumber(int buildNumber) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set("build.core", buildNumber + "");
+        }
+    }
+
+    public void setCurrentEngineBuildNumber(int buildNumber) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set("build.engine", buildNumber + "");
+        }
+    }
+
+    public void setCurrentGameBuildNumber(int buildNumber) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set("build.game", buildNumber + "");
+        }
+    }
+
+    public void setCurrentLobbyBuildNumber(int buildNumber) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set("build.lobby", buildNumber + "");
+        }
+    }
+
+    public void setCurrentProxyBuildNumber(int buildNumber) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set("build.proxy", buildNumber + "");
+        }
+    }
+
 }

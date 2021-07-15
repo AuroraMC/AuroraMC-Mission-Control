@@ -4,13 +4,14 @@ import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.backend.Game;
+import net.auroramc.missioncontrol.backend.Module;
+import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
+import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +22,9 @@ public class NetworkManager {
     private static final Object lock2 = new Object();
     private static boolean shutdown;
 
+    /*
+     * Build numbers for each module.
+     */
     private static int currentCoreBuildNumber;
     private static int currentLobbyBuildNumber;
     private static int currentBuildBuildNumber;
@@ -33,6 +37,7 @@ public class NetworkManager {
     private static final Map<String, Integer> serverPlayerTotals;
     private static final Map<UUID, Integer> nodePlayerTotals;
     private static final Logger logger;
+    private static final DatabaseManager dbManager;
     private static final ScheduledExecutorService scheduler;
 
     static {
@@ -41,6 +46,8 @@ public class NetworkManager {
         serverPlayerTotals = new HashMap<>();
         nodePlayerTotals = new HashMap<>();
         logger = MissionControl.getLogger();
+        dbManager = MissionControl.getDbManager();
+
         scheduler = Executors.newSingleThreadScheduledExecutor();
         shutdown = false;
 
@@ -52,7 +59,12 @@ public class NetworkManager {
 
     public static void handoff() {
         logger.info("Fetching pushed builds...");
-
+        currentCoreBuildNumber = dbManager.getCurrentCoreBuildNumber();
+        currentBuildBuildNumber = dbManager.getCurrentBuildBuildNumber();
+        currentEngineBuildNumber = dbManager.getCurrentEngineBuildNumber();
+        currentGameBuildNumber = dbManager.getCurrentGameBuildNumber();
+        currentLobbyBuildNumber = dbManager.getCurrentLobbyBuildNumber();
+        currentProxyBuildNumber = dbManager.getCurrentProxyBuildNumber();
 
         logger.info("Requesting player counts from servers...");
         for (ServerInfo info : MissionControl.getServers().values()) {
@@ -64,23 +76,26 @@ public class NetworkManager {
 
         //Wait for a response from all of the servers (max 1 minute wait)
         try {
-            for (int i = 0;i < 6;i++) {
-                if (serverPlayerTotals.size() == MissionControl.getServers().size() && nodePlayerTotals.size() == MissionControl.getProxies().size()) {
-                    logger.info("All responses received, starting network monitoring thread...");
-                    break;
-                }
-                if (i == 5) {
-                    logger.info("Not all responses received but timeout reached, starting network monitoring thread...");
-                } else {
-                    Thread.currentThread().wait(10000);
+            synchronized (lock2) {
+                for (int i = 0;i <= 6;i++) {
+                    if (serverPlayerTotals.size() == MissionControl.getServers().size() && nodePlayerTotals.size() == MissionControl.getProxies().size()) {
+                        logger.info("All responses received, starting network monitoring thread...");
+                        break;
+                    }
+                    if (i == 6) {
+                        logger.info("Not all responses received but timeout reached, starting network monitoring thread...");
+                    } else {
+                        lock2.wait(10000);
+                    }
                 }
             }
+
         } catch (InterruptedException e) {
             logger.warn("Waiting for responses was interrupted. Starting network monitoring thread... ", e);
         }
 
         NetworkMonitorRunnable runnable = new NetworkMonitorRunnable(logger);
-        scheduler.scheduleWithFixedDelay(runnable, 0, 1, TimeUnit.MINUTES);
+        scheduler.scheduleWithFixedDelay(runnable, 1, 1, TimeUnit.MINUTES);
         done();
     }
 
@@ -102,6 +117,56 @@ public class NetworkManager {
     public static void interrupt() {
         shutdown = true;
         lock2.notifyAll();
+    }
+
+    public static void pushUpdate(Map<Module, Integer> module) {
+        //Stop the network monitor from spinning up more servers.
+        NetworkMonitorRunnable.setUpdate(true);
+        for (UUID uuid : MissionControl.getProxies().keySet()) {
+            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.toString(), "update", "Mission Control", "Update in progress - Limited network capacity");
+            ProxyCommunicationUtils.sendMessage(message);
+        }
+
+        if (module.containsKey(Module.CORE)) {
+            currentCoreBuildNumber = module.get(Module.CORE);
+            MissionControl.getDbManager().setCurrentCoreBuildNumber(currentCoreBuildNumber);
+        }
+        if (module.containsKey(Module.LOBBY)) {
+            currentLobbyBuildNumber = module.get(Module.LOBBY);
+            MissionControl.getDbManager().setCurrentLobbyBuildNumber(currentLobbyBuildNumber);
+        }
+        if (module.containsKey(Module.BUILD)) {
+            currentBuildBuildNumber = module.get(Module.BUILD);
+            MissionControl.getDbManager().setCurrentBuildBuildNumber(currentBuildBuildNumber);
+        }
+        if (module.containsKey(Module.ENGINE)) {
+            currentEngineBuildNumber = module.get(Module.ENGINE);
+            MissionControl.getDbManager().setCurrentEngineBuildNumber(currentEngineBuildNumber);
+        }
+        if (module.containsKey(Module.GAME)) {
+            currentGameBuildNumber = module.get(Module.GAME);
+            MissionControl.getDbManager().setCurrentGameBuildNumber(currentGameBuildNumber);
+        }
+        if (module.containsKey(Module.PROXY)) {
+            currentProxyBuildNumber = module.get(Module.PROXY);
+            MissionControl.getDbManager().setCurrentProxyBuildNumber(currentProxyBuildNumber);
+        }
+
+        NetworkRestarterThread thread = new NetworkRestarterThread(new ArrayList<>(module.keySet()));
+        thread.start();
+    }
+
+    public static void createProxy() {
+        UUID uuid = UUID.randomUUID();
+
+    }
+
+    public static void removeProxyFromRotation(ProxyInfo info) {
+        MissionControl.getProxyManager().removeServer(info.getUuid().toString());
+    }
+
+    public static void deleteProxy(ProxyInfo info) {
+
     }
 
     public static void shutdown() {

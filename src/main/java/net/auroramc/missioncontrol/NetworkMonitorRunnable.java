@@ -9,6 +9,8 @@ import java.util.UUID;
 
 public class NetworkMonitorRunnable implements Runnable {
 
+    private static boolean update;
+
     private int networkPlayerTotal;
     private Map<Game, Integer> gamePlayerTotals;
     private Map<String, Integer> serverPlayerTotals;
@@ -17,6 +19,7 @@ public class NetworkMonitorRunnable implements Runnable {
 
     public NetworkMonitorRunnable(Logger logger) {
         this.logger = logger;
+        update = false;
         networkPlayerTotal = NetworkManager.getNetworkPlayerTotal();
         gamePlayerTotals = new HashMap<>(NetworkManager.getGamePlayerTotals());
         serverPlayerTotals = new HashMap<>(NetworkManager.getServerPlayerTotals());
@@ -25,7 +28,13 @@ public class NetworkMonitorRunnable implements Runnable {
 
     @Override
     public void run() {
+        //If an update is not in progress, check player counts.
+        if (!update) {
 
+        }
     }
 
+    public static void setUpdate(boolean update) {
+        NetworkMonitorRunnable.update = update;
+    }
 }

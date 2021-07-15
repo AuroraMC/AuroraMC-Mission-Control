@@ -1,7 +1,5 @@
 package net.auroramc.proxy.api.backend.communication;
 
-import net.auroramc.core.api.backend.communication.IncomingProtocolMessageThread;
-import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;

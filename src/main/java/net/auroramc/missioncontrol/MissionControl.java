@@ -46,10 +46,11 @@ public class MissionControl {
         String ciAPIKey = prefs.get("ciAPIKey", null);
         String panelBaseURL = prefs.get("panelBaseURL", null);
         String panelAPIKey = prefs.get("panelAPIKey", null);
+        String panelUserAPIKey = prefs.get("panelUserAPIKey", null);
         String loadBalancerBaseURL = prefs.get("loadBalancerBaseURL", null);
         String loadBalancerAuth = prefs.get("loadBalancerAuth", null);
 
-        if (mysqlHost == null || mysqlPort == null || mysqlDb == null || mysqlUsername == null || mysqlPassword == null || redisHost == null || redisAuth == null || ciBaseURL == null || panelBaseURL == null || loadBalancerBaseURL == null || ciAPIKey == null || panelAPIKey == null || loadBalancerAuth == null) {
+        if (mysqlHost == null || mysqlPort == null || mysqlDb == null || mysqlUsername == null || mysqlPassword == null || redisHost == null || redisAuth == null || ciBaseURL == null || panelBaseURL == null || loadBalancerBaseURL == null || ciAPIKey == null || panelAPIKey == null || loadBalancerAuth == null || panelUserAPIKey == null) {
             Scanner scanner = new Scanner(System.in);
             logger.info("\n" +
                     "===================================================\n" +
@@ -83,8 +84,10 @@ public class MissionControl {
             ciAPIKey = scanner.nextLine();
             logger.info("Now, we need the base URL for the Pterodactyl API?\n");
             panelBaseURL = scanner.nextLine();
-            logger.info("Now, we need the API key for the Pterodactyl API?\n");
+            logger.info("Now, we need the Application API key for the Pterodactyl API?\n");
             panelAPIKey = scanner.nextLine();
+            logger.info("Now, we need the User API key for the Pterodactyl API?\n");
+            panelUserAPIKey = scanner.nextLine();
             logger.info("Now, we need the base URL for the HaProxy API?\n");
             loadBalancerBaseURL = scanner.nextLine();
             logger.info("Now, we need the password for the HaProxy API?\n");
@@ -106,6 +109,7 @@ public class MissionControl {
             prefs.put("ciAPIKey", ciAPIKey);
             prefs.put("panelBaseURL", panelBaseURL);
             prefs.put("panelAPIKey", panelAPIKey);
+            prefs.put("panelUserAPIKey", panelUserAPIKey);
             prefs.put("loadBalancerBaseURL", loadBalancerBaseURL);
             prefs.put("loadBalancerAuth", loadBalancerAuth);
         }
@@ -113,7 +117,7 @@ public class MissionControl {
         dbManager = new DatabaseManager(mysqlHost, mysqlPort, mysqlDb, mysqlUsername, mysqlPassword, redisHost, redisAuth);
 
         proxyManager = new HaProxyManager(loadBalancerBaseURL, loadBalancerAuth);
-        panelManager = new PanelManager(panelBaseURL, panelAPIKey, ciAPIKey, mysqlHost, mysqlPort, mysqlDb, mysqlServerUsername, mysqlServerPassword, redisHost, redisAuth);
+        panelManager = new PanelManager(panelBaseURL, panelAPIKey, panelUserAPIKey, ciAPIKey, mysqlHost, mysqlPort, mysqlDb, mysqlServerUsername, mysqlServerPassword, redisHost, redisAuth);
         jenkinsManager = new JenkinsManager(ciBaseURL, ciAPIKey);
 
         logger.info("Loading current server/connection node configuration...");
