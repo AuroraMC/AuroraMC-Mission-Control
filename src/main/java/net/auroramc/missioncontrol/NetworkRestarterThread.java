@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class NetworkRestarterThread extends Thread {
 
-    private ServerInfo.Network network;
+    private final ServerInfo.Network network;
 
     private final List<Module> modules;
     private final List<ServerInfo> serversToRestart = new ArrayList<>();
@@ -26,7 +26,7 @@ public class NetworkRestarterThread extends Thread {
     private final List<ProxyInfo> proxiesToRestart = new ArrayList<>();
     private RestartMode proxyRestartMode;
 
-    private ArrayBlockingQueue<RestartServerResponse> queue = new ArrayBlockingQueue<>(50);
+    private final ArrayBlockingQueue<RestartServerResponse> queue = new ArrayBlockingQueue<>(50);
 
     public NetworkRestarterThread(List<Module> modulesToRestart, ServerInfo.Network network) {
         modules = modulesToRestart;
@@ -38,6 +38,9 @@ public class NetworkRestarterThread extends Thread {
         if (modules.contains(Module.PROXY)) {
             //Open and close proxies in batches of 10 to prevent using too many resources.
             proxiesToRestart.addAll(MissionControl.getProxies().values().stream().filter(info -> info.getNetwork() == network).collect(Collectors.toList()));
+            for (ProxyInfo info : proxiesToRestart) {
+                info.setBuildNumber(NetworkManager.getCurrentProxyBuildNumber());
+            }
             if (proxiesToRestart.size() <= 20) {
                 //As there are only 20 open, just restart them 1 at a time.
                 proxyRestartMode = RestartMode.SOLO;
@@ -60,7 +63,8 @@ public class NetworkRestarterThread extends Thread {
         }
         if (modules.contains(Module.CORE)) {
             //Restart the entire network.
-            for (ServerInfo info : MissionControl.getServers().values()) {
+            for (ServerInfo info : MissionControl.getServers().values().stream().filter(inf -> inf.getNetwork() == network).collect(Collectors.toList())) {
+                info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
                 if (info.getServerType().getString("type").equalsIgnoreCase("lobby")) {
                     lobbiesToRestart.add(info);
                 } else {
@@ -73,23 +77,33 @@ public class NetworkRestarterThread extends Thread {
         } else {
             if (modules.contains(Module.BUILD)) {
                 //Restart any build servers.
-                List<ServerInfo> servers = MissionControl.getServers().values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("build")).collect(Collectors.toList());
+                List<ServerInfo> servers = MissionControl.getServers().values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("build") && server.getNetwork() == network).collect(Collectors.toList());
                 for (ServerInfo info : servers) {
+                    info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
                     ServerCommunicationUtils.sendMessage(message);
                 }
             }
             if (modules.contains(Module.ENGINE) || modules.contains(Module.GAME)) {
                 //Restart any game servers.
-                serversToRestart.addAll(MissionControl.getServers().values().stream().filter(info -> !info.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList()));
+                serversToRestart.addAll(MissionControl.getServers().values().stream().filter(info -> !info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList()));
+                for (ServerInfo info : serversToRestart) {
+                    info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
+                    info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
+                }
                 updateServers();
-            } else if (modules.contains(Module.LOBBY)) {
+            }
+            if (modules.contains(Module.LOBBY)) {
                 //Restart any lobby servers.
-                lobbiesToRestart.addAll(MissionControl.getServers().values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList()));
+                lobbiesToRestart.addAll(MissionControl.getServers().values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList()));
+                for (ServerInfo info : serversToRestart) {
+                    info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
+                }
                 updateLobbies();
-            } else if (modules.contains(Module.EVENT)) {
+            }
+            if (modules.contains(Module.EVENT)) {
                 //Restart any event servers currently active. Does not include servers that have been turned into event servers.
-                List<ServerInfo> servers = MissionControl.getServers().values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event")).collect(Collectors.toList());
+                List<ServerInfo> servers = MissionControl.getServers().values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event") && server.getNetwork() == network).collect(Collectors.toList());
                 for (ServerInfo info : servers) {
                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
                     ServerCommunicationUtils.sendMessage(message);
@@ -99,11 +113,13 @@ public class NetworkRestarterThread extends Thread {
 
         //Update has been started. Now listen for changes then restart more servers.
         while (true) {
-            RestartServerResponse response = null;
+            RestartServerResponse response;
             try {
                 response = queue.poll(10, TimeUnit.MINUTES);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                NetworkMonitorRunnable.setUpdate(false);
+                return;
             }
             if (response != null) {
                 if (response.getProtocol() == RestartServerResponse.Type.CONFIRM_CLOSE) {
@@ -131,10 +147,7 @@ public class NetworkRestarterThread extends Thread {
                     }
                 } else {
                     if (response.getInfo() instanceof ProxyInfo) {
-                        if (proxyRestartMode == RestartMode.BATCHES) {
-                            //The connection node has started and is ready to accept connections, add the new connection node to the rotation.
-                            MissionControl.getProxyManager().addServer((ProxyInfo) response.getInfo());
-                        } else {
+                        if (proxyRestartMode == RestartMode.SOLO) {
                             //The connection node has started and is ready to accept connections, add it to the rotation and then queue another node to restart.
                             MissionControl.getProxyManager().addServer((ProxyInfo) response.getInfo());
                             NetworkManager.getNodePlayerTotals().put(((ProxyInfo) response.getInfo()).getUuid(), 0);
@@ -144,12 +157,23 @@ public class NetworkRestarterThread extends Thread {
                             ProxyCommunicationUtils.sendMessage(message);
                         }
                     } else {
-
+                        NetworkManager.getServerPlayerTotals().put(((ServerInfo) response.getInfo()).getName(), 0);
+                        ServerInfo info;
+                        if (((ServerInfo) response.getInfo()).getServerType().getString("type").equalsIgnoreCase("lobby")) {
+                            info = lobbiesToRestart.remove(0);
+                        } else {
+                            info = serversToRestart.remove(0);
+                        }
+                        if (info != null) {
+                            ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
+                            ServerCommunicationUtils.sendMessage(message);
+                        }
                     }
                 }
             }
 
             if (serversToRestart.size() == 0 && lobbiesToRestart.size() == 0 && proxiesToRestart.size() == 0) {
+                NetworkMonitorRunnable.setUpdate(false);
                 return;
             }
         }

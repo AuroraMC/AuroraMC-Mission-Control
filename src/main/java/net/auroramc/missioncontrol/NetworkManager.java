@@ -49,8 +49,13 @@ public class NetworkManager {
     private static final DatabaseManager dbManager;
     private static final ScheduledExecutorService scheduler;
 
-    private static List<Node> nodes;
+    private static Map<ServerInfo.Network, String> motd;
+    private static Map<ServerInfo.Network, Boolean> maintenance;
+    private static Map<ServerInfo.Network, String> maintenanceMode;
+    private static Map<ServerInfo.Network, String> maintenanceMotd;
 
+    private static List<Node> nodes;
+    private static NetworkRestarterThread restarterThread;
 
 
     static {
@@ -171,8 +176,13 @@ public class NetworkManager {
             MissionControl.getDbManager().setCurrentProxyBuildNumber(currentProxyBuildNumber);
         }
 
-        NetworkRestarterThread thread = new NetworkRestarterThread(new ArrayList<>(module.keySet()), network);
-        thread.start();
+        restarterThread = new NetworkRestarterThread(new ArrayList<>(module.keySet()), network);
+        restarterThread.start();
+    }
+
+    public static void updateComplete() {
+        NetworkMonitorRunnable.setUpdate(true);
+        restarterThread = null;
     }
 
     /**

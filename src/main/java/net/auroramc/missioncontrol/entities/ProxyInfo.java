@@ -8,7 +8,7 @@ public class ProxyInfo implements Info {
     private final String ip;
     private final int port;
     private final int protocolPort;
-    private final int buildNumber;
+    private int buildNumber;
     private final ServerInfo.Network network;
     private final boolean forced;
 
@@ -44,6 +44,10 @@ public class ProxyInfo implements Info {
 
     public ServerInfo.Network getNetwork() {
         return network;
+    }
+
+    public void setBuildNumber(int buildNumber) {
+        this.buildNumber = buildNumber;
     }
 
     public boolean isForced() {

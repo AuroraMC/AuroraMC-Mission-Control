@@ -6,7 +6,8 @@ public class ServerInfo implements Info {
 
     private final String name, ip;
     private final JSONObject serverType;
-    private final int protocolPort, buildNumber, port, lobbyBuildNumber, gameBuildNumber, engineBuildNumber, buildBuildNumber;
+    private final int protocolPort, port;
+    private int buildNumber, lobbyBuildNumber, gameBuildNumber, engineBuildNumber, buildBuildNumber;
     private final Network network;
     private final boolean forced;
 
@@ -71,6 +72,26 @@ public class ServerInfo implements Info {
 
     public Network getNetwork() {
         return network;
+    }
+
+    public void setBuildBuildNumber(int buildBuildNumber) {
+        this.buildBuildNumber = buildBuildNumber;
+    }
+
+    public void setBuildNumber(int buildNumber) {
+        this.buildNumber = buildNumber;
+    }
+
+    public void setEngineBuildNumber(int engineBuildNumber) {
+        this.engineBuildNumber = engineBuildNumber;
+    }
+
+    public void setGameBuildNumber(int gameBuildNumber) {
+        this.gameBuildNumber = gameBuildNumber;
+    }
+
+    public void setLobbyBuildNumber(int lobbyBuildNumber) {
+        this.lobbyBuildNumber = lobbyBuildNumber;
     }
 
     public enum Network {MAIN, TEST, ALPHA}

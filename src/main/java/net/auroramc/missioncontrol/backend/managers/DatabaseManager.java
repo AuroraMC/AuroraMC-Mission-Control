@@ -10,10 +10,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.lang.reflect.Proxy;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Duration;
 import java.util.*;
 
@@ -93,10 +90,26 @@ public class DatabaseManager {
             statement.setString(6, info.getServerType().toString());
             statement.setInt(7, info.getProtocolPort());
             statement.setInt(8, info.getBuildNumber());
-            statement.setInt(9, info.getLobbyBuildNumber());
-            statement.setInt(10, info.getEngineBuildNumber());
-            statement.setInt(11, info.getGameBuildNumber());
-            statement.setInt(12, info.getBuildBuildNumber());
+            if (info.getLobbyBuildNumber() == -1) {
+                statement.setNull(9, Types.INTEGER);
+            } else {
+                statement.setInt(9, info.getLobbyBuildNumber());
+            }
+            if (info.getEngineBuildNumber() == -1) {
+                statement.setNull(10, Types.INTEGER);
+            } else {
+                statement.setInt(10, info.getEngineBuildNumber());
+            }
+            if (info.getGameBuildNumber() == -1) {
+                statement.setNull(11, Types.INTEGER);
+            } else {
+                statement.setInt(11, info.getGameBuildNumber());
+            }
+            if (info.getBuildBuildNumber() == -1) {
+                statement.setNull(12, Types.INTEGER);
+            } else {
+                statement.setInt(12, info.getBuildBuildNumber());
+            }
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -225,11 +238,25 @@ public class DatabaseManager {
         try (Jedis connection = jedis.getResource()) {
             connection.set("build.build", buildNumber + "");
         }
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE servers SET build_buildNumber = ? WHERE build_buildNumber IS NOT NULL");
+            statement.setInt(1, buildNumber);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setCurrentCoreBuildNumber(int buildNumber) {
         try (Jedis connection = jedis.getResource()) {
             connection.set("build.core", buildNumber + "");
+        }
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE servers SET buildNumber = ?");
+            statement.setInt(1, buildNumber);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -237,11 +264,25 @@ public class DatabaseManager {
         try (Jedis connection = jedis.getResource()) {
             connection.set("build.engine", buildNumber + "");
         }
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE servers SET engine_buildNumber = ? WHERE servers.engine_buildNumber IS NOT NULL");
+            statement.setInt(1, buildNumber);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setCurrentGameBuildNumber(int buildNumber) {
         try (Jedis connection = jedis.getResource()) {
             connection.set("build.game", buildNumber + "");
+        }
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE servers SET game_buildNumber = ? WHERE servers.game_buildNumber IS NOT NULL");
+            statement.setInt(1, buildNumber);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -249,11 +290,25 @@ public class DatabaseManager {
         try (Jedis connection = jedis.getResource()) {
             connection.set("build.lobby", buildNumber + "");
         }
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE servers SET lobby_buildNumber = ? WHERE servers.lobby_buildNumber IS NOT NULL");
+            statement.setInt(1, buildNumber);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setCurrentProxyBuildNumber(int buildNumber) {
         try (Jedis connection = jedis.getResource()) {
             connection.set("build.proxy", buildNumber + "");
+        }
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE proxies SET build_number = ?");
+            statement.setInt(1, buildNumber);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

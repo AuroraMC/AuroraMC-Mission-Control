@@ -159,19 +159,6 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
 
-        if (serverInfo.getBuildBuildNumber() != 0) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
-        }
-        if (serverInfo.getLobbyBuildNumber() != 0) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
-        }
-        if (serverInfo.getEngineBuildNumber() != 0) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
-        }
-        if (serverInfo.getGameBuildNumber() != 0) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
-        }
-
         api.createServer()
                 .setName(serverInfo.getName())
                 .setDescription("Server")
@@ -190,10 +177,52 @@ public class PanelManager {
     }
 
     public void updateServer(ServerInfo info) {
+        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
+        environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        if (info.getLobbyBuildNumber() != -1) {
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        }
+        if (info.getBuildBuildNumber() != -1) {
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        }
+        if (info.getGameBuildNumber() != -1) {
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        }
+        if (info.getEngineBuildNumber() != -1) {
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        }
+        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
+        environment.put("SERVER_NAME", EnvironmentValue.ofString(info.getName()));
+
+        //Adding in database details.
+        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
+        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
+        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
+        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
+        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
+        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
+        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+
+        api.retrieveServersByName(info.getName(), false).execute().get(0).getManager().setEnvironment(environment).execute();
         apiClient.retrieveServersByName(info.getName(), false).execute().get(0).getManager().reinstall().execute();
     }
 
     public void updateProxy(ProxyInfo info) {
+        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
+        environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
+        environment.put("PROXY_UUID", EnvironmentValue.ofString(info.getUuid().toString()));
+
+        //Adding in database details.
+        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
+        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
+        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
+        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
+        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
+        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
+        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+
+        api.retrieveServersByName(info.getUuid().toString(), false).execute().get(0).getManager().setEnvironment(environment).execute();
         apiClient.retrieveServersByName(info.getUuid().toString(), false).execute().get(0).getManager().reinstall().execute();
     }
 
