@@ -4,7 +4,6 @@ import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.backend.Module;
-import net.auroramc.missioncontrol.entities.Info;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.RestartServerResponse;
 import net.auroramc.missioncontrol.entities.ServerInfo;
@@ -25,6 +24,7 @@ public class NetworkRestarterThread extends Thread {
     private final List<ServerInfo> lobbiesToRestart = new ArrayList<>();
     private final List<ProxyInfo> proxiesToRestart = new ArrayList<>();
     private RestartMode proxyRestartMode;
+    private int totalUpdates;
 
     private final ArrayBlockingQueue<RestartServerResponse> queue = new ArrayBlockingQueue<>(50);
 
@@ -38,6 +38,7 @@ public class NetworkRestarterThread extends Thread {
         if (modules.contains(Module.PROXY)) {
             //Open and close proxies in batches of 10 to prevent using too many resources.
             proxiesToRestart.addAll(MissionControl.getProxies().values().stream().filter(info -> info.getNetwork() == network).collect(Collectors.toList()));
+            totalUpdates = proxiesToRestart.size();
             for (ProxyInfo info : proxiesToRestart) {
                 info.setBuildNumber(NetworkManager.getCurrentProxyBuildNumber());
             }
@@ -146,6 +147,7 @@ public class NetworkRestarterThread extends Thread {
                         MissionControl.getPanelManager().openServer(info.getName());
                     }
                 } else {
+                    totalUpdates--;
                     if (response.getInfo() instanceof ProxyInfo) {
                         if (proxyRestartMode == RestartMode.SOLO) {
                             //The connection node has started and is ready to accept connections, add it to the rotation and then queue another node to restart.
@@ -172,7 +174,7 @@ public class NetworkRestarterThread extends Thread {
                 }
             }
 
-            if (serversToRestart.size() == 0 && lobbiesToRestart.size() == 0 && proxiesToRestart.size() == 0) {
+            if (totalUpdates == 0) {
                 NetworkMonitorRunnable.setUpdate(false);
                 return;
             }
@@ -180,22 +182,15 @@ public class NetworkRestarterThread extends Thread {
     }
 
     private void updateLobbies() {
-        if (lobbiesToRestart.size() <= 20) {
-            if (lobbiesToRestart.size() > 0) {
-                ServerInfo info = lobbiesToRestart.remove(0);
-                ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                ServerCommunicationUtils.sendMessage(message);
-            }
-        } else {
-            for (int i = 0;i < 10;i++) {
-                ServerInfo info = lobbiesToRestart.remove(0);
-                ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                ServerCommunicationUtils.sendMessage(message);
-            }
-        }
+        update(lobbiesToRestart);
     }
 
     private void updateServers() {
+        update(serversToRestart);
+    }
+
+    private void update(List<ServerInfo> serversToRestart) {
+        totalUpdates += serversToRestart.size();
         if (serversToRestart.size() <= 20) {
             if (serversToRestart.size() > 0) {
                 ServerInfo info = serversToRestart.remove(0);
