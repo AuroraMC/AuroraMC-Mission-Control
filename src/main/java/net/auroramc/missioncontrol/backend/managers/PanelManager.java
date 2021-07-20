@@ -131,12 +131,78 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
+    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation) {
+
+        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
+        environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        if (serverInfo.getLobbyBuildNumber() != -1) {
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        }
+        if (serverInfo.getBuildBuildNumber() != -1) {
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        }
+        if (serverInfo.getGameBuildNumber() != -1) {
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        }
+        if (serverInfo.getEngineBuildNumber() != -1) {
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        }
+        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
+        environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
+
+        //Adding in database details.
+        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
+        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
+        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
+        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
+        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
+        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
+        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+
+        if (serverInfo.getBuildBuildNumber() != 0) {
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
+        }
+        if (serverInfo.getLobbyBuildNumber() != 0) {
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
+        }
+        if (serverInfo.getEngineBuildNumber() != 0) {
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
+        }
+        if (serverInfo.getGameBuildNumber() != 0) {
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
+        }
+
+        api.createServer()
+                .setName(serverInfo.getName())
+                .setDescription("Server")
+                .setOwner(api.retrieveUserById(1).execute())
+                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 16).execute())
+                .setLocation(api.retrieveLocationById(1).execute())
+                .setAllocations(allocation)
+                .setDatabases(0)
+                .setCPU(0)
+                .setDisk(5, DataType.GB)
+                .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
+                .setDockerImage("quay.io/pterodactyl/core:java")
+                .setPort(serverInfo.getPort())
+                .startOnCompletion(true)
+                .setEnvironment(environment).execute();
+    }
+
     public void updateServer(ServerInfo info) {
         apiClient.retrieveServersByName(info.getName(), false).execute().get(0).getManager().reinstall().execute();
     }
 
     public void updateProxy(ProxyInfo info) {
         apiClient.retrieveServersByName(info.getUuid().toString(), false).execute().get(0).getManager().reinstall().execute();
+    }
+
+    public void closeServer(String name) {
+        apiClient.setPower(apiClient.retrieveServersByName(name, false).execute().get(0), PowerAction.STOP).execute();
+    }
+
+    public void openServer(String name) {
+        apiClient.setPower(apiClient.retrieveServersByName(name, false).execute().get(0), PowerAction.START);
     }
 
     public void createProxy(ProxyInfo info) {
@@ -163,6 +229,40 @@ public class PanelManager {
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 15).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
                 .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0))
+                .setDatabases(0)
+                .setCPU(0)
+                .setDisk(5, DataType.GB)
+                .setMemory(MemoryAllocation.PROXY.getMegaBytes(), DataType.MB)
+                .setDockerImage("quay.io/pterodactyl/core:java")
+                .setPort(info.getPort())
+                .startOnCompletion(true)
+                .setEnvironment(environment).execute();
+    }
+
+    public void createProxy(ProxyInfo info, Allocation allocation) {
+        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
+        environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
+        environment.put("PROXY_UUID", EnvironmentValue.ofString(info.getUuid().toString()));
+
+        //Adding in database details.
+        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
+        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
+        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
+        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
+        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
+        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
+        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+
+
+
+        api.createServer()
+                .setName(info.getUuid().toString())
+                .setDescription("Server")
+                .setOwner(api.retrieveUserById(1).execute())
+                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 15).execute())
+                .setLocation(api.retrieveLocationById(1).execute())
+                .setAllocations(allocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)

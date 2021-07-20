@@ -57,7 +57,7 @@ public class DatabaseManager {
 
             Map<String, ServerInfo> servers = new HashMap<>();
             while (set.next()) {
-                servers.put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), new JSONObject(set.getString(4)), set.getInt(5), set.getInt(6), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10)));
+                servers.put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12)));
             }
             return servers;
         } catch (SQLException e) {
@@ -73,7 +73,7 @@ public class DatabaseManager {
 
             Map<UUID, ProxyInfo> proxies = new HashMap<>();
             while (set.next()) {
-                proxies.put(UUID.fromString(set.getString(1)), new ProxyInfo(UUID.fromString(set.getString(1)), set.getString(2), set.getInt(3), set.getInt(4), set.getInt(5)));
+                proxies.put(UUID.fromString(set.getString(1)), new ProxyInfo(UUID.fromString(set.getString(1)), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), set.getInt(6), set.getInt(7)));
             }
             return proxies;
         } catch (SQLException e) {
@@ -84,17 +84,19 @@ public class DatabaseManager {
 
     public void createServer(ServerInfo info) {
         try (Connection connection = mysql.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
             statement.setString(1, info.getName());
             statement.setString(2, info.getIp());
             statement.setInt(3, info.getPort());
-            statement.setString(4, info.getServerType().toString());
-            statement.setInt(5, info.getProtocolPort());
-            statement.setInt(6, info.getBuildNumber());
-            statement.setInt(7, info.getLobbyBuildNumber());
-            statement.setInt(8, info.getEngineBuildNumber());
-            statement.setInt(9, info.getGameBuildNumber());
-            statement.setInt(10, info.getBuildBuildNumber());
+            statement.setString(4, info.getNetwork().name());
+            statement.setBoolean(5, info.isForced());
+            statement.setString(6, info.getServerType().toString());
+            statement.setInt(7, info.getProtocolPort());
+            statement.setInt(8, info.getBuildNumber());
+            statement.setInt(9, info.getLobbyBuildNumber());
+            statement.setInt(10, info.getEngineBuildNumber());
+            statement.setInt(11, info.getGameBuildNumber());
+            statement.setInt(12, info.getBuildBuildNumber());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -123,12 +125,14 @@ public class DatabaseManager {
 
     public void createConnectionNode(ProxyInfo proxyInfo) {
         try (Connection connection = mysql.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO proxies VALUES (?,?,?,?,?)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO proxies VALUES (?,?,?,?,?,?,?)");
             statement.setString(1, proxyInfo.getUuid().toString());
             statement.setString(2, proxyInfo.getIp());
             statement.setInt(3, proxyInfo.getPort());
-            statement.setInt(4, proxyInfo.getProtocolPort());
-            statement.setInt(5, proxyInfo.getBuildNumber());
+            statement.setString(4, proxyInfo.getNetwork().name());
+            statement.setBoolean(5, proxyInfo.isForced());
+            statement.setInt(6, proxyInfo.getProtocolPort());
+            statement.setInt(7, proxyInfo.getBuildNumber());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -141,7 +145,7 @@ public class DatabaseManager {
             statement.setString(1, name);
             ResultSet set = statement.executeQuery();
             if (set.next()) {
-                return new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), new JSONObject(set.getString(4)), set.getInt(5), set.getInt(6), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10));
+                return new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12));
             } else {
                 return null;
             }
@@ -254,3 +258,4 @@ public class DatabaseManager {
     }
 
 }
+

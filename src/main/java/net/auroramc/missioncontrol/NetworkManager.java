@@ -1,9 +1,12 @@
 package net.auroramc.missioncontrol;
 
+import com.mattmalec.pterodactyl4j.application.entities.Allocation;
+import com.mattmalec.pterodactyl4j.application.entities.Node;
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.backend.Game;
+import net.auroramc.missioncontrol.backend.MemoryAllocation;
 import net.auroramc.missioncontrol.backend.Module;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
@@ -12,15 +15,21 @@ import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class NetworkManager {
 
     private static final Object lock = new Object();
     private static final Object lock2 = new Object();
+    private static final Object lock3 = new Object();
     private static boolean shutdown;
+
+    private static final ArrayBlockingQueue<ProxyInfo> proxyBlockingQueue = new ArrayBlockingQueue<>(10);
+    private static final ArrayBlockingQueue<ProxyInfo> serverBlockingQueue = new ArrayBlockingQueue<>(20);
 
     /*
      * Build numbers for each module.
@@ -40,6 +49,10 @@ public class NetworkManager {
     private static final DatabaseManager dbManager;
     private static final ScheduledExecutorService scheduler;
 
+    private static List<Node> nodes;
+
+
+
     static {
         networkPlayerTotal = 0;
         gamePlayerTotals = new HashMap<>();
@@ -47,6 +60,8 @@ public class NetworkManager {
         nodePlayerTotals = new HashMap<>();
         logger = MissionControl.getLogger();
         dbManager = MissionControl.getDbManager();
+
+        nodes = MissionControl.getPanelManager().getAllNodes();
 
         scheduler = Executors.newSingleThreadScheduledExecutor();
         shutdown = false;
@@ -70,6 +85,10 @@ public class NetworkManager {
         for (ServerInfo info : MissionControl.getServers().values()) {
             ProtocolMessage message = new ProtocolMessage(Protocol.UPDATE_PLAYER_COUNT, info.getName(), "update", "MissionControl", "");
             ServerCommunicationUtils.sendMessage(message);
+        }
+        for (ProxyInfo info : MissionControl.getProxies().values()) {
+            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_PLAYER_COUNT, info.getUuid().toString(), "update", "MissionControl", "");
+            ProxyCommunicationUtils.sendMessage(message);
         }
         logger.info("Requests sent. Awaiting responses...");
 
@@ -119,7 +138,7 @@ public class NetworkManager {
         lock2.notifyAll();
     }
 
-    public static void pushUpdate(Map<Module, Integer> module) {
+    public static void pushUpdate(Map<Module, Integer> module, ServerInfo.Network network) {
         //Stop the network monitor from spinning up more servers.
         NetworkMonitorRunnable.setUpdate(true);
         for (UUID uuid : MissionControl.getProxies().keySet()) {
@@ -152,13 +171,45 @@ public class NetworkManager {
             MissionControl.getDbManager().setCurrentProxyBuildNumber(currentProxyBuildNumber);
         }
 
-        NetworkRestarterThread thread = new NetworkRestarterThread(new ArrayList<>(module.keySet()));
+        NetworkRestarterThread thread = new NetworkRestarterThread(new ArrayList<>(module.keySet()), network);
         thread.start();
     }
 
-    public static void createProxy() {
+    /**
+     * Create a connection node. This method blocks until the node has been confirmed to have fully started and be ready to accept connections.
+     */
+    public static void createProxy(ServerInfo.Network network, boolean forced) {
         UUID uuid = UUID.randomUUID();
+        boolean update = false;
+        for (Node node : nodes) {
+            if (node.getMemoryLong() - node.getAllocatedMemoryLong() > MemoryAllocation.PROXY.getMegaBytes()) {
+                //There is enough memory in this node
+                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned()).collect(Collectors.toList());
+                if (allocations.size() > 0) {
+                    Allocation allocation = allocations.get(0);
+                    ProxyInfo info = new ProxyInfo(uuid, allocation.getIP(), allocation.getPortInt(), network, forced, allocation.getPortInt() + 10, currentProxyBuildNumber);
+                    MissionControl.getDbManager().createConnectionNode(info);
+                    MissionControl.getPanelManager().createProxy(info, allocation);
+                    MissionControl.getProxyManager().addServer(info);
+                    MissionControl.getProxies().put(uuid, info);
+                    update = true;
+                }
+            }
+        }
 
+        if (update) {
+            //Node was found, update the node list.
+            nodes = MissionControl.getPanelManager().getAllNodes();
+            try {
+                proxyBlockingQueue.poll(2, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
+        //No nodes were found with enough memory. Ignore request.
+        logger.info("A connection node was attempted to be created but a node was not found with enough memory to create it.");
     }
 
     public static void removeProxyFromRotation(ProxyInfo info) {
@@ -166,7 +217,14 @@ public class NetworkManager {
     }
 
     public static void deleteProxy(ProxyInfo info) {
-
+        MissionControl.getPanelManager().deleteServer(info.getUuid().toString());
+        MissionControl.getDbManager().deleteNode(info);
+        MissionControl.getProxies().remove(info.getUuid());
+        nodePlayerTotals.remove(info.getUuid());
+        nodes = MissionControl.getPanelManager().getAllNodes();
+    }
+    public static synchronized void proxyOpenConfirmation(ProxyInfo info) {
+        proxyBlockingQueue.add(info);
     }
 
     public static void shutdown() {

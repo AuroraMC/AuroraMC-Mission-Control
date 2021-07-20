@@ -29,6 +29,7 @@ public class IncomingProtocolMessageThread extends Thread {
                 ObjectInputStream objectInputStream = (ObjectInputStream) connection.getInputStream();
                 ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
                 ServerMessageHandler.onMessage(message);
+                connection.close();
             }
         } catch (SocketException e) {
             listening = false;

@@ -34,4 +34,8 @@ public enum Protocol {
      * When a server is online and now available to take connections.
      */
     SERVER_ONLINE,
+    /**
+     * Remove a server from the rotation. Only sent to lobby servers to remove servers from the menu.
+     */
+    REMOVE_SERVER
 }
