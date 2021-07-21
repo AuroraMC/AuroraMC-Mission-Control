@@ -133,6 +133,7 @@ public class MissionControl {
         Set<String> serverNames = new HashSet<>(servers.keySet());
         Set<UUID> proxyNames = new HashSet<>(proxies.keySet());
 
+
         for (ApplicationServer server : panelServers) {
             if (servers.containsKey(server.getName())) {
                 panelServersCopy.remove(server);
@@ -165,9 +166,24 @@ public class MissionControl {
             logger.info("No Pterodactyl mismatch found.");
         }
 
-        JSONObject object = proxyManager.getBackendServers();
+        checkMissingProxies(proxyManager.getBackendServers(ServerInfo.Network.MAIN), ServerInfo.Network.MAIN);
+        checkMissingProxies(proxyManager.getBackendServers(ServerInfo.Network.ALPHA), ServerInfo.Network.ALPHA);
+        checkMissingProxies(proxyManager.getBackendServers(ServerInfo.Network.TEST), ServerInfo.Network.TEST);
+
+
+        logger.info("Starting server/proxy messaging protocol listeners...");
+
+        ServerCommunicationUtils.init();
+        ProxyCommunicationUtils.init();
+
+        logger.info("Server/proxy messaging protocol listeners successfully started.");
+        logger.info("AuroraMC Mission Control successfully started. Handing off to the network manager...");
+        NetworkManager.handoff();
+    }
+
+    private static void checkMissingProxies(JSONObject object, ServerInfo.Network network) {
         if (object != null) {
-            proxyNames = new HashSet<>(proxies.keySet());
+            Set<UUID> proxyNames = new HashSet<>(proxies.keySet());
             JSONArray array = object.getJSONArray("data");
             List<Object> copy = new ArrayList<>(array.toList());
             for (Object o : array) {
@@ -183,7 +199,7 @@ public class MissionControl {
                 for (Object o : copy) {
                     JSONObject ob = (JSONObject) o;
                     logger.info("Removing proxy " + ob.getString("name") + " in HaProxy.");
-                    proxyManager.removeServer(ob.getString("name"));
+                    proxyManager.removeServer(ob.getString("name"), network);
                 }
 
                 for (UUID uuid : proxyNames) {
@@ -196,15 +212,6 @@ public class MissionControl {
         } else {
             logger.warn("There was an issue contacting the HaProxy Data Plane API.");
         }
-
-        logger.info("Starting server/proxy messaging protocol listeners...");
-
-        ServerCommunicationUtils.init();
-        ProxyCommunicationUtils.init();
-
-        logger.info("Server/proxy messaging protocol listeners successfully started.");
-        logger.info("AuroraMC Mission Control successfully started. Handing off to the network manager...");
-        NetworkManager.handoff();
     }
 
     public static Logger getLogger() {

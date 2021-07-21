@@ -2,6 +2,7 @@ package net.auroramc.missioncontrol.backend.managers;
 
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
+import net.auroramc.missioncontrol.entities.ServerInfo;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -55,12 +56,12 @@ public class HaProxyManager {
     }
 
 
-    public JSONObject getBackendServers() {
-        return sendGetRequest("services/haproxy/configuration/servers?backend=proxies", null);
+    public JSONObject getBackendServers(ServerInfo.Network network) {
+        return sendGetRequest("services/haproxy/configuration/servers?backend=" + network.name().toLowerCase(), null);
     }
 
-    public void removeServer(String name) {
-        sendDeleteRequest("services/haproxy/configuration/servers/" + name + "?backend=proxies", null);
+    public void removeServer(String name, ServerInfo.Network network) {
+        sendDeleteRequest("services/haproxy/configuration/servers/" + name + "?backend=" + network.name().toLowerCase(), null);
     }
 
     public void addServer(ProxyInfo proxyInfo) {
@@ -71,8 +72,9 @@ public class HaProxyManager {
         object.put("check-send-proxy", "enabled");
         object.put("send-proxy-v2", "enabled");
         object.put("check", "enabled");
+        ServerInfo.Network network = proxyInfo.getNetwork();
 
-        sendPostRequest("services/haproxy/configuration/servers?backend=proxies", object.toString());
+        sendPostRequest("services/haproxy/configuration/servers?backend=" + network.name().toLowerCase(), object.toString());
     }
 
     private JSONObject sendPostRequest(String endpoint, String body) {

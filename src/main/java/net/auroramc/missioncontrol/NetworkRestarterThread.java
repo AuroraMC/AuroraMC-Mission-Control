@@ -119,7 +119,7 @@ public class NetworkRestarterThread extends Thread {
                 response = queue.poll(10, TimeUnit.MINUTES);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                NetworkMonitorRunnable.setUpdate(false);
+                NetworkManager.updateComplete();
                 return;
             }
             if (response != null) {
@@ -175,7 +175,7 @@ public class NetworkRestarterThread extends Thread {
             }
 
             if (totalUpdates == 0) {
-                NetworkMonitorRunnable.setUpdate(false);
+                NetworkManager.updateComplete();
                 return;
             }
         }

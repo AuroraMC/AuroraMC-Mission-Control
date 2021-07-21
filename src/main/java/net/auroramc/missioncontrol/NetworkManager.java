@@ -41,7 +41,7 @@ public class NetworkManager {
     private static int currentEngineBuildNumber;
     private static int currentGameBuildNumber;
 
-    private static int networkPlayerTotal;
+    private static final Map<ServerInfo.Network, Integer> networkPlayerTotal;
     private static final Map<Game, Integer> gamePlayerTotals;
     private static final Map<String, Integer> serverPlayerTotals;
     private static final Map<UUID, Integer> nodePlayerTotals;
@@ -57,9 +57,14 @@ public class NetworkManager {
     private static List<Node> nodes;
     private static NetworkRestarterThread restarterThread;
 
+    private static boolean alphaEnabled;
+
 
     static {
-        networkPlayerTotal = 0;
+        networkPlayerTotal = new HashMap<>();
+        networkPlayerTotal.put(ServerInfo.Network.MAIN, 0);
+        networkPlayerTotal.put(ServerInfo.Network.TEST, 0);
+        networkPlayerTotal.put(ServerInfo.Network.ALPHA, 0);
         gamePlayerTotals = new HashMap<>();
         serverPlayerTotals = new HashMap<>();
         nodePlayerTotals = new HashMap<>();
@@ -68,7 +73,7 @@ public class NetworkManager {
 
         nodes = MissionControl.getPanelManager().getAllNodes();
 
-        scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler = Executors.newScheduledThreadPool(2);
         shutdown = false;
 
         for (Game game : Game.values()) {
@@ -118,8 +123,13 @@ public class NetworkManager {
             logger.warn("Waiting for responses was interrupted. Starting network monitoring thread... ", e);
         }
 
-        NetworkMonitorRunnable runnable = new NetworkMonitorRunnable(logger);
+        NetworkMonitorRunnable runnable = new NetworkMonitorRunnable(logger, ServerInfo.Network.MAIN);
         scheduler.scheduleWithFixedDelay(runnable, 1, 1, TimeUnit.MINUTES);
+        if (alphaEnabled) {
+            runnable = new NetworkMonitorRunnable(logger, ServerInfo.Network.ALPHA);
+            scheduler.scheduleWithFixedDelay(runnable, 1, 1, TimeUnit.MINUTES);
+        }
+
         done();
     }
 
@@ -147,8 +157,10 @@ public class NetworkManager {
         //Stop the network monitor from spinning up more servers.
         NetworkMonitorRunnable.setUpdate(true);
         for (UUID uuid : MissionControl.getProxies().keySet()) {
-            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.toString(), "update", "Mission Control", "Update in progress - Limited network capacity");
-            ProxyCommunicationUtils.sendMessage(message);
+            if (MissionControl.getProxies().get(uuid).getNetwork() == network) {
+                net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.toString(), "update", "Mission Control", "&b&lUpdate in progress - Limited network capacity");
+                ProxyCommunicationUtils.sendMessage(message);
+            }
         }
 
         if (module.containsKey(Module.CORE)) {
@@ -183,6 +195,12 @@ public class NetworkManager {
     public static void updateComplete() {
         NetworkMonitorRunnable.setUpdate(true);
         restarterThread = null;
+
+        //Update the MOTD to what it was before.
+        for (UUID uuid : MissionControl.getProxies().keySet()) {
+            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.toString(), "update", "Mission Control", motd.get(MissionControl.getProxies().get(uuid).getNetwork()));
+            ProxyCommunicationUtils.sendMessage(message);
+        }
     }
 
     /**
@@ -197,7 +215,7 @@ public class NetworkManager {
                 List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned()).collect(Collectors.toList());
                 if (allocations.size() > 0) {
                     Allocation allocation = allocations.get(0);
-                    ProxyInfo info = new ProxyInfo(uuid, allocation.getIP(), allocation.getPortInt(), network, forced, allocation.getPortInt() + 10, currentProxyBuildNumber);
+                    ProxyInfo info = new ProxyInfo(uuid, allocation.getIP(), allocation.getPortInt(), network, forced, allocation.getPortInt() + 100, currentProxyBuildNumber);
                     MissionControl.getDbManager().createConnectionNode(info);
                     MissionControl.getPanelManager().createProxy(info, allocation);
                     MissionControl.getProxyManager().addServer(info);
@@ -223,7 +241,7 @@ public class NetworkManager {
     }
 
     public static void removeProxyFromRotation(ProxyInfo info) {
-        MissionControl.getProxyManager().removeServer(info.getUuid().toString());
+        MissionControl.getProxyManager().removeServer(info.getUuid().toString(), info.getNetwork());
     }
 
     public static void deleteProxy(ProxyInfo info) {
@@ -243,12 +261,12 @@ public class NetworkManager {
         logger.info("Shutting down protocol threads...");
         ProxyCommunicationUtils.shutdown();
         ServerCommunicationUtils.shutdown();
-        logger.info("Shutting down protocol threads...");
+        logger.info("Shutdown complete. Goodbye!");
     }
 
-    public static void playerJoinedNetwork(UUID proxy) {
+    public static void playerJoinedNetwork(UUID proxy, ServerInfo.Network network) {
         synchronized (lock) {
-            networkPlayerTotal++;
+            networkPlayerTotal.put(network, networkPlayerTotal.get(network) + 1);
             if (nodePlayerTotals.containsKey(proxy)) {
                 nodePlayerTotals.put(proxy, nodePlayerTotals.get(proxy) + 1);
             } else {
@@ -257,9 +275,9 @@ public class NetworkManager {
         }
     }
 
-    public static void playerLeftNetwork(UUID proxy) {
+    public static void playerLeftNetwork(UUID proxy, ServerInfo.Network network) {
         synchronized (lock) {
-            networkPlayerTotal--;
+            networkPlayerTotal.put(network, networkPlayerTotal.get(network) - 1);
             if (nodePlayerTotals.containsKey(proxy)) {
                 int newTotal = nodePlayerTotals.get(proxy) - 1;
                 if (newTotal <= 0) {
@@ -300,21 +318,21 @@ public class NetworkManager {
         }
     }
 
-    public static void reportServerTotal(String server, Game game, int amount) {
+    public static void reportServerTotal(String server, Game game, int amount, ServerInfo.Network network) {
         synchronized (lock) {
             if (serverPlayerTotals.containsKey(server)) {
                 gamePlayerTotals.put(game, gamePlayerTotals.get(game) - serverPlayerTotals.get(server));
-                networkPlayerTotal -= serverPlayerTotals.get(server);
+                networkPlayerTotal.put(network, networkPlayerTotal.get(network) - serverPlayerTotals.get(server));
             }
             serverPlayerTotals.put(server, amount);
-            networkPlayerTotal += amount;
+            networkPlayerTotal.put(network, networkPlayerTotal.get(network) + amount);;
             if (game != null) {
                 gamePlayerTotals.put(game, gamePlayerTotals.get(game) + amount);
             }
         }
     }
 
-    public static int getNetworkPlayerTotal() {
+    public static Map<ServerInfo.Network, Integer> getNetworkPlayerTotal() {
         return networkPlayerTotal;
     }
 
