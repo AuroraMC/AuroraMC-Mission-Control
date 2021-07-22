@@ -82,7 +82,7 @@ public class NetworkRestarterThread extends Thread {
                 for (ServerInfo info : servers) {
                     info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                    ServerCommunicationUtils.sendMessage(message);
+                    ServerCommunicationUtils.sendMessage(message, network);
                 }
             }
             if (modules.contains(Module.ENGINE) || modules.contains(Module.GAME)) {
@@ -107,7 +107,7 @@ public class NetworkRestarterThread extends Thread {
                 List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event") && server.getNetwork() == network).collect(Collectors.toList());
                 for (ServerInfo info : servers) {
                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                    ServerCommunicationUtils.sendMessage(message);
+                    ServerCommunicationUtils.sendMessage(message, network);
                 }
             }
         }
@@ -168,7 +168,7 @@ public class NetworkRestarterThread extends Thread {
                         }
                         if (info != null) {
                             ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                            ServerCommunicationUtils.sendMessage(message);
+                            ServerCommunicationUtils.sendMessage(message, network);
                         }
                     }
                 }
@@ -195,13 +195,13 @@ public class NetworkRestarterThread extends Thread {
             if (serversToRestart.size() > 0) {
                 ServerInfo info = serversToRestart.remove(0);
                 ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                ServerCommunicationUtils.sendMessage(message);
+                ServerCommunicationUtils.sendMessage(message, network);
             }
         } else {
             for (int i = 0;i < 10;i++) {
                 ServerInfo info = serversToRestart.remove(0);
                 ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                ServerCommunicationUtils.sendMessage(message);
+                ServerCommunicationUtils.sendMessage(message, network);
             }
         }
     }

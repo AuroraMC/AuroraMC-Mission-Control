@@ -2,7 +2,6 @@ package net.auroramc.proxy.api.backend.communication;
 
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
-import net.auroramc.missioncontrol.entities.ServerInfo;
 
 import java.io.ObjectOutputStream;
 import java.net.Socket;

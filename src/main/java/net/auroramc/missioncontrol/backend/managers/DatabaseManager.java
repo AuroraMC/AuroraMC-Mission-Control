@@ -9,10 +9,11 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class DatabaseManager {
 

@@ -2,7 +2,6 @@ package net.auroramc.missioncontrol;
 
 import com.mattmalec.pterodactyl4j.application.entities.Allocation;
 import com.mattmalec.pterodactyl4j.application.entities.Node;
-import com.mattmalec.pterodactyl4j.entities.Server;
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
@@ -103,7 +102,7 @@ public class NetworkManager {
         for (ServerInfo.Network network : ServerInfo.Network.values()) {
             for (ServerInfo info : MissionControl.getServers().get(network).values()) {
                 ProtocolMessage message = new ProtocolMessage(Protocol.UPDATE_PLAYER_COUNT, info.getName(), "update", "MissionControl", "");
-                ServerCommunicationUtils.sendMessage(message);
+                ServerCommunicationUtils.sendMessage(message, network);
             }
         }
         for (ProxyInfo info : MissionControl.getProxies().values()) {
@@ -291,7 +290,7 @@ public class NetworkManager {
                         List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == server.getNetwork()).collect(Collectors.toList());
                         for (ServerInfo info : infos) {
                             ProtocolMessage message = new ProtocolMessage(Protocol.SERVER_ONLINE ,info.getName(), "add", "Mission Control", server.getName());
-                            ServerCommunicationUtils.sendMessage(message);
+                            ServerCommunicationUtils.sendMessage(message, network);
                         }
                     }
                 }
@@ -309,7 +308,7 @@ public class NetworkManager {
         List<ServerInfo> infos = MissionControl.getServers().get(server.getNetwork()).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == server.getNetwork()).collect(Collectors.toList());
         for (ServerInfo info : infos) {
             ProtocolMessage message = new ProtocolMessage(Protocol.REMOVE_SERVER ,info.getName(), "remove", "Mission Control", server.getName());
-            ServerCommunicationUtils.sendMessage(message);
+            ServerCommunicationUtils.sendMessage(message, info.getNetwork());
         }
     }
 

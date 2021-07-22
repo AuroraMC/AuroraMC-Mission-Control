@@ -2,16 +2,16 @@ package net.auroramc.missioncontrol;
 
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.backend.Game;
-import net.auroramc.missioncontrol.entities.Info;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.Protocol;
 import net.auroramc.proxy.api.backend.communication.ProtocolMessage;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 import org.apache.log4j.Logger;
-import sun.nio.ch.Net;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class NetworkMonitorRunnable implements Runnable {
@@ -99,7 +99,7 @@ public class NetworkMonitorRunnable implements Runnable {
                             NetworkManager.removeServerFromRotation(info);
                             serversPendingRestart.add(info);
                             net.auroramc.core.api.backend.communication.ProtocolMessage message = new net.auroramc.core.api.backend.communication.ProtocolMessage(net.auroramc.core.api.backend.communication.Protocol.SHUTDOWN, info.getName(), "close", "Mission Control", "");
-                            ServerCommunicationUtils.sendMessage(message);
+                            ServerCommunicationUtils.sendMessage(message, network);
                             i--;
                         } while (serversNeeded < i);
                     } else if (serversNeeded > serversOpen) {

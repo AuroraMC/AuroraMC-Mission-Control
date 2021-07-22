@@ -19,8 +19,8 @@ public class ServerCommunicationUtils {
         task.start();
     }
 
-    public static UUID sendMessage(ProtocolMessage message) {
-       ServerInfo info = MissionControl.getServers().get(message.getDestination());
+    public static UUID sendMessage(ProtocolMessage message, ServerInfo.Network network) {
+       ServerInfo info = MissionControl.getServers().get(network).get(message.getDestination());
         if (info != null) {
             try (Socket socket = new Socket(info.getIp(), info.getProtocolPort())) {
                 ObjectOutputStream outputStream = (ObjectOutputStream) socket.getOutputStream();
