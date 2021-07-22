@@ -2,6 +2,7 @@ package net.auroramc.missioncontrol;
 
 import com.mattmalec.pterodactyl4j.application.entities.Allocation;
 import com.mattmalec.pterodactyl4j.application.entities.Node;
+import com.mattmalec.pterodactyl4j.entities.Server;
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
@@ -29,7 +30,7 @@ public class NetworkManager {
     private static boolean shutdown;
 
     private static final ArrayBlockingQueue<ProxyInfo> proxyBlockingQueue = new ArrayBlockingQueue<>(10);
-    private static final ArrayBlockingQueue<ProxyInfo> serverBlockingQueue = new ArrayBlockingQueue<>(20);
+    private static final ArrayBlockingQueue<ServerInfo> serverBlockingQueue = new ArrayBlockingQueue<>(20);
 
     /*
      * Build numbers for each module.
@@ -42,9 +43,9 @@ public class NetworkManager {
     private static int currentGameBuildNumber;
 
     private static final Map<ServerInfo.Network, Integer> networkPlayerTotal;
-    private static final Map<Game, Integer> gamePlayerTotals;
-    private static final Map<String, Integer> serverPlayerTotals;
-    private static final Map<UUID, Integer> nodePlayerTotals;
+    private static final Map<ServerInfo.Network, Map<Game, Integer>> gamePlayerTotals;
+    private static final Map<ServerInfo.Network, Map<String, Integer>> serverPlayerTotals;
+    private static final Map<ServerInfo.Network, Map<UUID, Integer>> nodePlayerTotals;
     private static final Logger logger;
     private static final DatabaseManager dbManager;
     private static final ScheduledExecutorService scheduler;
@@ -62,12 +63,23 @@ public class NetworkManager {
 
     static {
         networkPlayerTotal = new HashMap<>();
-        networkPlayerTotal.put(ServerInfo.Network.MAIN, 0);
-        networkPlayerTotal.put(ServerInfo.Network.TEST, 0);
-        networkPlayerTotal.put(ServerInfo.Network.ALPHA, 0);
         gamePlayerTotals = new HashMap<>();
         serverPlayerTotals = new HashMap<>();
         nodePlayerTotals = new HashMap<>();
+
+        for (ServerInfo.Network network : ServerInfo.Network.values()) {
+            networkPlayerTotal.put(network, 0);
+
+            Map<Game, Integer> gameTotals = new HashMap<>();
+            for (Game game : Game.values()) {
+                gameTotals.put(game, 0);
+            }
+
+            gamePlayerTotals.put(network, gameTotals);
+            serverPlayerTotals.put(network, new HashMap<>());
+            nodePlayerTotals.put(network, new HashMap<>());
+        }
+
         logger = MissionControl.getLogger();
         dbManager = MissionControl.getDbManager();
 
@@ -75,10 +87,6 @@ public class NetworkManager {
 
         scheduler = Executors.newScheduledThreadPool(2);
         shutdown = false;
-
-        for (Game game : Game.values()) {
-            gamePlayerTotals.put(game, 0);
-        }
     }
 
 
@@ -92,9 +100,11 @@ public class NetworkManager {
         currentProxyBuildNumber = dbManager.getCurrentProxyBuildNumber();
 
         logger.info("Requesting player counts from servers...");
-        for (ServerInfo info : MissionControl.getServers().values()) {
-            ProtocolMessage message = new ProtocolMessage(Protocol.UPDATE_PLAYER_COUNT, info.getName(), "update", "MissionControl", "");
-            ServerCommunicationUtils.sendMessage(message);
+        for (ServerInfo.Network network : ServerInfo.Network.values()) {
+            for (ServerInfo info : MissionControl.getServers().get(network).values()) {
+                ProtocolMessage message = new ProtocolMessage(Protocol.UPDATE_PLAYER_COUNT, info.getName(), "update", "MissionControl", "");
+                ServerCommunicationUtils.sendMessage(message);
+            }
         }
         for (ProxyInfo info : MissionControl.getProxies().values()) {
             net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_PLAYER_COUNT, info.getUuid().toString(), "update", "MissionControl", "");
@@ -248,11 +258,75 @@ public class NetworkManager {
         MissionControl.getPanelManager().deleteServer(info.getUuid().toString());
         MissionControl.getDbManager().deleteNode(info);
         MissionControl.getProxies().remove(info.getUuid());
-        nodePlayerTotals.remove(info.getUuid());
+        nodePlayerTotals.get(info.getNetwork()).remove(info.getUuid());
         nodes = MissionControl.getPanelManager().getAllNodes();
     }
+
+    public static void createServer(String serverName, Game game, boolean forced, ServerInfo.Network network) {
+        boolean update = false;
+
+        for (Node node : nodes) {
+            if (node.getMemoryLong() - node.getAllocatedMemoryLong() > game.getMemoryAllocation().getMegaBytes()) {
+                //There is enough memory in this node
+                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned()).collect(Collectors.toList());
+                if (allocations.size() > 0) {
+                    Allocation allocation = allocations.get(0);
+                    ServerInfo info = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, game.getServerTypeInformation(), allocation.getPortInt() + 100, currentCoreBuildNumber, ((game.getModules().contains(Module.LOBBY)?currentLobbyBuildNumber:-1)), ((game.getModules().contains(Module.ENGINE)?currentEngineBuildNumber:-1)), ((game.getModules().contains(Module.GAME)?currentGameBuildNumber:-1)), ((game.getModules().contains(Module.BUILD)?currentBuildBuildNumber:-1)));
+                    MissionControl.getDbManager().createServer(info);
+                    MissionControl.getPanelManager().createServer(info, game.getMemoryAllocation(), allocation);
+                    MissionControl.getServers().get(network).put(serverName, info);
+                    update = true;
+                }
+            }
+        }
+
+        if (update) {
+            //Node was found, update the node list.
+            nodes = MissionControl.getPanelManager().getAllNodes();
+            try {
+                ServerInfo server = serverBlockingQueue.poll(2, TimeUnit.MINUTES);
+                if (server != null) {
+                    if (!server.getServerType().getString("type").equalsIgnoreCase("lobby") && !server.getServerType().getString("type").equalsIgnoreCase("build") && !server.getServerType().getString("type").equalsIgnoreCase("staff")) {
+                        //Send a message to all lobbies on that network that there is a new server online
+                        List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == server.getNetwork()).collect(Collectors.toList());
+                        for (ServerInfo info : infos) {
+                            ProtocolMessage message = new ProtocolMessage(Protocol.SERVER_ONLINE ,info.getName(), "add", "Mission Control", server.getName());
+                            ServerCommunicationUtils.sendMessage(message);
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
+        //No nodes were found with enough memory. Ignore request.
+        logger.info("A server was attempted to be created but a node was not found with enough memory to create it.");
+    }
+
+    public static void removeServerFromRotation(ServerInfo server) {
+        List<ServerInfo> infos = MissionControl.getServers().get(server.getNetwork()).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == server.getNetwork()).collect(Collectors.toList());
+        for (ServerInfo info : infos) {
+            ProtocolMessage message = new ProtocolMessage(Protocol.REMOVE_SERVER ,info.getName(), "remove", "Mission Control", server.getName());
+            ServerCommunicationUtils.sendMessage(message);
+        }
+    }
+
+    public static void closeServer(ServerInfo info) {
+        MissionControl.getPanelManager().deleteServer(info.getName());
+        MissionControl.getDbManager().deleteServer(info);
+        MissionControl.getServers().get(info.getNetwork()).remove(info.getName());
+        serverPlayerTotals.get(info.getNetwork()).remove(info.getName());
+        nodes = MissionControl.getPanelManager().getAllNodes();
+    }
+
     public static synchronized void proxyOpenConfirmation(ProxyInfo info) {
         proxyBlockingQueue.add(info);
+    }
+
+    public static synchronized void serverOpenConfirmation(ServerInfo info) {
+        serverBlockingQueue.add(info);
     }
 
     public static void shutdown() {
@@ -267,10 +341,10 @@ public class NetworkManager {
     public static void playerJoinedNetwork(UUID proxy, ServerInfo.Network network) {
         synchronized (lock) {
             networkPlayerTotal.put(network, networkPlayerTotal.get(network) + 1);
-            if (nodePlayerTotals.containsKey(proxy)) {
-                nodePlayerTotals.put(proxy, nodePlayerTotals.get(proxy) + 1);
+            if (nodePlayerTotals.get(network).containsKey(proxy)) {
+                nodePlayerTotals.get(network).put(proxy, nodePlayerTotals.get(network).get(proxy) + 1);
             } else {
-                nodePlayerTotals.put(proxy, 1);
+                nodePlayerTotals.get(network).put(proxy, 1);
             }
         }
     }
@@ -278,56 +352,56 @@ public class NetworkManager {
     public static void playerLeftNetwork(UUID proxy, ServerInfo.Network network) {
         synchronized (lock) {
             networkPlayerTotal.put(network, networkPlayerTotal.get(network) - 1);
-            if (nodePlayerTotals.containsKey(proxy)) {
-                int newTotal = nodePlayerTotals.get(proxy) - 1;
+            if (nodePlayerTotals.get(network).containsKey(proxy)) {
+                int newTotal = nodePlayerTotals.get(network).get(proxy) - 1;
                 if (newTotal <= 0) {
-                    nodePlayerTotals.remove(proxy);
+                    nodePlayerTotals.get(network).remove(proxy);
                     return;
                 }
-                nodePlayerTotals.put(proxy, newTotal);
+                nodePlayerTotals.get(network).put(proxy, newTotal);
             }
         }
     }
 
-    public static void playerJoinedServer(String newServer, Game game) {
+    public static void playerJoinedServer(String newServer, Game game, ServerInfo.Network network) {
         synchronized (lock) {
-            if (serverPlayerTotals.containsKey(newServer)) {
-                serverPlayerTotals.put(newServer, serverPlayerTotals.get(newServer) + 1);
+            if (serverPlayerTotals.get(network).containsKey(newServer)) {
+                serverPlayerTotals.get(network).put(newServer, serverPlayerTotals.get(network).get(newServer) + 1);
             } else {
-                serverPlayerTotals.put(newServer, 1);
+                serverPlayerTotals.get(network).put(newServer, 1);
             }
             if (game != null) {
-                gamePlayerTotals.put(game, gamePlayerTotals.get(game) + 1);
+                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) + 1);
             }
         }
     }
 
-    public static void playerLeftServer(String oldServer, Game game) {
+    public static void playerLeftServer(String oldServer, Game game, ServerInfo.Network network) {
         synchronized (lock) {
-            if (serverPlayerTotals.containsKey(oldServer)) {
-                int newTotal = serverPlayerTotals.get(oldServer) - 1;
+            if (serverPlayerTotals.get(network).containsKey(oldServer)) {
+                int newTotal = serverPlayerTotals.get(network).get(oldServer) - 1;
                 if (newTotal <= 0) {
-                    serverPlayerTotals.remove(oldServer);
+                    serverPlayerTotals.get(network).remove(oldServer);
                     return;
                 }
-                serverPlayerTotals.put(oldServer, newTotal);
+                serverPlayerTotals.get(network).put(oldServer, newTotal);
             }
             if (game != null) {
-                gamePlayerTotals.put(game, gamePlayerTotals.get(game) - 1);
+                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) - 1);
             }
         }
     }
 
     public static void reportServerTotal(String server, Game game, int amount, ServerInfo.Network network) {
         synchronized (lock) {
-            if (serverPlayerTotals.containsKey(server)) {
-                gamePlayerTotals.put(game, gamePlayerTotals.get(game) - serverPlayerTotals.get(server));
-                networkPlayerTotal.put(network, networkPlayerTotal.get(network) - serverPlayerTotals.get(server));
+            if (serverPlayerTotals.get(network).containsKey(server)) {
+                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) - serverPlayerTotals.get(network).get(server));
+                networkPlayerTotal.put(network, networkPlayerTotal.get(network) - serverPlayerTotals.get(network).get(server));
             }
-            serverPlayerTotals.put(server, amount);
+            serverPlayerTotals.get(network).put(server, amount);
             networkPlayerTotal.put(network, networkPlayerTotal.get(network) + amount);;
             if (game != null) {
-                gamePlayerTotals.put(game, gamePlayerTotals.get(game) + amount);
+                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) + amount);
             }
         }
     }
@@ -336,15 +410,15 @@ public class NetworkManager {
         return networkPlayerTotal;
     }
 
-    public static Map<Game, Integer> getGamePlayerTotals() {
+    public static Map<ServerInfo.Network, Map<Game, Integer>> getGamePlayerTotals() {
         return gamePlayerTotals;
     }
 
-    public static Map<String, Integer> getServerPlayerTotals() {
+    public static Map<ServerInfo.Network, Map<String, Integer>> getServerPlayerTotals() {
         return serverPlayerTotals;
     }
 
-    public static Map<UUID, Integer> getNodePlayerTotals() {
+    public static Map<ServerInfo.Network, Map<UUID, Integer>> getNodePlayerTotals() {
         return nodePlayerTotals;
     }
 

@@ -47,14 +47,17 @@ public class DatabaseManager {
         MissionControl.getLogger().info("Database connection pools initialised.");
     }
 
-    public Map<String, ServerInfo> getAllServers() {
+    public Map<ServerInfo.Network, Map<String, ServerInfo>> getAllServers() {
         try (Connection connection = mysql.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM servers");
             ResultSet set = statement.executeQuery();
 
-            Map<String, ServerInfo> servers = new HashMap<>();
+            Map<ServerInfo.Network, Map<String, ServerInfo>> servers = new HashMap<>();
+            servers.put(ServerInfo.Network.MAIN, new HashMap<>());
+            servers.put(ServerInfo.Network.TEST, new HashMap<>());
+            servers.put(ServerInfo.Network.ALPHA, new HashMap<>());
             while (set.next()) {
-                servers.put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12)));
+                servers.get(ServerInfo.Network.valueOf(set.getString(4))).put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12)));
             }
             return servers;
         } catch (SQLException e) {
@@ -313,4 +316,3 @@ public class DatabaseManager {
     }
 
 }
-

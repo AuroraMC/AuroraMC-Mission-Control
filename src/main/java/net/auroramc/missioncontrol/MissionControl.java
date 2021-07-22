@@ -25,7 +25,7 @@ public class MissionControl {
     private static JenkinsManager jenkinsManager;
     private static HaProxyManager proxyManager;
 
-    private static Map<String, ServerInfo> servers;
+    private static Map<ServerInfo.Network, Map<String, ServerInfo>> servers;
     private static Map<UUID, ProxyInfo> proxies;
 
     public static void main(String[] args) {
@@ -130,15 +130,23 @@ public class MissionControl {
         List<ApplicationServer> panelServers = panelManager.getAllServers();
         List<ApplicationServer> panelServersCopy = new ArrayList<>(panelServers);
 
-        Set<String> serverNames = new HashSet<>(servers.keySet());
+        Map<ServerInfo.Network, Set<String>> serverNameSets = new HashMap<>();
+        for (ServerInfo.Network network : ServerInfo.Network.values()) {
+           serverNameSets.put(network, new HashSet<>(servers.get(network).keySet()));
+        }
         Set<UUID> proxyNames = new HashSet<>(proxies.keySet());
 
 
+        outer:
         for (ApplicationServer server : panelServers) {
-            if (servers.containsKey(server.getName())) {
-                panelServersCopy.remove(server);
-                serverNames.remove(server.getName());
-            } else if (server.getName().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
+            for (ServerInfo.Network network : ServerInfo.Network.values()) {
+                if (servers.get(network).containsKey(server.getName().replace("-" + network.name(), ""))) {
+                    panelServersCopy.remove(server);
+                    servers.get(network).remove(server.getName());
+                    continue outer;
+                }
+            }
+            if (server.getName().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
                 if (proxies.containsKey(UUID.fromString(server.getName()))) {
                     panelServersCopy.remove(server);
                     proxyNames.remove(UUID.fromString(server.getName()));
@@ -146,16 +154,23 @@ public class MissionControl {
             }
         }
 
-        if (panelServersCopy.size() > 0 || serverNames.size() > 0 || proxyNames.size() > 0) {
+        int totalServers = 0;
+        for (ServerInfo.Network network : ServerInfo.Network.values()) {
+            totalServers += serverNameSets.get(network).size();
+        }
+
+        if (panelServersCopy.size() > 0 || totalServers > 0 || proxyNames.size() > 0) {
             logger.warn("Pterodactyl mismatch found, updating panel servers...");
             for (ApplicationServer server : panelServersCopy) {
                 logger.info("Deleting server " + server.getName() + " from the panel.");
                 panelManager.deleteServer(server);
             }
 
-            for (String server : serverNames) {
-                logger.info("Creating server " + server + " on the panel.");
-                panelManager.createServer(servers.get(server), MemoryAllocation.valueOf(servers.get(server).getServerType().getString("type").toUpperCase(Locale.ROOT)));
+            for (ServerInfo.Network network : ServerInfo.Network.values()) {
+                for (String server : serverNameSets.get(network)) {
+                    logger.info("Creating server " + server + " on the panel for network " + network.name() + ".");
+                    panelManager.createServer(servers.get(network).get(server), Game.valueOf(servers.get(network).get(server).getServerType().getString("game").toUpperCase(Locale.ROOT)).getMemoryAllocation());
+                }
             }
 
             for (UUID proxy : proxyNames) {
@@ -234,7 +249,7 @@ public class MissionControl {
         return panelManager;
     }
 
-    public static Map<String, ServerInfo> getServers() {
+    public static Map<ServerInfo.Network, Map<String, ServerInfo>> getServers() {
         return servers;
     }
 

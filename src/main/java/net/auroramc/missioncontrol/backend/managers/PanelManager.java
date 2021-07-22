@@ -115,7 +115,7 @@ public class PanelManager {
         }
 
         api.createServer()
-                .setName(serverInfo.getName())
+                .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(1).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 16).execute())
@@ -160,7 +160,7 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
 
         api.createServer()
-                .setName(serverInfo.getName())
+                .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(1).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 16).execute())
@@ -203,8 +203,8 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
 
-        api.retrieveServersByName(info.getName(), false).execute().get(0).getManager().setEnvironment(environment).execute();
-        apiClient.retrieveServersByName(info.getName(), false).execute().get(0).getManager().reinstall().execute();
+        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getManager().setEnvironment(environment).execute();
+        apiClient.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getManager().reinstall().execute();
     }
 
     public void updateProxy(ProxyInfo info) {
@@ -231,7 +231,7 @@ public class PanelManager {
     }
 
     public void openServer(String name) {
-        apiClient.setPower(apiClient.retrieveServersByName(name, false).execute().get(0), PowerAction.START);
+        apiClient.setPower(apiClient.retrieveServersByName(name, false).execute().get(0), PowerAction.START).execute();
     }
 
     public void createProxy(ProxyInfo info) {

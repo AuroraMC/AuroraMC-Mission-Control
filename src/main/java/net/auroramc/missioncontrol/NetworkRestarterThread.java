@@ -64,7 +64,7 @@ public class NetworkRestarterThread extends Thread {
         }
         if (modules.contains(Module.CORE)) {
             //Restart the entire network.
-            for (ServerInfo info : MissionControl.getServers().values().stream().filter(inf -> inf.getNetwork() == network).collect(Collectors.toList())) {
+            for (ServerInfo info : MissionControl.getServers().get(network).values().stream().filter(inf -> inf.getNetwork() == network).collect(Collectors.toList())) {
                 info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
                 if (info.getServerType().getString("type").equalsIgnoreCase("lobby")) {
                     lobbiesToRestart.add(info);
@@ -78,7 +78,7 @@ public class NetworkRestarterThread extends Thread {
         } else {
             if (modules.contains(Module.BUILD)) {
                 //Restart any build servers.
-                List<ServerInfo> servers = MissionControl.getServers().values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("build") && server.getNetwork() == network).collect(Collectors.toList());
+                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("build") && server.getNetwork() == network).collect(Collectors.toList());
                 for (ServerInfo info : servers) {
                     info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
@@ -87,7 +87,7 @@ public class NetworkRestarterThread extends Thread {
             }
             if (modules.contains(Module.ENGINE) || modules.contains(Module.GAME)) {
                 //Restart any game servers.
-                serversToRestart.addAll(MissionControl.getServers().values().stream().filter(info -> !info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList()));
+                serversToRestart.addAll(MissionControl.getServers().get(network).values().stream().filter(info -> !info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList()));
                 for (ServerInfo info : serversToRestart) {
                     info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
                     info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
@@ -96,7 +96,7 @@ public class NetworkRestarterThread extends Thread {
             }
             if (modules.contains(Module.LOBBY)) {
                 //Restart any lobby servers.
-                lobbiesToRestart.addAll(MissionControl.getServers().values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList()));
+                lobbiesToRestart.addAll(MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList()));
                 for (ServerInfo info : serversToRestart) {
                     info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                 }
@@ -104,7 +104,7 @@ public class NetworkRestarterThread extends Thread {
             }
             if (modules.contains(Module.EVENT)) {
                 //Restart any event servers currently active. Does not include servers that have been turned into event servers.
-                List<ServerInfo> servers = MissionControl.getServers().values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event") && server.getNetwork() == network).collect(Collectors.toList());
+                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event") && server.getNetwork() == network).collect(Collectors.toList());
                 for (ServerInfo info : servers) {
                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
                     ServerCommunicationUtils.sendMessage(message);
@@ -152,14 +152,14 @@ public class NetworkRestarterThread extends Thread {
                         if (proxyRestartMode == RestartMode.SOLO) {
                             //The connection node has started and is ready to accept connections, add it to the rotation and then queue another node to restart.
                             MissionControl.getProxyManager().addServer((ProxyInfo) response.getInfo());
-                            NetworkManager.getNodePlayerTotals().put(((ProxyInfo) response.getInfo()).getUuid(), 0);
+                            NetworkManager.getNodePlayerTotals().get(network).put(((ProxyInfo) response.getInfo()).getUuid(), 0);
                             ProxyInfo info = proxiesToRestart.remove(0);
                             NetworkManager.removeProxyFromRotation(info);
                             net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                             ProxyCommunicationUtils.sendMessage(message);
                         }
                     } else {
-                        NetworkManager.getServerPlayerTotals().put(((ServerInfo) response.getInfo()).getName(), 0);
+                        NetworkManager.getServerPlayerTotals().get(network).put(((ServerInfo) response.getInfo()).getName(), 0);
                         ServerInfo info;
                         if (((ServerInfo) response.getInfo()).getServerType().getString("type").equalsIgnoreCase("lobby")) {
                             info = lobbiesToRestart.remove(0);
