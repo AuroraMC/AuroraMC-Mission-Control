@@ -142,6 +142,9 @@ public class NetworkRestarterThread extends Thread {
                     } else {
                         ServerInfo info = (ServerInfo) response.getInfo();
                         //Close the server, update it, then restart it.
+                        if (info.getServerType().getString("type").equalsIgnoreCase("lobby")) {
+
+                        }
                         MissionControl.getPanelManager().closeServer(info.getName());
                         MissionControl.getPanelManager().updateServer(info);
                         MissionControl.getPanelManager().openServer(info.getName());
