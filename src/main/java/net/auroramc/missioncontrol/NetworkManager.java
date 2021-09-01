@@ -292,6 +292,10 @@ public class NetworkManager {
                             ProtocolMessage message = new ProtocolMessage(Protocol.SERVER_ONLINE ,info.getName(), "add", "Mission Control", server.getName());
                             ServerCommunicationUtils.sendMessage(message, network);
                         }
+                        for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+                            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_ONLINE, info.getUuid().toString(), "remove", "Mission Control", server.getName());
+                            ProxyCommunicationUtils.sendMessage(message);
+                        }
                     }
                 }
             } catch (InterruptedException e) {
@@ -309,6 +313,10 @@ public class NetworkManager {
         for (ServerInfo info : infos) {
             ProtocolMessage message = new ProtocolMessage(Protocol.REMOVE_SERVER ,info.getName(), "remove", "Mission Control", server.getName());
             ServerCommunicationUtils.sendMessage(message, info.getNetwork());
+        }
+        for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == server.getNetwork()).collect(Collectors.toList())) {
+            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_OFFLINE, info.getUuid().toString(), "remove", "Mission Control", server.getName());
+            ProxyCommunicationUtils.sendMessage(message);
         }
     }
 
