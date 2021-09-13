@@ -125,7 +125,7 @@ public class NetworkRestarterThread extends Thread {
             if (response != null) {
                 if (response.getProtocol() == RestartServerResponse.Type.CONFIRM_CLOSE) {
                     if (response.getInfo() instanceof ProxyInfo) {
-                        MissionControl.getPanelManager().closeServer(((ProxyInfo) response.getInfo()).getUuid().toString());
+                        MissionControl.getPanelManager().closeServer(((ProxyInfo) response.getInfo()).getUuid().toString(), network);
                         if (proxyRestartMode == RestartMode.BATCHES) {
                             //Previous connection node has been closed, open a new connection node then prompt another connection node to close.
                             NetworkManager.deleteProxy(((ProxyInfo) response.getInfo()));
@@ -137,17 +137,14 @@ public class NetworkRestarterThread extends Thread {
                         } else {
                             //A connection node has closed, update then re-open the connection node.
                             MissionControl.getPanelManager().updateProxy((ProxyInfo) response.getInfo());
-                            MissionControl.getPanelManager().openServer(((ProxyInfo) response.getInfo()).getUuid().toString());
+                            MissionControl.getPanelManager().openServer(((ProxyInfo) response.getInfo()).getUuid().toString(), network);
                         }
                     } else {
                         ServerInfo info = (ServerInfo) response.getInfo();
                         //Close the server, update it, then restart it.
-                        if (info.getServerType().getString("type").equalsIgnoreCase("lobby")) {
-
-                        }
-                        MissionControl.getPanelManager().closeServer(info.getName());
+                        MissionControl.getPanelManager().closeServer(info.getName(), network);
                         MissionControl.getPanelManager().updateServer(info);
-                        MissionControl.getPanelManager().openServer(info.getName());
+                        MissionControl.getPanelManager().openServer(info.getName(), network);
                     }
                 } else {
                     totalUpdates--;
@@ -224,5 +221,10 @@ public class NetworkRestarterThread extends Thread {
         queue.add(new RestartServerResponse(info, RestartServerResponse.Type.CONFIRM_OPEN));
     }
 
-    private enum RestartMode {BATCHES, SOLO}
+    public RestartMode getProxyRestartMode() {
+        return proxyRestartMode;
+    }
+
+
+    public enum RestartMode {BATCHES, SOLO}
 }

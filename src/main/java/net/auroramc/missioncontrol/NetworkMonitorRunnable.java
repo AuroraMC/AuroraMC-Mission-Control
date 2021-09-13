@@ -162,6 +162,10 @@ public class NetworkMonitorRunnable implements Runnable {
         NetworkMonitorRunnable.update = update;
     }
 
+    public static boolean isUpdate() {
+        return update;
+    }
+
     public void serverConfirmClose(ServerInfo info) {
         serversPendingRestart.remove(info);
     }

@@ -56,6 +56,8 @@ public class NetworkManager {
 
     private static List<Node> nodes;
     private static NetworkRestarterThread restarterThread;
+    private static NetworkMonitorRunnable monitorRunnable;
+    private static NetworkMonitorRunnable alphaMonitorRunnable;
 
     private static boolean alphaEnabled;
 
@@ -257,6 +259,7 @@ public class NetworkManager {
         MissionControl.getPanelManager().deleteServer(info.getUuid().toString());
         MissionControl.getDbManager().deleteNode(info);
         MissionControl.getProxies().remove(info.getUuid());
+        networkPlayerTotal.put(info.getNetwork(), networkPlayerTotal.get(info.getNetwork()) - nodePlayerTotals.get(info.getNetwork()).get(info.getUuid()));
         nodePlayerTotals.get(info.getNetwork()).remove(info.getUuid());
         nodes = MissionControl.getPanelManager().getAllNodes();
     }
@@ -403,13 +406,21 @@ public class NetworkManager {
         synchronized (lock) {
             if (serverPlayerTotals.get(network).containsKey(server)) {
                 gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) - serverPlayerTotals.get(network).get(server));
-                networkPlayerTotal.put(network, networkPlayerTotal.get(network) - serverPlayerTotals.get(network).get(server));
             }
             serverPlayerTotals.get(network).put(server, amount);
-            networkPlayerTotal.put(network, networkPlayerTotal.get(network) + amount);;
             if (game != null) {
                 gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) + amount);
             }
+        }
+    }
+
+    public static void reportProxyTotal(UUID proxy, int amount, ServerInfo.Network network) {
+        synchronized (lock) {
+            if (nodePlayerTotals.get(network).containsKey(proxy)) {
+                networkPlayerTotal.put(network, networkPlayerTotal.get(network) - nodePlayerTotals.get(network).get(proxy));
+            }
+            nodePlayerTotals.get(network).put(proxy, amount);
+            networkPlayerTotal.put(network, networkPlayerTotal.get(network) + amount);
         }
     }
 
@@ -451,5 +462,17 @@ public class NetworkManager {
 
     public static int getCurrentProxyBuildNumber() {
         return currentProxyBuildNumber;
+    }
+
+    public static NetworkMonitorRunnable getAlphaMonitorRunnable() {
+        return alphaMonitorRunnable;
+    }
+
+    public static NetworkMonitorRunnable getMonitorRunnable() {
+        return monitorRunnable;
+    }
+
+    public static NetworkRestarterThread getRestarterThread() {
+        return restarterThread;
     }
 }

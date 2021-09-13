@@ -136,16 +136,16 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
         if (serverInfo.getLobbyBuildNumber() != -1) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
         }
         if (serverInfo.getBuildBuildNumber() != -1) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
         }
         if (serverInfo.getGameBuildNumber() != -1) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
@@ -180,16 +180,16 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getLobbyBuildNumber() != -1) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(info.getLobbyBuildNumber() + ""));
         }
         if (info.getBuildBuildNumber() != -1) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(info.getBuildBuildNumber() + ""));
         }
         if (info.getGameBuildNumber() != -1) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(info.getGameBuildNumber() + ""));
         }
         if (info.getEngineBuildNumber() != -1) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(info.getEngineBuildNumber() + ""));
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("SERVER_NAME", EnvironmentValue.ofString(info.getName()));
@@ -222,16 +222,16 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
 
-        api.retrieveServersByName(info.getUuid().toString(), false).execute().get(0).getManager().setEnvironment(environment).execute();
-        apiClient.retrieveServersByName(info.getUuid().toString(), false).execute().get(0).getManager().reinstall().execute();
+        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getManager().setEnvironment(environment).execute();
+        apiClient.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getManager().reinstall().execute();
     }
 
-    public void closeServer(String name) {
-        apiClient.setPower(apiClient.retrieveServersByName(name, false).execute().get(0), PowerAction.STOP).execute();
+    public void closeServer(String name, ServerInfo.Network network) {
+        apiClient.setPower(apiClient.retrieveServersByName(name + "-" + network.name(), false).execute().get(0), PowerAction.STOP).execute();
     }
 
-    public void openServer(String name) {
-        apiClient.setPower(apiClient.retrieveServersByName(name, false).execute().get(0), PowerAction.START).execute();
+    public void openServer(String name, ServerInfo.Network network) {
+        apiClient.setPower(apiClient.retrieveServersByName(name + "-" + network.name(), false).execute().get(0), PowerAction.START).execute();
     }
 
     public void createProxy(ProxyInfo info) {
@@ -252,7 +252,7 @@ public class PanelManager {
 
 
         api.createServer()
-                .setName(info.getUuid().toString())
+                .setName(info.getUuid().toString() + "-" + info.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(1).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 15).execute())
@@ -286,7 +286,7 @@ public class PanelManager {
 
 
         api.createServer()
-                .setName(info.getUuid().toString())
+                .setName(info.getUuid().toString() + "-" + info.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(1).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), 15).execute())
