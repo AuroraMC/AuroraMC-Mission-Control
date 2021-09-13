@@ -37,5 +37,13 @@ public enum Protocol {
     /**
      * Remove a server from the rotation. Only sent to lobby servers to remove servers from the menu.
      */
-    REMOVE_SERVER
+    REMOVE_SERVER,
+    /**
+     *
+     */
+    STAFF_MESSAGE,
+    /**
+     * Sent when the player count changes.
+     */
+    PLAYER_COUNT_CHANGE
 }

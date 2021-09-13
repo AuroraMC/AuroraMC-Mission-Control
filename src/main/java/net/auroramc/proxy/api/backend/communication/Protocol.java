@@ -54,9 +54,9 @@ public enum Protocol {
      */
     PARTY,
     /**
-     * Kick a player from the network for whatever reason.
+     * Punish a player on the network for whatever reason.
      */
-    KICK,
+    PUNISH,
     /**
      * Update some part of the users profile.
      */
@@ -84,5 +84,13 @@ public enum Protocol {
     /**
      * A server is now offline, delete it from the cache.
      */
-    SERVER_OFFLINE
+    SERVER_OFFLINE,
+    /**
+     * This proxy is online and ready to accept connections.
+     */
+    PROXY_ONLINE,
+    /**
+     * When the proxy player count changes, send the update to Mission Control.
+     */
+    PLAYER_COUNT_CHANGE
 }
