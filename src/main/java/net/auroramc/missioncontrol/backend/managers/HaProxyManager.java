@@ -16,22 +16,24 @@ import java.util.Base64;
 
 public class HaProxyManager {
 
-    private String baseURL;
-    private String auth;
+    private final String baseURL;
+    private final String auth;
 
     public HaProxyManager(String baseURL, String auth) {
         MissionControl.getLogger().info("Loading Load Balancer manager...");
         this.auth = "Basic " + new String(Base64.getEncoder().encode(("missioncontrol:" + auth).getBytes(StandardCharsets.UTF_8)));
+        this.baseURL = baseURL;
 
         MissionControl.getLogger().info("Sending test API request.");
         try {
             URL url = new URL(baseURL + "/info");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestProperty("Accept", "application/json");
 
 
-            con.setRequestProperty("Authorization", auth);
+            con.setRequestProperty("Authorization", this.auth);
 
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()))) {
@@ -45,7 +47,7 @@ public class HaProxyManager {
                     content.append(System.lineSeparator());
                 }
                 JSONObject json = new JSONObject(content.toString());
-                MissionControl.getLogger().info("Test API request succeeded, HaProxy API version " + json.getJSONObject("data").getJSONObject("api").getString("version") + " detected.");
+                MissionControl.getLogger().info("Test API request succeeded, HaProxy API version " + json.getJSONObject("api").getString("version") + " detected.");
             }
         } catch (IOException e) {
             MissionControl.getLogger().error("Failed to send test API request. Stack trace:", e);
@@ -83,6 +85,7 @@ public class HaProxyManager {
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-Type", "application/json; utf-8");
             con.setRequestProperty("Authorization", auth);
+            con.setRequestProperty("Accept", "application/json");
 
             if (body != null) {
                 con.setDoOutput(true);
@@ -119,6 +122,7 @@ public class HaProxyManager {
             con.setRequestMethod("DELETE");
             con.setRequestProperty("Content-Type", "application/json; utf-8");
             con.setRequestProperty("Authorization", auth);
+            con.setRequestProperty("Accept", "application/json");
 
             if (body != null) {
                 con.setDoOutput(true);
@@ -155,6 +159,7 @@ public class HaProxyManager {
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "application/json; utf-8");
             con.setRequestProperty("Authorization", auth);
+            con.setRequestProperty("Accept", "application/json");
 
             if (body != null) {
                 con.setDoOutput(true);
