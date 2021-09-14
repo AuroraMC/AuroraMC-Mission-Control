@@ -113,12 +113,15 @@ public class NetworkManager {
         }
         logger.info("Requests sent. Awaiting responses...");
 
-
         //Wait for a response from all of the servers (max 1 minute wait)
         try {
             synchronized (lock2) {
                 for (int i = 0;i <= 6;i++) {
-                    if (serverPlayerTotals.size() == MissionControl.getServers().size() && nodePlayerTotals.size() == MissionControl.getProxies().size()) {
+                    int totalServerTotals = serverPlayerTotals.get(ServerInfo.Network.MAIN).size() + serverPlayerTotals.get(ServerInfo.Network.TEST).size() + serverPlayerTotals.get(ServerInfo.Network.ALPHA).size();
+                    int totalProxyTotals = nodePlayerTotals.get(ServerInfo.Network.MAIN).size() + nodePlayerTotals.get(ServerInfo.Network.TEST).size() + nodePlayerTotals.get(ServerInfo.Network.ALPHA).size();
+
+                    int totalServers = MissionControl.getServers().get(ServerInfo.Network.MAIN).size() + MissionControl.getServers().get(ServerInfo.Network.TEST).size() + MissionControl.getServers().get(ServerInfo.Network.ALPHA).size();
+                    if (totalServerTotals == totalServers && totalProxyTotals == MissionControl.getProxies().size()) {
                         logger.info("All responses received, starting network monitoring thread...");
                         break;
                     }
