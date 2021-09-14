@@ -60,7 +60,7 @@ public class MySQLConnectionPool {
             connectionURL = connectionURL + "/" + this.database;
         }
 
-        Class.forName("com.mysql.jdbc.Driver");
+        Class.forName("com.mysql.cj.jdbc.Driver");
         dataSource = new BasicDataSource();
         dataSource.setUrl(connectionURL);
         dataSource.setUsername(username);
