@@ -128,6 +128,7 @@ public class NetworkManager {
                     if (i == 6) {
                         logger.info("Not all responses received but timeout reached, starting network monitoring thread...");
                     } else {
+                        logger.info("Still waiting for " + ((totalServers - totalServerTotals) + (MissionControl.getProxies().size() - totalProxyTotals)) + " responses...");
                         lock2.wait(10000);
                     }
                 }
