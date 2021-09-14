@@ -49,6 +49,7 @@ public class HaProxyManager {
             }
         } catch (IOException e) {
             MissionControl.getLogger().error("Failed to send test API request. Stack trace:", e);
+            e.printStackTrace();
         }
 
         MissionControl.getLogger().info("Load Balancer manager successfully loaded.");
