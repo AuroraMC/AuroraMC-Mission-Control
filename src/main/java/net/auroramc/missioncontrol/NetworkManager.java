@@ -511,6 +511,7 @@ public class NetworkManager {
         ProxyCommunicationUtils.shutdown();
         ServerCommunicationUtils.shutdown();
         logger.info("Shutdown complete. Goodbye!");
+        System.exit(0);
     }
 
     public static void playerJoinedNetwork(UUID proxy, ServerInfo.Network network) {
