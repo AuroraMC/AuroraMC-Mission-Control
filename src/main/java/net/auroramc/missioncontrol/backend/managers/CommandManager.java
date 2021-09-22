@@ -12,7 +12,7 @@ public class CommandManager {
     public static void onCommand(String message) {
         MissionControl.getLogger().info("Console user executed: " + message);
         ArrayList<String> args = new ArrayList<>(Arrays.asList(message.split(" ")));
-        String commandLabel = args.remove(0).substring(1);
+        String commandLabel = args.remove(0);
         onCommand(commandLabel, args);
     }
 
