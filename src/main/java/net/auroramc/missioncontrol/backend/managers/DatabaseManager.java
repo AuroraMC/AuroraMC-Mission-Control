@@ -425,6 +425,9 @@ public class DatabaseManager {
             Map<String, String> mappings = connection.hgetAll("missioncontrol.alpha.branches");
             Map<Module, String> branchMappings = new HashMap<>();
             for (Module module : Module.values()) {
+                if (mappings.get(module.name()) == null) {
+                    setBranchMapping(module, "master");
+                }
                 branchMappings.put(module, mappings.get(module.name()));
             }
            return branchMappings;
@@ -442,7 +445,10 @@ public class DatabaseManager {
             Map<String, String> mappings = connection.hgetAll("missioncontrol.alpha.builds");
             Map<Module, Integer> buildMappings = new HashMap<>();
             for (Module module : Module.values()) {
-                buildMappings.put(module, Integer.parseInt(mappings.get(module.name())));
+                if (mappings.get(module.name()) == null) {
+                    setBuildMapping(module, 1);
+                }
+                buildMappings.put(module, 1);
             }
             return buildMappings;
         }
