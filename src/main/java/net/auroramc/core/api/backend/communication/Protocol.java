@@ -45,5 +45,9 @@ public enum Protocol {
     /**
      * Sent when the player count changes.
      */
-    PLAYER_COUNT_CHANGE
+    PLAYER_COUNT_CHANGE,
+    /**
+     * When the alpha network is closing.
+     */
+    ALPHA_CHANGE
 }

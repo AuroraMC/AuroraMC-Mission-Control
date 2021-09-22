@@ -1,25 +1,35 @@
 package net.auroramc.missioncontrol;
 
 import com.mattmalec.pterodactyl4j.application.entities.ApplicationServer;
+import jline.console.ConsoleReader;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.backend.Game;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.backend.managers.HaProxyManager;
 import net.auroramc.missioncontrol.backend.managers.JenkinsManager;
 import net.auroramc.missioncontrol.backend.managers.PanelManager;
+import net.auroramc.missioncontrol.commands.*;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
-import org.apache.log4j.Logger;
+import net.md_5.bungee.log.MissionControlLogger;
+import net.md_5.bungee.log.LoggingOutputStream;
+import org.fusesource.jansi.AnsiConsole;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.impl.JDK14LoggerFactory;
 
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 public class MissionControl {
 
-    private static final Logger logger = Logger.getLogger(MissionControl.class);
+    private static ConsoleReader consoleReader;
+    private static Logger logger;
     private static DatabaseManager dbManager;
     private static PanelManager panelManager;
     private static JenkinsManager jenkinsManager;
@@ -27,10 +37,27 @@ public class MissionControl {
 
     private static Map<ServerInfo.Network, Map<String, ServerInfo>> servers;
     private static Map<UUID, ProxyInfo> proxies;
+    private static Map<String, Command> commands;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        System.setProperty( "library.jansi.version", "BungeeCord" );
+
+        AnsiConsole.systemInstall();
+        try {
+            consoleReader = new ConsoleReader();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        consoleReader.setExpandEvents( false );
+
+        logger = new MissionControlLogger( "Mission Control", "missioncontrol.log", consoleReader );
+        System.setErr( new PrintStream( new LoggingOutputStream( logger, Level.SEVERE ), true ) );
+        System.setOut( new PrintStream( new LoggingOutputStream( logger, Level.INFO ), true ) );
         Thread.currentThread().setName("Main Thread");
         logger.info("Starting AuroraMC Mission Control...");
+        commands = new HashMap<>();
 
         Preferences prefs = Preferences.userNodeForPackage(MissionControl.class);
         String mysqlHost = prefs.get("mysqlHost", null);
@@ -51,7 +78,6 @@ public class MissionControl {
         String loadBalancerAuth = prefs.get("loadBalancerAuth", null);
 
         if (mysqlHost == null || mysqlPort == null || mysqlDb == null || mysqlUsername == null || mysqlPassword == null || redisHost == null || redisAuth == null || ciBaseURL == null || panelBaseURL == null || loadBalancerBaseURL == null || ciAPIKey == null || panelAPIKey == null || loadBalancerAuth == null || panelUserAPIKey == null) {
-            Scanner scanner = new Scanner(System.in);
             logger.info("\n" +
                     "===================================================\n" +
                     "AuroraMC Mission Control First Time Setup\n" +
@@ -61,37 +87,37 @@ public class MissionControl {
                     "about the network.\n" +
                     "\n" +
                     "To start off, what is the MySQL database host?\n");
-            mysqlHost = scanner.nextLine();
+            mysqlHost = consoleReader.readLine(">");
             logger.info("Now, we need the MySQL database port?\n");
-            mysqlPort = scanner.nextLine();
+            mysqlPort = consoleReader.readLine(">");
             logger.info("Now, we need the MySQL database Database name?\n");
-            mysqlDb = scanner.nextLine();
+            mysqlDb = consoleReader.readLine(">");
             logger.info("Now, we need the MySQL database username to be used by Mission Control?\n");
-            mysqlUsername = scanner.nextLine();
+            mysqlUsername = consoleReader.readLine(">");
             logger.info("Now, we need the MySQL database password to be used by Mission Control?\n");
-            mysqlPassword = scanner.nextLine();
+            mysqlPassword = consoleReader.readLine(">");
             logger.info("Now, we need the MySQL database username to be used by servers?\n");
-            mysqlServerUsername = scanner.nextLine();
+            mysqlServerUsername = consoleReader.readLine(">");
             logger.info("Now, we need the MySQL database password to be used by servers?\n");
-            mysqlServerPassword = scanner.nextLine();
+            mysqlServerPassword = consoleReader.readLine(">");
             logger.info("Now, we need the Redis database host?\n");
-            redisHost = scanner.nextLine();
+            redisHost = consoleReader.readLine(">");
             logger.info("Now, we need the Redis database password?\n");
-            redisAuth = scanner.nextLine();
+            redisAuth = consoleReader.readLine(">");
             logger.info("Now, we need the base URL for the Jenkins API?\n");
-            ciBaseURL = scanner.nextLine();
+            ciBaseURL = consoleReader.readLine(">");
             logger.info("Now, we need the API key for the Jenkins API?\n");
-            ciAPIKey = scanner.nextLine();
+            ciAPIKey = consoleReader.readLine(">");
             logger.info("Now, we need the base URL for the Pterodactyl API?\n");
-            panelBaseURL = scanner.nextLine();
+            panelBaseURL = consoleReader.readLine(">");
             logger.info("Now, we need the Application API key for the Pterodactyl API?\n");
-            panelAPIKey = scanner.nextLine();
+            panelAPIKey = consoleReader.readLine(">");
             logger.info("Now, we need the User API key for the Pterodactyl API?\n");
-            panelUserAPIKey = scanner.nextLine();
+            panelUserAPIKey = consoleReader.readLine(">");
             logger.info("Now, we need the base URL for the HaProxy API?\n");
-            loadBalancerBaseURL = scanner.nextLine();
+            loadBalancerBaseURL = consoleReader.readLine(">");
             logger.info("Now, we need the password for the HaProxy API?\n");
-            loadBalancerAuth = scanner.nextLine();
+            loadBalancerAuth = consoleReader.readLine(">");
             logger.info("That's now everything! First time setup is complete!\n" +
                     "If the details need to change, you can use the Mission Control\n" +
                     "admin panel to modify them!\n" +
@@ -113,6 +139,13 @@ public class MissionControl {
             prefs.put("loadBalancerBaseURL", loadBalancerBaseURL);
             prefs.put("loadBalancerAuth", loadBalancerAuth);
         }
+
+        logger.info("Registering commands...");
+        registerCommand(new CommandAlpha());
+        registerCommand(new CommandGame());
+        registerCommand(new CommandHelp());
+        registerCommand(new CommandServerManager());
+        registerCommand(new CommandUpdate());
 
         dbManager = new DatabaseManager(mysqlHost, mysqlPort, mysqlDb, mysqlUsername, mysqlPassword, redisHost, redisAuth);
 
@@ -160,7 +193,7 @@ public class MissionControl {
         }
 
         if (panelServersCopy.size() > 0 || totalServers > 0 || proxyNames.size() > 0) {
-            logger.warn("Pterodactyl mismatch found, updating panel servers...");
+            logger.warning("Pterodactyl mismatch found, updating panel servers...");
             for (ApplicationServer server : panelServersCopy) {
                 logger.info("Deleting server " + server.getName() + " from the panel.");
                 panelManager.deleteServer(server);
@@ -210,7 +243,7 @@ public class MissionControl {
             }
 
             if (copy.size() > 0 || proxyNames.size() > 0) {
-                logger.warn("HaProxy mismatch found for network " + network.name() + ", updating servers...");
+                logger.warning("HaProxy mismatch found for network " + network.name() + ", updating servers...");
                 for (Object o : copy) {
                     JSONObject ob = (JSONObject) o;
                     logger.info("Removing proxy " + ob.getString("name") + " in HaProxy for network " + network.name() + ".");
@@ -222,10 +255,10 @@ public class MissionControl {
                     proxyManager.addServer(proxies.get(uuid));
                 }
             } else {
-                logger.warn("No HaProxy mismatch found for network " + network.name() + ".");
+                logger.warning("No HaProxy mismatch found for network " + network.name() + ".");
             }
         } else {
-            logger.warn("There was an issue contacting the HaProxy Data Plane API.");
+            logger.warning("There was an issue contacting the HaProxy Data Plane API.");
         }
     }
 
@@ -255,5 +288,20 @@ public class MissionControl {
 
     public static Map<UUID, ProxyInfo> getProxies() {
         return proxies;
+    }
+
+    public static Command getCommand(String command) {
+        return commands.get(command);
+    }
+
+    public static void registerCommand(Command command) {
+        commands.put(command.getMainCommand(), command);
+        for (String alias : command.getAliases()) {
+            commands.put(alias, command);
+        }
+    }
+
+    public static ConsoleReader getConsoleReader() {
+        return consoleReader;
     }
 }

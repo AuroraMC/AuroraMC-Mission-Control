@@ -1,6 +1,9 @@
 package net.auroramc.missioncontrol.backend.managers;
 
 import net.auroramc.missioncontrol.MissionControl;
+import net.auroramc.missioncontrol.backend.Game;
+import net.auroramc.missioncontrol.backend.MaintenanceMode;
+import net.auroramc.missioncontrol.backend.Module;
 import net.auroramc.missioncontrol.backend.MySQLConnectionPool;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
@@ -8,6 +11,7 @@ import org.json.JSONObject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Pipeline;
 
 import java.sql.*;
 import java.time.Duration;
@@ -315,5 +319,269 @@ public class DatabaseManager {
             e.printStackTrace();
         }
     }
+
+    public boolean isGameEnabled(Game game, ServerInfo.Network network) {
+        try (Jedis connection = jedis.getResource()) {
+            if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()))) {
+                connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()), "false");
+                return false;
+            }
+            return Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name())));
+        }
+    }
+
+    public Map<Game, Boolean> getGameEnabled(ServerInfo.Network network) {
+        try (Jedis connection = jedis.getResource()) {
+            if (!connection.exists(String.format("missioncontrol.%s", network.name()))) {
+                Map<Game, Boolean> enabled = new HashMap<>();
+                Pipeline pipeline = connection.pipelined();
+                for (Game game : Game.values()) {
+                    enabled.put(game, false);
+                    pipeline.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()), "false");
+                }
+                pipeline.sync();
+                return enabled;
+            }
+            Map<Game, Boolean> enabled = new HashMap<>();
+            for (Game game : Game.values()) {
+                if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()))) {
+                    connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()), "false");
+                    enabled.put(game, false);
+                    continue;
+                }
+                Boolean enable = Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name())));
+                enabled.put(game, enable);
+            }
+            return enabled;
+        }
+    }
+
+    public void setGameEnabled(Game game, ServerInfo.Network network, boolean enabled) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()), enabled + "");
+        }
+    }
+
+    public boolean isMonitoringEnabled(Game game, ServerInfo.Network network) {
+        try (Jedis connection = jedis.getResource()) {
+            if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", game.name()))) {
+                connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", game.name()), "false");
+                return false;
+            }
+            return Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", game.name())));
+        }
+    }
+
+    public Map<Game, Boolean> getMonitoring(ServerInfo.Network network) {
+        try (Jedis connection = jedis.getResource()) {
+            if (!connection.exists(String.format("missioncontrol.%s", network.name()))) {
+                Map<Game, Boolean> monitoring = new HashMap<>();
+                Pipeline pipeline = connection.pipelined();
+                for (Game game : Game.values()) {
+                    monitoring.put(game, false);
+                    pipeline.hset(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", game.name()), "false");
+                }
+                pipeline.sync();
+                return monitoring;
+            }
+            Map<Game, Boolean> monitoring = new HashMap<>();
+            for (Game game : Game.values()) {
+                if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", game.name()))) {
+                    connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", game.name()), "false");
+                    monitoring.put(game, false);
+                    continue;
+                }
+                Boolean enable = Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", game.name())));
+                monitoring.put(game, enable);
+            }
+            return monitoring;
+        }
+    }
+
+    public void setMonitoringEnabled(Game game, ServerInfo.Network network, boolean enabled) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", game.name()), enabled + "");
+        }
+    }
+
+    public boolean isAlphaEnabled() {
+        try (Jedis connection = jedis.getResource()) {
+            if (!connection.hexists("missioncontrol.alpha", "enabled")) {
+                connection.hset("missioncontrol.alpha", "enabled", "false");
+                return false;
+            }
+            return Boolean.parseBoolean(connection.hget("missioncontrol.alpha", "enabled"));
+        }
+    }
+
+    public void setAlphaEnabled(boolean enabled) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.hset("missioncontrol.alpha", "enabled", enabled + "");
+        }
+    }
+
+    public Map<Module, String> getBranchMappings() {
+        try (Jedis connection = jedis.getResource()) {
+            Map<String, String> mappings = connection.hgetAll("missioncontrol.alpha.branches");
+            Map<Module, String> branchMappings = new HashMap<>();
+            for (Module module : Module.values()) {
+                branchMappings.put(module, mappings.get(module.name()));
+            }
+           return branchMappings;
+        }
+    }
+
+    public void setBranchMapping(Module module, String branch) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.hset("missioncontrol.alpha.branches", module.name(), branch);
+        }
+    }
+
+    public Map<Module, Integer> getBuildMappings() {
+        try (Jedis connection = jedis.getResource()) {
+            Map<String, String> mappings = connection.hgetAll("missioncontrol.alpha.builds");
+            Map<Module, Integer> buildMappings = new HashMap<>();
+            for (Module module : Module.values()) {
+                buildMappings.put(module, Integer.parseInt(mappings.get(module.name())));
+            }
+            return buildMappings;
+        }
+    }
+
+    public void setBuildMapping(Module module, int buildNumber) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.hset("missioncontrol.alpha.builds", module.name(), buildNumber + "");
+        }
+    }
+
+    public boolean isServerManagerEnabled(ServerInfo.Network network) {
+        try (Jedis connection = jedis.getResource()) {
+            if (!connection.hexists("missioncontrol.manager.enabled", network.name())) {
+                connection.hset("missioncontrol.manager.enabled", network.name(), "false");
+                return false;
+            }
+            return Boolean.parseBoolean(connection.hget("missioncontrol.manager.enabled", network.name()));
+        }
+    }
+
+    public void setServerManagerEnabled(ServerInfo.Network network, boolean enabled) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.hset("missioncontrol.manager.enabled", network.name(), enabled + "");
+        }
+    }
+
+    public Map<ServerInfo.Network, Boolean> getMaintenance() {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM proxy_settings");
+            Map<ServerInfo.Network, Boolean> maintenance = new HashMap<>();
+            ResultSet set = statement.executeQuery();
+            while (set.next()) {
+                maintenance.put(ServerInfo.Network.valueOf(set.getString(1)), set.getBoolean(2));
+            }
+            return maintenance;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Map<ServerInfo.Network, MaintenanceMode> getMaintenanceMode() {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM proxy_settings");
+            Map<ServerInfo.Network, MaintenanceMode> maintenance = new HashMap<>();
+            ResultSet set = statement.executeQuery();
+            while (set.next()) {
+                maintenance.put(ServerInfo.Network.valueOf(set.getString(1)), MaintenanceMode.valueOf(set.getString(5)));
+            }
+            return maintenance;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Map<ServerInfo.Network, String> getMaintenanceMotd() {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM proxy_settings");
+            Map<ServerInfo.Network, String> maintenance = new HashMap<>();
+            ResultSet set = statement.executeQuery();
+            while (set.next()) {
+                maintenance.put(ServerInfo.Network.valueOf(set.getString(1)), set.getString(3));
+            }
+            return maintenance;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Map<ServerInfo.Network, String> getMotd() {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM proxy_settings");
+            Map<ServerInfo.Network, String> maintenance = new HashMap<>();
+            ResultSet set = statement.executeQuery();
+            while (set.next()) {
+                maintenance.put(ServerInfo.Network.valueOf(set.getString(1)), set.getString(4));
+            }
+            return maintenance;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void changeMaintenance(ServerInfo.Network network, boolean maintenance) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE proxy_settings SET maintenance = ? WHERE network = ?");
+            statement.setBoolean(1, maintenance);
+            statement.setString(2, network.name());
+            boolean set = statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void changeMaintenanceMotd(ServerInfo.Network network, String motd) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE proxy_settings SET maintenance_motd = ? WHERE network = ?");
+            if (motd == null) {
+                statement.setNull(1, Types.VARCHAR);
+            } else {
+                statement.setString(1, motd);
+            }
+            statement.setString(2, network.name());
+            boolean set = statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void changeMaintenanceMode(ServerInfo.Network network, MaintenanceMode mode) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE proxy_settings SET maintenance_mode = ? WHERE network = ?");
+            if (mode == null) {
+                statement.setNull(1, Types.VARCHAR);
+            } else {
+                statement.setString(1, mode.name());
+            }
+            statement.setString(2, network.name());
+            boolean set = statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void changeMotd(ServerInfo.Network network, String motd) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE proxy_settings SET motd = ? WHERE network = ?");
+            statement.setString(1, motd);
+            statement.setString(2, network.name());
+            boolean set = statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

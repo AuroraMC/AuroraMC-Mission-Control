@@ -13,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.logging.Level;
 
 public class HaProxyManager {
 
@@ -50,7 +51,7 @@ public class HaProxyManager {
                 MissionControl.getLogger().info("Test API request succeeded, HaProxy API version " + json.getJSONObject("api").getString("version") + " detected.");
             }
         } catch (IOException e) {
-            MissionControl.getLogger().error("Failed to send test API request. Stack trace:", e);
+            MissionControl.getLogger().log(Level.SEVERE,"Failed to send test API request. Stack trace:", e);
         }
 
         MissionControl.getLogger().info("Load Balancer manager successfully loaded.");
@@ -110,7 +111,7 @@ public class HaProxyManager {
                 return new JSONObject(content.toString());
             }
         } catch (IOException e) {
-            MissionControl.getLogger().error("Failed to send API request. Stack trace:", e);
+            MissionControl.getLogger().log(Level.SEVERE,"Failed to send API request. Stack trace:", e);
             return null;
         }
     }
@@ -147,14 +148,14 @@ public class HaProxyManager {
                 return new JSONObject(content.toString());
             }
         } catch (IOException e) {
-            MissionControl.getLogger().error("Failed to send API request. Stack trace:", e);
+            MissionControl.getLogger().log(Level.SEVERE,"Failed to send API request. Stack trace:", e);
             return null;
         }
     }
 
     private JSONObject sendGetRequest(String endpoint, String body) {
         try {
-            URL url = new URL(baseURL + "/" + endpoint);
+            URL url = new URL(baseURL + "/" + endpoint + ((endpoint.contains("?"))?"&version=2":"?version=2"));
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -185,7 +186,7 @@ public class HaProxyManager {
                 return json;
             }
         } catch (IOException e) {
-            MissionControl.getLogger().error("Failed to send API request. Stack trace:", e);
+            MissionControl.getLogger().log(Level.SEVERE,"Failed to send API request. Stack trace:", e);
             return null;
         }
     }

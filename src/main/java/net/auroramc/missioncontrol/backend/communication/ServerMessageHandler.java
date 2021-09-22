@@ -50,14 +50,20 @@ public class ServerMessageHandler {
             case CONFIRM_SHUTDOWN: {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
-                if (NetworkMonitorRunnable.isUpdate()) {
+                if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().serverCloseConfirm(info);
                 } else {
                     NetworkManager.closeServer(info);
-                    if (network == ServerInfo.Network.ALPHA) {
-                        NetworkManager.getAlphaMonitorRunnable().serverConfirmClose(info);
-                    } else if (network == ServerInfo.Network.MAIN) {
-                        NetworkManager.getMonitorRunnable().serverConfirmClose(info);
+                    if (message.getCommand().equalsIgnoreCase("restart")) {
+                        MissionControl.getPanelManager().closeServer(info.getName(), network);
+                        MissionControl.getPanelManager().updateServer(info);
+                        MissionControl.getPanelManager().openServer(info.getName(), network);
+                    } else {
+                        if (network == ServerInfo.Network.ALPHA) {
+                            NetworkManager.getAlphaMonitorRunnable().serverConfirmClose(info);
+                        } else if (network == ServerInfo.Network.MAIN) {
+                            NetworkManager.getMonitorRunnable().serverConfirmClose(info);
+                        }
                     }
                 }
                 break;
@@ -65,7 +71,7 @@ public class ServerMessageHandler {
             case SERVER_ONLINE: {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
-                if (NetworkMonitorRunnable.isUpdate()) {
+                if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().serverStartConfirm(info);
                 } else {
                     NetworkManager.serverOpenConfirmation(info);
