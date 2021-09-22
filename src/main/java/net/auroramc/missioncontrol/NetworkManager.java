@@ -200,7 +200,7 @@ public class NetworkManager {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "An error has occurred while trying to process commands. Shutting down.");
         }
-        logger.info("Interrupt received on the main thread, shutting down...");
+        logger.info("Shutting down...");
         shutdown();
     }
 
