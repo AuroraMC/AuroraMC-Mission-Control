@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 public class MissionControl {
 
@@ -180,10 +181,10 @@ public class MissionControl {
                     continue outer;
                 }
             }
-            if (server.getName().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
-                if (proxies.containsKey(UUID.fromString(server.getName()))) {
+            if (server.getName().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}-[A-Z]{4,5}$")) {
+                if (proxies.containsKey(UUID.fromString(server.getName().substring(0, 37)))) {
                     panelServersCopy.remove(server);
-                    proxyNames.remove(UUID.fromString(server.getName()));
+                    proxyNames.remove(UUID.fromString(server.getName().substring(0, 37)));
                 }
             }
         }
@@ -232,21 +233,21 @@ public class MissionControl {
 
     private static void checkMissingProxies(JSONObject object, ServerInfo.Network network) {
         if (object != null) {
-            Set<UUID> proxyNames = new HashSet<>(proxies.keySet());
+            Set<UUID> proxyNames = proxies.keySet().stream().filter(uuid -> proxies.get(uuid).getNetwork() == network).collect(Collectors.toSet());
             JSONArray array = object.getJSONArray("data");
-            List<Object> copy = new ArrayList<>(array.toList());
+            List<JSONObject> copy = new ArrayList<>();
             for (Object o : array) {
                 JSONObject ob = (JSONObject) o;
                 if (proxies.containsKey(UUID.fromString(ob.getString("name")))) {
                     proxyNames.remove(UUID.fromString(ob.getString("name")));
-                    copy.remove(o);
+                } else {
+                    copy.add(ob);
                 }
             }
 
             if (copy.size() > 0 || proxyNames.size() > 0) {
                 logger.warning("HaProxy mismatch found for network " + network.name() + ", updating servers...");
-                for (Object o : copy) {
-                    JSONObject ob = (JSONObject) o;
+                for (JSONObject ob : copy) {
                     logger.info("Removing proxy " + ob.getString("name") + " in HaProxy for network " + network.name() + ".");
                     proxyManager.removeServer(ob.getString("name"), network);
                 }

@@ -1,8 +1,9 @@
 package net.auroramc.core.api.backend.communication;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class ProtocolMessage {
+public class ProtocolMessage implements Serializable {
 
     private final Protocol protocol;
     private final String destination;
