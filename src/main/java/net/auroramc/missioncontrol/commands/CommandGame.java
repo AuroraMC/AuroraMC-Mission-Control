@@ -73,6 +73,7 @@ public class CommandGame extends Command {
                     } else {
                         logger.info("Invalid syntax. Correct syntax: game enable <game> [network]");
                     }
+                    break;
                 }
                 case "disable": {
                     if (args.size() == 2) {
@@ -127,6 +128,7 @@ public class CommandGame extends Command {
                     } else {
                         logger.info("Invalid syntax. Correct syntax: game disable <game> [network]");
                     }
+                    break;
                 }
                 case "monitor": {
                     if (args.size() == 3) {
@@ -186,6 +188,7 @@ public class CommandGame extends Command {
                     } else {
                         logger.info("Invalid syntax. Correct syntax: game monitor <game> <true|false> [network]");
                     }
+                    break;
                 }
             }
         } else {
