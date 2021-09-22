@@ -19,6 +19,7 @@ public class HaProxyManager {
 
     private final String baseURL;
     private final String auth;
+    private int lastVersion;
 
     public HaProxyManager(String baseURL, String auth) {
         MissionControl.getLogger().info("Loading Load Balancer manager...");
@@ -80,12 +81,16 @@ public class HaProxyManager {
         sendPostRequest("services/haproxy/configuration/servers?backend=" + network.name().toLowerCase(), object.toString());
     }
 
+    private void updateLastVersion() {
+        sendGetRequest("services/haproxy/configuration/servers?backend=main", null);
+    }
+
     private JSONObject sendPostRequest(String endpoint, String body) {
         try {
-            URL url = new URL(baseURL + "/" + endpoint + ((endpoint.contains("?"))?"&version=2":"?version=2"));
+            URL url = new URL(baseURL + "/" + endpoint + ((endpoint.contains("?"))?"&version=" + lastVersion:"?version=" + lastVersion));
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Authorization", auth);
             con.setRequestProperty("Accept", "application/json");
 
@@ -109,20 +114,38 @@ public class HaProxyManager {
                     content.append(line);
                     content.append(System.lineSeparator());
                 }
+                updateLastVersion();
                 return new JSONObject(content.toString());
+            } catch (IOException e) {
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(con.getErrorStream()))) {
+
+                    String line;
+                    StringBuilder content = new StringBuilder();
+
+                    while ((line = in.readLine()) != null) {
+
+                        content.append(line);
+                        content.append(System.lineSeparator());
+                    }
+                    MissionControl.getLogger().log(Level.SEVERE,"Failed to send API request. Response body:" + (new JSONObject(content.toString())));
+                    updateLastVersion();
+                    return null;
+                }
             }
         } catch (IOException e) {
             MissionControl.getLogger().log(Level.SEVERE,"Failed to send API request. Stack trace:", e);
+            updateLastVersion();
             return null;
         }
     }
 
-    private JSONObject sendDeleteRequest(String endpoint, String body) {
+    private void sendDeleteRequest(String endpoint, String body) {
         try {
-            URL url = new URL(baseURL + "/" + endpoint + ((endpoint.contains("?"))?"&version=2":"?version=2"));
+            URL url = new URL(baseURL + "/" + endpoint + ((endpoint.contains("?"))?"&version=" + lastVersion:"?version=" + lastVersion));
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("DELETE");
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Authorization", auth);
             con.setRequestProperty("Accept", "application/json");
 
@@ -146,20 +169,20 @@ public class HaProxyManager {
                     content.append(line);
                     content.append(System.lineSeparator());
                 }
-                return new JSONObject(content.toString());
+                updateLastVersion();
             }
         } catch (IOException e) {
             MissionControl.getLogger().log(Level.SEVERE,"Failed to send API request. Stack trace:", e);
-            return null;
+            updateLastVersion();
         }
     }
 
     private JSONObject sendGetRequest(String endpoint, String body) {
         try {
-            URL url = new URL(baseURL + "/" + endpoint + ((endpoint.contains("?"))?"&version=2":"?version=2"));
+            URL url = new URL(baseURL + "/" + endpoint);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Authorization", auth);
             con.setRequestProperty("Accept", "application/json");
 
@@ -184,6 +207,7 @@ public class HaProxyManager {
                     content.append(System.lineSeparator());
                 }
                 JSONObject json = new JSONObject(content.toString());
+                lastVersion = json.getInt("_version");
                 return json;
             }
         } catch (IOException e) {

@@ -23,7 +23,7 @@ public class ServerCommunicationUtils {
        ServerInfo info = MissionControl.getServers().get(network).get(message.getDestination());
         if (info != null) {
             try (Socket socket = new Socket(info.getIp(), info.getProtocolPort())) {
-                ObjectOutputStream outputStream = (ObjectOutputStream) socket.getOutputStream();
+                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 outputStream.writeObject(message);
                 outputStream.flush();
                 return message.getUuid();

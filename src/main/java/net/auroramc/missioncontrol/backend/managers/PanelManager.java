@@ -139,7 +139,7 @@ public class PanelManager {
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0))
+                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -150,7 +150,7 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
-    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation) {
+    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation) {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
@@ -200,7 +200,7 @@ public class PanelManager {
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(allocation)
+                .setAllocations(allocation, protocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -211,7 +211,7 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
-    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch) {
+    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch) {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
@@ -261,7 +261,7 @@ public class PanelManager {
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(allocation)
+                .setAllocations(allocation, protocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -377,7 +377,7 @@ public class PanelManager {
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0))
+                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -388,7 +388,7 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
-    public void createProxy(ProxyInfo info, Allocation allocation) {
+    public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation) {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() == ServerInfo.Network.ALPHA) {
@@ -413,7 +413,7 @@ public class PanelManager {
                 .setOwner(api.retrieveUserById(1).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(allocation)
+                .setAllocations(allocation, protocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -424,7 +424,7 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
-    public void createProxy(ProxyInfo info, Allocation allocation, String branch) {
+    public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation, String branch) {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() == ServerInfo.Network.ALPHA) {
@@ -449,7 +449,7 @@ public class PanelManager {
                 .setOwner(api.retrieveUserById(1).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(allocation)
+                .setAllocations(allocation, protocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)

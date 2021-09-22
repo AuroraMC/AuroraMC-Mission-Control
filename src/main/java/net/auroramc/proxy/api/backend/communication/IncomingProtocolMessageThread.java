@@ -1,5 +1,6 @@
 package net.auroramc.proxy.api.backend.communication;
 
+import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.backend.communication.ProxyMessageHandler;
 
 import java.io.IOException;
@@ -7,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.logging.Level;
 
 public class IncomingProtocolMessageThread extends Thread {
 
@@ -18,6 +20,7 @@ public class IncomingProtocolMessageThread extends Thread {
         this.port = port;
         this.setName("Incoming Proxy Protocol Messages Thread");
         this.setDaemon(true);
+        listening = true;
     }
 
     @Override
@@ -26,7 +29,8 @@ public class IncomingProtocolMessageThread extends Thread {
             this.socket = socket;
             while (listening) {
                 Socket connection = socket.accept();
-                ObjectInputStream objectInputStream = (ObjectInputStream) connection.getInputStream();
+                MissionControl.getLogger().log(Level.FINEST, "Accepted connection from proxy.");
+                ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
                 ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
                 ProxyMessageHandler.onMessage(message);
             }

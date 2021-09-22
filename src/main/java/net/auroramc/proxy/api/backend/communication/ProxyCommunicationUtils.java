@@ -6,6 +6,7 @@ import net.auroramc.missioncontrol.entities.ProxyInfo;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class ProxyCommunicationUtils {
 
@@ -22,8 +23,9 @@ public class ProxyCommunicationUtils {
     public static UUID sendMessage(ProtocolMessage message) {
         ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getDestination()));
         if (info != null) {
+            MissionControl.getLogger().log(Level.FINEST, "Sending protocol message to " + info.getIp() + ":" + info.getProtocolPort());
             try (Socket socket = new Socket(info.getIp(), info.getProtocolPort())) {
-                ObjectOutputStream outputStream = (ObjectOutputStream) socket.getOutputStream();
+                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 outputStream.writeObject(message);
                 outputStream.flush();
                 return message.getUuid();
