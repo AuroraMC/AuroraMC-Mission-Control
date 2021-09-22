@@ -92,5 +92,9 @@ public enum Protocol {
     /**
      * When the proxy player count changes, send the update to Mission Control.
      */
-    PLAYER_COUNT_CHANGE
+    PLAYER_COUNT_CHANGE,
+    /**
+     * Update whether alpha is enabled or disabled.
+     */
+    ALPHA_UPDATE
 }

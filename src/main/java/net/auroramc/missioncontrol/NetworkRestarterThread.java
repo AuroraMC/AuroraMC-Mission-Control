@@ -136,6 +136,7 @@ public class NetworkRestarterThread extends Thread {
                             ProxyCommunicationUtils.sendMessage(message);
                         } else {
                             //A connection node has closed, update then re-open the connection node.
+                            MissionControl.getPanelManager().closeServer(((ProxyInfo) response.getInfo()).getUuid().toString(), network);
                             MissionControl.getPanelManager().updateProxy((ProxyInfo) response.getInfo());
                             MissionControl.getPanelManager().openServer(((ProxyInfo) response.getInfo()).getUuid().toString(), network);
                         }
@@ -225,6 +226,9 @@ public class NetworkRestarterThread extends Thread {
         return proxyRestartMode;
     }
 
+    public ServerInfo.Network getNetwork() {
+        return network;
+    }
 
     public enum RestartMode {BATCHES, SOLO}
 }

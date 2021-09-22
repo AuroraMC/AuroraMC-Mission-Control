@@ -7,16 +7,16 @@ import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.Protocol;
 import net.auroramc.proxy.api.backend.communication.ProtocolMessage;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
-import org.apache.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class NetworkMonitorRunnable implements Runnable {
 
-    private static boolean update;
+    private boolean update;
+    private boolean enabled;
     private final Logger logger;
     private final ServerInfo.Network network;
     private final List<ServerInfo> serversPendingRestart;
@@ -29,12 +29,13 @@ public class NetworkMonitorRunnable implements Runnable {
         this.network = network;
         serversPendingRestart = new ArrayList<>();
         proxiesPendingRestart = new ArrayList<>();
+        enabled = MissionControl.getDbManager().isServerManagerEnabled(network);
     }
 
     @Override
     public void run() {
         //If an update is not in progress, check player counts.
-        if (!update) {
+        if (!update && enabled) {
             //Check to see if there are sufficient/too many connection nodes open. Open/close as many as are needed. Keep open as many connection nodes are needed to support all the players + 1. (or +2 if there is no-one online)
             if (NetworkManager.getNetworkPlayerTotal().get(network) > 0) {
                 List<UUID> uuids = MissionControl.getProxies().keySet().stream().filter(uuid -> MissionControl.getProxies().get(uuid).getNetwork() == network).collect(Collectors.toList());
@@ -83,7 +84,7 @@ public class NetworkMonitorRunnable implements Runnable {
 
             //Now that all proxies are created/deleted, check all gamemodes, making sure that all games have at least 2 servers open.
             for (Game game : Game.values()) {
-                if (!game.isEnabled() || !game.isMonitor()) {
+                if (!NetworkManager.isGameEnabled(game, network) || !NetworkManager.isGameMonitored(game, network)) {
                     continue;
                 }
                 List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getNetwork() == network && info.getServerType().getString("type").equalsIgnoreCase("game") && info.getServerType().getString("game").equalsIgnoreCase(game.name())).collect(Collectors.toList());
@@ -149,7 +150,7 @@ public class NetworkMonitorRunnable implements Runnable {
         return highest;
     }
 
-    private int findLowestAvailableServerID(Game game, ServerInfo.Network network) {
+    public static int findLowestAvailableServerID(Game game, ServerInfo.Network network) {
         for (int i = 1;i <= 1000;i++) {
             if (!MissionControl.getServers().get(network).containsKey(game.getServerCode() + "-" + i)) {
                 return i;
@@ -158,11 +159,11 @@ public class NetworkMonitorRunnable implements Runnable {
         return -1;
     }
 
-    public static void setUpdate(boolean update) {
-        NetworkMonitorRunnable.update = update;
+    public void setUpdate(boolean update) {
+        this.update = update;
     }
 
-    public static boolean isUpdate() {
+    public boolean isUpdate() {
         return update;
     }
 
@@ -172,5 +173,13 @@ public class NetworkMonitorRunnable implements Runnable {
 
     public void proxyConfirmClose(ProxyInfo info) {
         proxiesPendingRestart.remove(info);
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
