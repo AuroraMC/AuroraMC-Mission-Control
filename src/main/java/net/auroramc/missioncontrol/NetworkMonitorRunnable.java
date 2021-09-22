@@ -36,6 +36,7 @@ public class NetworkMonitorRunnable implements Runnable {
     public void run() {
         //If an update is not in progress, check player counts.
         if (!update && enabled) {
+            logger.info("Checking servers for network '" + network.name() + "'.");
             //Check to see if there are sufficient/too many connection nodes open. Open/close as many as are needed. Keep open as many connection nodes are needed to support all the players + 1. (or +2 if there is no-one online)
             if (NetworkManager.getNetworkPlayerTotal().get(network) > 0) {
                 List<UUID> uuids = MissionControl.getProxies().keySet().stream().filter(uuid -> MissionControl.getProxies().get(uuid).getNetwork() == network).collect(Collectors.toList());
@@ -43,8 +44,9 @@ public class NetworkMonitorRunnable implements Runnable {
                 if (uuids.size() - proxiesPendingRestart.size() != totalProxiesNeeded) {
                     //There are not enough/too many proxies open. Close/open some.
                     int i = uuids.size() - proxiesPendingRestart.size();
-                    if (totalProxiesNeeded > i) {
+                    if (totalProxiesNeeded < i) {
                         //Too many proxies.
+                        logger.info("Too many proxies are open for network '" + network.name() + "'. Destroying " +  (i - totalProxiesNeeded) + " proxies.");
                         do {
                             ProxyInfo info = MissionControl.getProxies().get(uuids.remove(0));
                             NetworkManager.removeProxyFromRotation(info);
@@ -55,6 +57,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         } while (totalProxiesNeeded > i);
                     } else {
                         //Not enough proxies.
+                        logger.info("Not enough proxies are open for network '" + network.name() + "'. Creating " +  (totalProxiesNeeded - i) + " proxies.");
                         do {
                             NetworkManager.createProxy(network, false);
                             i++;
@@ -94,6 +97,7 @@ public class NetworkMonitorRunnable implements Runnable {
                     int i = (int) serversOpen;
                     if (serversNeeded < serversOpen) {
                         //Too many servers are open, close as many are needed.
+                        logger.info("Too many servers are open on network '" + network.name() + "' for game '" + game.name() + "'. Destroying " +  (serversOpen - serversNeeded) + " servers.");
                         do {
                             ServerInfo info = findHighestServerID(infos);
                             infos.remove(info);
@@ -105,6 +109,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         } while (serversNeeded < i);
                     } else if (serversNeeded > serversOpen) {
                         //Not enough are open, open as many are needed.
+                        logger.info("Not enough servers are open on network '" + network.name() + "' for game '" + game.name() + "'. Creating " +  (serversNeeded - serversOpen) + " servers.");
                         do {
                             int id = findLowestAvailableServerID(game, network);
                             NetworkManager.createServer(game.getServerCode() + "-" + id, game, false, network);
@@ -133,6 +138,7 @@ public class NetworkMonitorRunnable implements Runnable {
                     }
                 }
             }
+            logger.info("Monitoring round for network '" + network.name() + "' complete.");
         }
     }
 
