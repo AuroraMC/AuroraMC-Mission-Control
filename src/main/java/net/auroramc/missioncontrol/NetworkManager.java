@@ -261,16 +261,19 @@ public class NetworkManager {
     }
 
     public static void updateComplete() {
-        if (restarterThread.getNetwork() == MAIN) {
+        ServerInfo.Network network = restarterThread.getNetwork();
+        if (network == MAIN) {
             monitorRunnable.setUpdate(false);
-        } else if (restarterThread.getNetwork() == ALPHA) {
-            monitorRunnable.setUpdate(false);
+        } else if (network == ALPHA) {
+            alphaMonitorRunnable.setUpdate(false);
         }
         restarterThread = null;
 
+        logger.info("Update complete.");
+
         //Update the MOTD to what it was before.
-        for (UUID uuid : MissionControl.getProxies().keySet()) {
-            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.toString(), "update", "Mission Control", motd.get(MissionControl.getProxies().get(uuid).getNetwork()));
+        for (ProxyInfo uuid : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.toString(), "update", "Mission Control", motd.get(MissionControl.getProxies().get(uuid.getUuid()).getNetwork()));
             ProxyCommunicationUtils.sendMessage(message);
         }
     }

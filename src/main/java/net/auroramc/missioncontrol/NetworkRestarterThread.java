@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class NetworkRestarterThread extends Thread {
@@ -25,16 +26,19 @@ public class NetworkRestarterThread extends Thread {
     private final List<ProxyInfo> proxiesToRestart = new ArrayList<>();
     private RestartMode proxyRestartMode;
     private int totalUpdates;
+    private Logger logger;
 
     private final ArrayBlockingQueue<RestartServerResponse> queue = new ArrayBlockingQueue<>(50);
 
     public NetworkRestarterThread(List<Module> modulesToRestart, ServerInfo.Network network) {
         modules = modulesToRestart;
         this.network = network;
+        logger = MissionControl.getLogger();
     }
 
     @Override
     public void run() {
+        logger.info("Initiating restart for network '" + network.name() + "', restarting " + modules.size() + " modules.");
         if (modules.contains(Module.PROXY)) {
             //Open and close proxies in batches of 10 to prevent using too many resources.
             proxiesToRestart.addAll(MissionControl.getProxies().values().stream().filter(info -> info.getNetwork() == network).collect(Collectors.toList()));
