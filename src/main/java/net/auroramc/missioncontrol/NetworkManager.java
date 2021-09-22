@@ -206,7 +206,6 @@ public class NetworkManager {
 
     public static void interrupt() {
         shutdown = true;
-        lock2.notifyAll();
     }
 
     public static void pushUpdate(Map<Module, Integer> modules, ServerInfo.Network network) {
