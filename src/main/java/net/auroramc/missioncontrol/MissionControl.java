@@ -146,6 +146,7 @@ public class MissionControl {
         registerCommand(new CommandHelp());
         registerCommand(new CommandServerManager());
         registerCommand(new CommandUpdate());
+        registerCommand(new CommandExit());
 
         dbManager = new DatabaseManager(mysqlHost, mysqlPort, mysqlDb, mysqlUsername, mysqlPassword, redisHost, redisAuth);
 
