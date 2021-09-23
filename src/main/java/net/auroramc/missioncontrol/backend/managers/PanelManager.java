@@ -156,6 +156,7 @@ public class PanelManager {
                 .setDockerImage("quay.io/pterodactyl/core:java")
                 .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
+                .skipScripts(false)
                 .setEnvironment(environment).execute();
         server.getBuildManager().setAllocation(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0)).delay(2, TimeUnit.SECONDS).execute();
     }
@@ -238,6 +239,7 @@ public class PanelManager {
                 .setDockerImage("quay.io/pterodactyl/core:java")
                 .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
+                .skipScripts(false)
                 .setEnvironment(environment).execute();
         server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
 
@@ -321,6 +323,7 @@ public class PanelManager {
                 .setDockerImage("quay.io/pterodactyl/core:java")
                 .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
+                .skipScripts(false)
                 .setEnvironment(environment).execute();
         server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }
@@ -369,7 +372,8 @@ public class PanelManager {
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
 
         api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
-        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).delay(10, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
+        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setSkipScripts(false).execute();
+        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).delay(20, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
     }
 
     public void updateProxy(ProxyInfo info) {
@@ -392,7 +396,8 @@ public class PanelManager {
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
 
         api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
-        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).delay(10, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
+        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setSkipScripts(false).execute();
+        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).delay(20, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
     }
 
     public void closeServer(String name, ServerInfo.Network network) {
@@ -401,7 +406,7 @@ public class PanelManager {
     }
 
     public void openServer(String name, ServerInfo.Network network) {
-        apiClient.retrieveServersByName(name + "-" + network.name(), false).delay(10, TimeUnit.SECONDS).execute().get(0).start().execute();
+        apiClient.retrieveServersByName(name + "-" + network.name(), false).delay(10, TimeUnit.SECONDS).execute().get(0).start().delay(10, TimeUnit.SECONDS).execute();
     }
 
     public void createProxy(ProxyInfo info) {
@@ -439,6 +444,7 @@ public class PanelManager {
                 .setDockerImage("quay.io/pterodactyl/core:java")
                 .setPort(info.getPort())
                 .startOnCompletion(true)
+                .skipScripts(false)
                 .setEnvironment(environment).execute();
         server.getBuildManager().setAllocation(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0)).delay(2, TimeUnit.SECONDS).execute();
     }
@@ -477,6 +483,7 @@ public class PanelManager {
                 .setDockerImage("quay.io/pterodactyl/core:java")
                 .setPort(info.getPort())
                 .startOnCompletion(true)
+                .skipScripts(false)
                 .setEnvironment(environment).execute();
         server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }
@@ -515,6 +522,7 @@ public class PanelManager {
                 .setDockerImage("quay.io/pterodactyl/core:java")
                 .setPort(info.getPort())
                 .startOnCompletion(true)
+                .skipScripts(false)
                 .setEnvironment(environment).execute();
         server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }

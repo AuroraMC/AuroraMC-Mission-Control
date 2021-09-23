@@ -262,9 +262,13 @@ public class NetworkManager {
     public static void updateComplete() {
         ServerInfo.Network network = restarterThread.getNetwork();
         if (network == MAIN) {
-            monitorRunnable.setUpdate(false);
+            if (monitorRunnable != null) {
+                monitorRunnable.setUpdate(false);
+            }
         } else if (network == ALPHA) {
-            alphaMonitorRunnable.setUpdate(false);
+            if (alphaMonitorRunnable != null) {
+                alphaMonitorRunnable.setUpdate(false);
+            }
         }
         restarterThread = null;
 
@@ -415,10 +419,11 @@ public class NetworkManager {
                             ProtocolMessage message = new ProtocolMessage(Protocol.SERVER_ONLINE ,info.getName(), "add", "Mission Control", server.getName());
                             ServerCommunicationUtils.sendMessage(message, network);
                         }
-                        for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
-                            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_ONLINE, info.getUuid().toString(), "remove", "Mission Control", server.getName());
-                            ProxyCommunicationUtils.sendMessage(message);
-                        }
+
+                    }
+                    for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+                        net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_ONLINE, info.getUuid().toString(), "add", "Mission Control", server.getName());
+                        ProxyCommunicationUtils.sendMessage(message);
                     }
                 }
             } catch (InterruptedException e) {
