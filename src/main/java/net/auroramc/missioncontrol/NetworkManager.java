@@ -198,7 +198,7 @@ public class NetworkManager {
                 CommandManager.onCommand(command);
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "An error has occurred while trying to process commands. Shutting down.");
+            logger.log(Level.SEVERE, "An error has occurred while trying to process commands. Shutting down. Stack trace: ", e);
         }
         logger.info("Shutting down...");
         shutdown();
@@ -287,13 +287,14 @@ public class NetworkManager {
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > MemoryAllocation.PROXY.getMegaBytes()) {
                 //There is enough memory in this node
-                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660).collect(Collectors.toList());
+                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
                     Allocation allocation = allocations.get(0);
-                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100).collect(Collectors.toList()).get(0);
+                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    Allocation altProtocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     info = new ProxyInfo(uuid, allocation.getIP(), allocation.getPortInt(), network, forced, allocation.getPortInt() + 100, (network == ALPHA)?alphaBuilds.get(Module.PROXY):currentProxyBuildNumber);
                     MissionControl.getDbManager().createConnectionNode(info);
-                    MissionControl.getPanelManager().createProxy(info, allocation, protocolAllocation);
+                    MissionControl.getPanelManager().createProxy(info, allocation, protocolAllocation, altProtocolAllocation);
                     MissionControl.getProxyManager().addServer(info);
                     MissionControl.getProxies().put(uuid, info);
                     update = true;
@@ -327,13 +328,14 @@ public class NetworkManager {
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > MemoryAllocation.PROXY.getMegaBytes()) {
                 //There is enough memory in this node
-                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660).collect(Collectors.toList());
+                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
                     Allocation allocation = allocations.get(0);
-                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100).collect(Collectors.toList()).get(0);
+                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    Allocation altProtocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     info = new ProxyInfo(uuid, allocation.getIP(), allocation.getPortInt(), network, forced, allocation.getPortInt() + 100, coreBuild);
                     MissionControl.getDbManager().createConnectionNode(info);
-                    MissionControl.getPanelManager().createProxy(info, allocation, protocolAllocation, branch);
+                    MissionControl.getPanelManager().createProxy(info, allocation, protocolAllocation, altProtocolAllocation, branch);
                     MissionControl.getProxyManager().addServer(info);
                     MissionControl.getProxies().put(uuid, info);
                     update = true;
@@ -363,7 +365,7 @@ public class NetworkManager {
 
     public static void deleteProxy(ProxyInfo info) {
         MissionControl.getPanelManager().closeServer(info.getUuid().toString(), info.getNetwork());
-        MissionControl.getPanelManager().deleteServer(info.getUuid().toString());
+        MissionControl.getPanelManager().deleteServer(info.getUuid().toString(), info.getNetwork());
         MissionControl.getDbManager().deleteNode(info);
         MissionControl.getProxies().remove(info.getUuid());
         networkPlayerTotal.put(info.getNetwork(), networkPlayerTotal.get(info.getNetwork()) - nodePlayerTotals.get(info.getNetwork()).get(info.getUuid()));
@@ -385,13 +387,15 @@ public class NetworkManager {
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > game.getMemoryAllocation().getMegaBytes()) {
                 //There is enough memory in this node
-                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660).collect(Collectors.toList());
+                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
                     Allocation allocation = allocations.get(0);
-                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100).collect(Collectors.toList()).get(0);
+                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    Allocation altAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    Allocation altProtocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, game.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild);
                     MissionControl.getDbManager().createServer(serverInfo);
-                    MissionControl.getPanelManager().createServer(serverInfo, game.getMemoryAllocation(), allocation, protocolAllocation);
+                    MissionControl.getPanelManager().createServer(serverInfo, game.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);
                     update = true;
                 }
@@ -436,13 +440,15 @@ public class NetworkManager {
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > game.getMemoryAllocation().getMegaBytes()) {
                 //There is enough memory in this node
-                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660).collect(Collectors.toList());
+                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
                     Allocation allocation = allocations.get(0);
-                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100).collect(Collectors.toList()).get(0);
+                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    Allocation altAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    Allocation altProtocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, game.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild);
                     MissionControl.getDbManager().createServer(serverInfo);
-                    MissionControl.getPanelManager().createServer(serverInfo, game.getMemoryAllocation(), allocation, protocolAllocation, coreBranch, lobbybranch, buildBranch, gameBranch, engineBranch);
+                    MissionControl.getPanelManager().createServer(serverInfo, game.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation, coreBranch, lobbybranch, buildBranch, gameBranch, engineBranch);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);
                     update = true;
                 }
@@ -492,7 +498,7 @@ public class NetworkManager {
     }
 
     public static void closeServer(ServerInfo info) {
-        MissionControl.getPanelManager().deleteServer(info.getName());
+        MissionControl.getPanelManager().deleteServer(info.getName(), info.getNetwork());
         MissionControl.getDbManager().deleteServer(info);
         MissionControl.getServers().get(info.getNetwork()).remove(info.getName());
         serverPlayerTotals.get(info.getNetwork()).remove(info.getName());

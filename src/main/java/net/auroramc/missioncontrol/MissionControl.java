@@ -177,7 +177,7 @@ public class MissionControl {
             for (ServerInfo.Network network : ServerInfo.Network.values()) {
                 if (servers.get(network).containsKey(server.getName().replace("-" + network.name(), ""))) {
                     panelServersCopy.remove(server);
-                    servers.get(network).remove(server.getName());
+                    serverNameSets.get(network).remove(server.getName().replace("-" + network.name(), ""));
                     continue outer;
                 }
             }
