@@ -376,6 +376,7 @@ public class CommandServerManager extends Command {
                                     NetworkManager.removeProxyFromRotation(info);
                                     ProtocolMessage message = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, uuid.toString(), "close", "Mission Control", "");
                                     ProxyCommunicationUtils.sendMessage(message);
+                                    logger.info("Shutting down proxy '" + info.getUuid() + "'");
                                 } else {
                                     logger.info("Invalid syntax. Correct syntax: smanager proxy close <server name>");
                                 }
@@ -399,7 +400,6 @@ public class CommandServerManager extends Command {
                                         return;
                                     }
 
-                                    NetworkManager.removeProxyFromRotation(info);
                                     ProtocolMessage message = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, uuid.toString(), "restart", "Mission Control", "");
                                     ProxyCommunicationUtils.sendMessage(message);
                                 } else {

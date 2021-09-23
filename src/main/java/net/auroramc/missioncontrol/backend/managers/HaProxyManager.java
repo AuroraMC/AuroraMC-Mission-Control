@@ -76,8 +76,6 @@ public class HaProxyManager {
         object.put("send-proxy-v2", "enabled");
         object.put("check", "enabled");
         ServerInfo.Network network = proxyInfo.getNetwork();
-
-        MissionControl.getLogger().info("Creating proxy on HaProxy using body: " + object);
         sendPostRequest("services/haproxy/configuration/servers?backend=" + network.name().toLowerCase(), object.toString());
     }
 

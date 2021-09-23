@@ -79,6 +79,7 @@ public class ProxyMessageHandler {
                 break;
             }
             case PROXY_ONLINE: {
+                NetworkManager.getNodePlayerTotals().get(MissionControl.getProxies().get(UUID.fromString(message.getSender())).getNetwork()).put(UUID.fromString(message.getSender()), 0);
                 if (NetworkManager.isUpdate()) {
                     if (NetworkManager.getRestarterThread().getProxyRestartMode() == NetworkRestarterThread.RestartMode.SOLO) {
                         NetworkManager.getRestarterThread().proxyStartConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
@@ -102,9 +103,9 @@ public class ProxyMessageHandler {
                         MissionControl.getPanelManager().openServer(info.getUuid().toString(), network);
                     } else {
                         NetworkManager.deleteProxy(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
-                        if (network == ServerInfo.Network.ALPHA) {
+                        if (network == ServerInfo.Network.ALPHA && NetworkManager.isServerMonitoringEnabled(ServerInfo.Network.ALPHA)) {
                             NetworkManager.getAlphaMonitorRunnable().proxyConfirmClose(info);
-                        } else if (network == ServerInfo.Network.MAIN) {
+                        } else if (network == ServerInfo.Network.MAIN && NetworkManager.isServerMonitoringEnabled(ServerInfo.Network.MAIN)) {
                             NetworkManager.getMonitorRunnable().proxyConfirmClose(info);
                         }
                     }

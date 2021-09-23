@@ -16,9 +16,11 @@ import net.auroramc.missioncontrol.backend.Module;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -60,8 +62,8 @@ public class PanelManager {
         return api.retrieveServers().execute();
     }
 
-    public void deleteServer(String name) {
-        api.retrieveServersByName(name, false).execute().get(0).getController().delete(true);
+    public void deleteServer(String name, ServerInfo.Network network) {
+        api.retrieveServersByName(name + "-" + network.name(), false).execute().get(0).getController().delete(true).execute();
     }
 
     public List<Allocation> getAvailableAllocations() {
@@ -84,27 +86,47 @@ public class PanelManager {
             environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
         }
         if (serverInfo.getLobbyBuildNumber() != -1) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+            }
+        } else {
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
             }
         }
         if (serverInfo.getBuildBuildNumber() != -1) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.BUILD) + ""));
             }
+        } else {
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+            }
         }
         if (serverInfo.getGameBuildNumber() != -1) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.GAME) + ""));
             }
+        } else {
+            environment.put("GAME_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+            }
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
+            }
+        } else {
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
             }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -120,26 +142,13 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
-        if (serverInfo.getBuildBuildNumber() != 0) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
-        }
-        if (serverInfo.getLobbyBuildNumber() != 0) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
-        }
-        if (serverInfo.getEngineBuildNumber() != 0) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
-        }
-        if (serverInfo.getGameBuildNumber() != 0) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
-        }
-
-        api.createServer()
+        ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0))
+                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0),api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -148,9 +157,10 @@ public class PanelManager {
                 .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
                 .setEnvironment(environment).execute();
+        server.getBuildManager().setAllocation(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0)).delay(2, TimeUnit.SECONDS).execute();
     }
 
-    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation) {
+    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation, Allocation altAllocation, Allocation altProtocolAllocation) {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
@@ -158,28 +168,48 @@ public class PanelManager {
             environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
         }
         if (serverInfo.getLobbyBuildNumber() != -1) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+            }
+        } else {
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
             }
         }
         if (serverInfo.getBuildBuildNumber() != -1) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.BUILD) + ""));
             }
+        } else {
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+            }
         }
         if (serverInfo.getGameBuildNumber() != -1) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.GAME) + ""));
             }
+        } else {
+            environment.put("GAME_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+            }
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
             }
+        } else {
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+            }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
@@ -194,13 +224,13 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
-        api.createServer()
+        ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(allocation, protocolAllocation)
+                .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -209,37 +239,59 @@ public class PanelManager {
                 .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
                 .setEnvironment(environment).execute();
+        server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
+
     }
 
-    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch) {
+    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation, Allocation altAllocation, Allocation altProtocolAllocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch) {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
-        if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
             environment.put("CORE_BRANCH", EnvironmentValue.ofString(coreBranch));
         }
         if (serverInfo.getLobbyBuildNumber() != -1) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
-            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
                 environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(lobbybranch));
+            }
+        } else {
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString("na"));
             }
         }
         if (serverInfo.getBuildBuildNumber() != -1) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
-            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
                 environment.put("BUILD_BRANCH", EnvironmentValue.ofString(buildBranch));
+            }
+        } else {
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString("na"));
             }
         }
         if (serverInfo.getGameBuildNumber() != -1) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
-            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
                 environment.put("GAME_BRANCH", EnvironmentValue.ofString(gameBranch));
+            }
+        } else {
+            environment.put("GAME_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString("na"));
             }
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
-            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(engineBranch));
+            }
+        } else {
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString("na"));
             }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -255,13 +307,13 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
-        api.createServer()
+        ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(allocation, protocolAllocation)
+                .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -270,6 +322,7 @@ public class PanelManager {
                 .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
                 .setEnvironment(environment).execute();
+        server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }
 
     public void updateServer(ServerInfo info) {
@@ -279,25 +332,25 @@ public class PanelManager {
             environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
         }
         if (info.getLobbyBuildNumber() != -1) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(info.getLobbyBuildNumber() + ""));
             if (info.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
             }
         }
         if (info.getBuildBuildNumber() != -1) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+            environment.put("BUILD_VERSION", EnvironmentValue.ofString(info.getBuildBuildNumber() + ""));
             if (info.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.BUILD) + ""));
             }
         }
         if (info.getGameBuildNumber() != -1) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+            environment.put("GAME_VERSION", EnvironmentValue.ofString(info.getGameBuildNumber() + ""));
             if (info.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.GAME) + ""));
             }
         }
         if (info.getEngineBuildNumber() != -1) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(info.getEngineBuildNumber() + ""));
             if (info.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
             }
@@ -315,8 +368,8 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
 
-        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getManager().setEnvironment(environment).execute();
-        apiClient.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getManager().reinstall().execute();
+        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
+        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).delay(10, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
     }
 
     public void updateProxy(ProxyInfo info) {
@@ -338,16 +391,17 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
 
-        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getManager().setEnvironment(environment).execute();
-        apiClient.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getManager().reinstall().execute();
+        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
+        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).delay(10, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
     }
 
     public void closeServer(String name, ServerInfo.Network network) {
-        apiClient.setPower(apiClient.retrieveServersByName(name + "-" + network.name(), false).execute().get(0), PowerAction.STOP).execute();
+        apiClient.retrieveServersByName(name + "-" + network.name(), false).execute().get(0).stop().execute();
+
     }
 
     public void openServer(String name, ServerInfo.Network network) {
-        apiClient.setPower(apiClient.retrieveServersByName(name + "-" + network.name(), false).execute().get(0), PowerAction.START).execute();
+        apiClient.retrieveServersByName(name + "-" + network.name(), false).delay(10, TimeUnit.SECONDS).execute().get(0).start().execute();
     }
 
     public void createProxy(ProxyInfo info) {
@@ -371,13 +425,13 @@ public class PanelManager {
 
 
 
-        api.createServer()
+        ApplicationServer server = api.createServer()
                 .setName(info.getUuid().toString() + "-" + info.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0))
+                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -386,9 +440,10 @@ public class PanelManager {
                 .setPort(info.getPort())
                 .startOnCompletion(true)
                 .setEnvironment(environment).execute();
+        server.getBuildManager().setAllocation(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0)).delay(2, TimeUnit.SECONDS).execute();
     }
 
-    public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation) {
+    public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation, Allocation altProtocolAllocation) {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() == ServerInfo.Network.ALPHA) {
@@ -406,14 +461,15 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
+        MissionControl.getLogger().info("Creating proxy with IP: " + allocation.getIP() + ":" + allocation.getPort());
 
-        api.createServer()
+        ApplicationServer server = api.createServer()
                 .setName(info.getUuid().toString() + "-" + info.getNetwork().name())
                 .setDescription("Server")
-                .setOwner(api.retrieveUserById(1).execute())
+                .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(allocation, protocolAllocation)
+                .setAllocations(allocation, Arrays.asList(protocolAllocation, altProtocolAllocation))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -422,9 +478,10 @@ public class PanelManager {
                 .setPort(info.getPort())
                 .startOnCompletion(true)
                 .setEnvironment(environment).execute();
+        server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }
 
-    public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation, String branch) {
+    public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation, Allocation altProtocolAllocation, String branch) {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() == ServerInfo.Network.ALPHA) {
@@ -442,14 +499,15 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
+        MissionControl.getLogger().info("Creating proxy with IP: " + allocation.getIP() + ":" + allocation.getPort());
 
-        api.createServer()
+        ApplicationServer server = api.createServer()
                 .setName(info.getUuid().toString() + "-" + info.getNetwork().name())
                 .setDescription("Server")
-                .setOwner(api.retrieveUserById(1).execute())
+                .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
                 .setLocation(api.retrieveLocationById(1).execute())
-                .setAllocations(allocation, protocolAllocation)
+                .setAllocations(allocation, Arrays.asList(protocolAllocation, altProtocolAllocation))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
@@ -458,6 +516,7 @@ public class PanelManager {
                 .setPort(info.getPort())
                 .startOnCompletion(true)
                 .setEnvironment(environment).execute();
+        server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }
 
 }
