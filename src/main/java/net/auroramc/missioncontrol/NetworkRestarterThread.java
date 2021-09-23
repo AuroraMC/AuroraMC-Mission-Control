@@ -158,6 +158,10 @@ public class NetworkRestarterThread extends Thread {
                             //The connection node has started and is ready to accept connections, add it to the rotation and then queue another node to restart.
                             MissionControl.getProxyManager().addServer((ProxyInfo) response.getInfo());
                             NetworkManager.getNodePlayerTotals().get(network).put(((ProxyInfo) response.getInfo()).getUuid(), 0);
+                            if (totalUpdates == 0) {
+                                NetworkManager.updateComplete();
+                                return;
+                            }
                             ProxyInfo info = proxiesToRestart.remove(0);
                             NetworkManager.removeProxyFromRotation(info);
                             net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");

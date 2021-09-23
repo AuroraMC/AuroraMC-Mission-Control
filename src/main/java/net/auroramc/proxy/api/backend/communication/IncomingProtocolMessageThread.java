@@ -32,7 +32,11 @@ public class IncomingProtocolMessageThread extends Thread {
                 MissionControl.getLogger().log(Level.FINEST, "Accepted connection from proxy.");
                 ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
                 ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
-                ProxyMessageHandler.onMessage(message);
+                try {
+                    ProxyMessageHandler.onMessage(message);
+                } catch (Exception e) {
+                    MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a proxy message. Stack trace: ", e);
+                }
             }
         } catch (SocketException e) {
             listening = false;

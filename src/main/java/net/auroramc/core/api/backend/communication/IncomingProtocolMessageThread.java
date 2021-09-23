@@ -32,7 +32,11 @@ public class IncomingProtocolMessageThread extends Thread {
                 MissionControl.getLogger().log(Level.FINEST, "Accepted connection from server.");
                 ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
                 ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
-                ServerMessageHandler.onMessage(message);
+                try {
+                    ServerMessageHandler.onMessage(message);
+                } catch (Exception e) {
+                    MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a server message. Stack trace: ", e);
+                }
                 connection.close();
             }
         } catch (SocketException e) {
