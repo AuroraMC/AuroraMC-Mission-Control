@@ -79,7 +79,7 @@ public class ProxyMessageHandler {
                 break;
             }
             case PROXY_ONLINE: {
-                NetworkManager.getNodePlayerTotals().get(MissionControl.getProxies().get(UUID.fromString(message.getSender())).getNetwork()).put(UUID.fromString(message.getSender()), 0);
+                NetworkManager.reportProxyTotal(UUID.fromString(message.getSender()), 0, ServerInfo.Network.valueOf(message.getExtraInfo()));
                 if (NetworkManager.isUpdate()) {
                     if (NetworkManager.getRestarterThread().getProxyRestartMode() == NetworkRestarterThread.RestartMode.SOLO) {
                         NetworkManager.getRestarterThread().proxyStartConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
@@ -92,6 +92,7 @@ public class ProxyMessageHandler {
                 break;
             }
             case CONFIRM_SHUTDOWN: {
+                NetworkManager.proxyClose(UUID.fromString(message.getSender()), ServerInfo.Network.valueOf(message.getExtraInfo()));
                 if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().proxyCloseConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                 } else {

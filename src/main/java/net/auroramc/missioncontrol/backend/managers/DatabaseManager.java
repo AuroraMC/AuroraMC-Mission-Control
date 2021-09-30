@@ -589,5 +589,10 @@ public class DatabaseManager {
         }
     }
 
+    public void pushPlayerCount(ServerInfo.Network network, int amount) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set(String.format("playercount.%s", network.name().toLowerCase()), amount + "");
+        }
+    }
 
 }
