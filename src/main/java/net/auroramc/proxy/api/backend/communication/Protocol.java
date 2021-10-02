@@ -96,5 +96,9 @@ public enum Protocol {
     /**
      * Update whether alpha is enabled or disabled.
      */
-    ALPHA_UPDATE
+    ALPHA_UPDATE,
+    /**
+     * When there is an approval notification.
+     */
+    APPROVAL_NOTIFICATION
 }
