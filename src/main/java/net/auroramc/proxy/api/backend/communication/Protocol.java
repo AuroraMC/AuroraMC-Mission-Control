@@ -100,5 +100,9 @@ public enum Protocol {
     /**
      * When there is an approval notification.
      */
-    APPROVAL_NOTIFICATION
+    APPROVAL_NOTIFICATION,
+    /**
+     * When a report has been handled.
+     */
+    REPORT_NOTIFICATION
 }
