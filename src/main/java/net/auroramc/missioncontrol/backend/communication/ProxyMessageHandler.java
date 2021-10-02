@@ -38,6 +38,7 @@ public class ProxyMessageHandler {
             case UPDATE_CHAT_SLOW:
             case UPDATE_CHAT_SILENCE:
             case GLOBAL_MESSAGE:
+            case APPROVAL_NOTIFICATION:
             case ANNOUNCE: {
                 String[] args = message.getExtraInfo().split("\n");
                 for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == ServerInfo.Network.valueOf(args[1])).collect(Collectors.toList())) {
