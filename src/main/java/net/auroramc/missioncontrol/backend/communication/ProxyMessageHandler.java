@@ -61,8 +61,8 @@ public class ProxyMessageHandler {
                         break;
                     }
                     case "update": {
-                        MissionControl.getDbManager().changeMaintenanceMode(ServerInfo.Network.valueOf(args[1]),  MaintenanceMode.valueOf(message.getExtraInfo()));
-                        NetworkManager.setMaintenanceMode(ServerInfo.Network.valueOf(args[1]), MaintenanceMode.valueOf(message.getExtraInfo()));
+                        MissionControl.getDbManager().changeMaintenanceMode(ServerInfo.Network.valueOf(args[1]),  MaintenanceMode.valueOf(args[0]));
+                        NetworkManager.setMaintenanceMode(ServerInfo.Network.valueOf(args[1]), MaintenanceMode.valueOf(args[0]));
                         break;
                     }
                 }
