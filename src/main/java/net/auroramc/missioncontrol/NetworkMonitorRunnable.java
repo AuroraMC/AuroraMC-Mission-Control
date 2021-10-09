@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ */
+
 package net.auroramc.missioncontrol;
 
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;

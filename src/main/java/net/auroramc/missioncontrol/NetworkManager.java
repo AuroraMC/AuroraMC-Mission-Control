@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ */
+
 package net.auroramc.missioncontrol;
 
 import com.mattmalec.pterodactyl4j.application.entities.Allocation;
