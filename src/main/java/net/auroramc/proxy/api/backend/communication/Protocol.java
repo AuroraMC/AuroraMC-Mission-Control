@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ */
+
 package net.auroramc.proxy.api.backend.communication;
 
 public enum Protocol {
@@ -96,5 +100,13 @@ public enum Protocol {
     /**
      * Update whether alpha is enabled or disabled.
      */
-    ALPHA_UPDATE
+    ALPHA_UPDATE,
+    /**
+     * When there is an approval notification.
+     */
+    APPROVAL_NOTIFICATION,
+    /**
+     * When a report has been handled.
+     */
+    REPORT_NOTIFICATION
 }

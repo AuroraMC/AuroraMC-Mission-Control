@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ */
+
 package net.auroramc.missioncontrol.backend.communication;
 
 import net.auroramc.missioncontrol.MissionControl;
@@ -38,6 +42,7 @@ public class ProxyMessageHandler {
             case UPDATE_CHAT_SLOW:
             case UPDATE_CHAT_SILENCE:
             case GLOBAL_MESSAGE:
+            case APPROVAL_NOTIFICATION:
             case ANNOUNCE: {
                 String[] args = message.getExtraInfo().split("\n");
                 for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == ServerInfo.Network.valueOf(args[1])).collect(Collectors.toList())) {
@@ -60,8 +65,8 @@ public class ProxyMessageHandler {
                         break;
                     }
                     case "update": {
-                        MissionControl.getDbManager().changeMaintenanceMode(ServerInfo.Network.valueOf(args[1]),  MaintenanceMode.valueOf(message.getExtraInfo()));
-                        NetworkManager.setMaintenanceMode(ServerInfo.Network.valueOf(args[1]), MaintenanceMode.valueOf(message.getExtraInfo()));
+                        MissionControl.getDbManager().changeMaintenanceMode(ServerInfo.Network.valueOf(args[1]),  MaintenanceMode.valueOf(args[0]));
+                        NetworkManager.setMaintenanceMode(ServerInfo.Network.valueOf(args[1]), MaintenanceMode.valueOf(args[0]));
                         break;
                     }
                 }
@@ -79,7 +84,7 @@ public class ProxyMessageHandler {
                 break;
             }
             case PROXY_ONLINE: {
-                NetworkManager.getNodePlayerTotals().get(MissionControl.getProxies().get(UUID.fromString(message.getSender())).getNetwork()).put(UUID.fromString(message.getSender()), 0);
+                NetworkManager.reportProxyTotal(UUID.fromString(message.getSender()), 0, ServerInfo.Network.valueOf(message.getExtraInfo()));
                 if (NetworkManager.isUpdate()) {
                     if (NetworkManager.getRestarterThread().getProxyRestartMode() == NetworkRestarterThread.RestartMode.SOLO) {
                         NetworkManager.getRestarterThread().proxyStartConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
@@ -92,6 +97,7 @@ public class ProxyMessageHandler {
                 break;
             }
             case CONFIRM_SHUTDOWN: {
+                NetworkManager.proxyClose(UUID.fromString(message.getSender()), ServerInfo.Network.valueOf(message.getExtraInfo()));
                 if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().proxyCloseConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                 } else {

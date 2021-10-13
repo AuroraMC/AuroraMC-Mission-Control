@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ */
+
 package net.auroramc.missioncontrol;
 
 import com.mattmalec.pterodactyl4j.application.entities.Allocation;
@@ -5,10 +9,7 @@ import com.mattmalec.pterodactyl4j.application.entities.Node;
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
-import net.auroramc.missioncontrol.backend.Game;
-import net.auroramc.missioncontrol.backend.MaintenanceMode;
-import net.auroramc.missioncontrol.backend.MemoryAllocation;
-import net.auroramc.missioncontrol.backend.Module;
+import net.auroramc.missioncontrol.backend.*;
 import net.auroramc.missioncontrol.backend.managers.CommandManager;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
@@ -104,7 +105,7 @@ public class NetworkManager {
 
         nodes = MissionControl.getPanelManager().getAllNodes();
 
-        scheduler = Executors.newScheduledThreadPool(2);
+        scheduler = Executors.newScheduledThreadPool(4);
         shutdown = false;
     }
 
@@ -186,6 +187,9 @@ public class NetworkManager {
             alphaMonitorRunnable = new NetworkMonitorRunnable(logger, ALPHA);
             scheduler.scheduleWithFixedDelay(alphaMonitorRunnable, 1, 1, TimeUnit.MINUTES);
         }
+
+        scheduler.scheduleWithFixedDelay(new PlayerCountUpdateRunnable(), 1, 1, TimeUnit.SECONDS);
+        scheduler.scheduleWithFixedDelay(new RequestPlayerCountUpdateRunnable(), 5, 5, TimeUnit.MINUTES);
 
         done();
     }
@@ -276,7 +280,7 @@ public class NetworkManager {
 
         //Update the MOTD to what it was before.
         for (ProxyInfo uuid : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
-            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.toString(), "update", "Mission Control", motd.get(MissionControl.getProxies().get(uuid.getUuid()).getNetwork()));
+            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.getUuid().toString(), "update", "Mission Control", motd.get(MissionControl.getProxies().get(uuid.getUuid()).getNetwork()));
             ProxyCommunicationUtils.sendMessage(message);
         }
     }
@@ -601,6 +605,24 @@ public class NetworkManager {
             }
             nodePlayerTotals.get(network).put(proxy, amount);
             networkPlayerTotal.put(network, networkPlayerTotal.get(network) + amount);
+        }
+    }
+
+    public static void proxyClose(UUID proxy, ServerInfo.Network network) {
+        synchronized (lock) {
+            if (nodePlayerTotals.get(network).containsKey(proxy)) {
+                networkPlayerTotal.put(network, networkPlayerTotal.get(network) - nodePlayerTotals.get(network).get(proxy));
+            }
+            nodePlayerTotals.get(network).remove(proxy);
+        }
+    }
+
+    public static void serverClose(String server, Game game, ServerInfo.Network network) {
+        synchronized (lock) {
+            if (serverPlayerTotals.get(network).containsKey(server)) {
+                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) - serverPlayerTotals.get(network).get(server));
+            }
+            serverPlayerTotals.get(network).remove(server);
         }
     }
 

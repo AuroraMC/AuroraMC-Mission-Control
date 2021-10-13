@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ */
+
 package net.md_5.bungee.log;
 
 import com.google.common.base.Charsets;
