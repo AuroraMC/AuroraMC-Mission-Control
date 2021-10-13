@@ -169,11 +169,19 @@ public class NetworkRestarterThread extends Thread {
                         }
                     } else {
                         NetworkManager.getServerPlayerTotals().get(network).put(((ServerInfo) response.getInfo()).getName(), 0);
-                        ServerInfo info;
+                        if (totalUpdates == 0) {
+                            NetworkManager.updateComplete();
+                            return;
+                        }
+                        ServerInfo info = null;
                         if (((ServerInfo) response.getInfo()).getServerType().getString("type").equalsIgnoreCase("lobby")) {
-                            info = lobbiesToRestart.remove(0);
+                            if (lobbiesToRestart.size() > 0) {
+                                info = lobbiesToRestart.remove(0);
+                            }
                         } else {
-                            info = serversToRestart.remove(0);
+                            if (serversToRestart.size() > 0) {
+                                info = serversToRestart.remove(0);
+                            }
                         }
                         if (info != null) {
                             ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
