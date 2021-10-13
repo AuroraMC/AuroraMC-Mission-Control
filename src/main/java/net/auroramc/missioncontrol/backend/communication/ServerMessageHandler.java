@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ */
+
 package net.auroramc.missioncontrol.backend.communication;
 
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
@@ -50,6 +54,7 @@ public class ServerMessageHandler {
             case CONFIRM_SHUTDOWN: {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
+                NetworkManager.serverClose(info.getName(), Game.valueOf(info.getServerType().getString("game")), network);
                 if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().serverCloseConfirm(info);
                 } else {
@@ -71,6 +76,7 @@ public class ServerMessageHandler {
             case SERVER_ONLINE: {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
+                NetworkManager.reportServerTotal(info.getName(), Game.valueOf(info.getServerType().getString("game")), 0, network);
                 if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().serverStartConfirm(info);
                 } else {

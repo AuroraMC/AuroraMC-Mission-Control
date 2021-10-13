@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ */
+
 package net.auroramc.missioncontrol.backend.managers;
 
 import com.mattmalec.pterodactyl4j.DataType;
@@ -147,18 +151,15 @@ public class PanelManager {
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
-                .setLocation(api.retrieveLocationById(1).execute())
                 .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0),api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
                 .setDockerImage("quay.io/pterodactyl/core:java")
-                .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
-        server.getBuildManager().setAllocation(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0)).delay(2, TimeUnit.SECONDS).execute();
     }
 
     public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation, Allocation altAllocation, Allocation altProtocolAllocation) {
@@ -225,23 +226,25 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
+        MissionControl.getLogger().info(allocation.getIP() + ":" + allocation.getPort());
+        MissionControl.getLogger().info(altAllocation.getIP() + ":" + altAllocation.getPort());
+        MissionControl.getLogger().info(protocolAllocation.getIP() + ":" + protocolAllocation.getPort());
+        MissionControl.getLogger().info(altProtocolAllocation.getIP() + ":" + altProtocolAllocation.getPort());
+
         ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
-                .setLocation(api.retrieveLocationById(1).execute())
                 .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
                 .setDockerImage("quay.io/pterodactyl/core:java")
-                .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
-        server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
 
     }
 
@@ -309,23 +312,25 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
+        MissionControl.getLogger().info(allocation.getIP() + ":" + allocation.getPort());
+        MissionControl.getLogger().info(altAllocation.getIP() + ":" + altAllocation.getPort());
+        MissionControl.getLogger().info(protocolAllocation.getIP() + ":" + protocolAllocation.getPort());
+        MissionControl.getLogger().info(altProtocolAllocation.getIP() + ":" + altProtocolAllocation.getPort());
+
         ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
-                .setLocation(api.retrieveLocationById(1).execute())
                 .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
                 .setDockerImage("quay.io/pterodactyl/core:java")
-                .setPort(serverInfo.getPort())
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
-        server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }
 
     public void updateServer(ServerInfo info) {
@@ -435,18 +440,15 @@ public class PanelManager {
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
-                .setLocation(api.retrieveLocationById(1).execute())
                 .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(MemoryAllocation.PROXY.getMegaBytes(), DataType.MB)
                 .setDockerImage("quay.io/pterodactyl/core:java")
-                .setPort(info.getPort())
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
-        server.getBuildManager().setAllocation(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(info.getPort() + "") && allocation.getIP().equalsIgnoreCase(info.getIp())).collect(Collectors.toList()).get(0)).delay(2, TimeUnit.SECONDS).execute();
     }
 
     public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation, Allocation altProtocolAllocation) {
@@ -474,18 +476,15 @@ public class PanelManager {
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
-                .setLocation(api.retrieveLocationById(1).execute())
                 .setAllocations(allocation, Arrays.asList(protocolAllocation, altProtocolAllocation))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(MemoryAllocation.PROXY.getMegaBytes(), DataType.MB)
                 .setDockerImage("quay.io/pterodactyl/core:java")
-                .setPort(info.getPort())
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
-        server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }
 
     public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation, Allocation altProtocolAllocation, String branch) {
@@ -513,18 +512,15 @@ public class PanelManager {
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
                 .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
-                .setLocation(api.retrieveLocationById(1).execute())
                 .setAllocations(allocation, Arrays.asList(protocolAllocation, altProtocolAllocation))
                 .setDatabases(0)
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(MemoryAllocation.PROXY.getMegaBytes(), DataType.MB)
                 .setDockerImage("quay.io/pterodactyl/core:java")
-                .setPort(info.getPort())
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
-        server.getBuildManager().setAllocation(allocation).delay(2, TimeUnit.SECONDS).execute();
     }
 
 }
