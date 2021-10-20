@@ -102,22 +102,22 @@ public class DatabaseManager {
             statement.setString(6, info.getServerType().toString());
             statement.setInt(7, info.getProtocolPort());
             statement.setInt(8, info.getBuildNumber());
-            if (info.getLobbyBuildNumber() == -1) {
+            if (info.getLobbyBuildNumber() == 0) {
                 statement.setNull(9, Types.INTEGER);
             } else {
                 statement.setInt(9, info.getLobbyBuildNumber());
             }
-            if (info.getEngineBuildNumber() == -1) {
+            if (info.getEngineBuildNumber() == 0) {
                 statement.setNull(10, Types.INTEGER);
             } else {
                 statement.setInt(10, info.getEngineBuildNumber());
             }
-            if (info.getGameBuildNumber() == -1) {
+            if (info.getGameBuildNumber() == 0) {
                 statement.setNull(11, Types.INTEGER);
             } else {
                 statement.setInt(11, info.getGameBuildNumber());
             }
-            if (info.getBuildBuildNumber() == -1) {
+            if (info.getBuildBuildNumber() == 0) {
                 statement.setNull(12, Types.INTEGER);
             } else {
                 statement.setInt(12, info.getBuildBuildNumber());
@@ -186,7 +186,7 @@ public class DatabaseManager {
             if (buildNumber != null) {
                 return Integer.parseInt(buildNumber);
             } else {
-                return -1;
+                return 0;
             }
         }
     }
@@ -197,7 +197,7 @@ public class DatabaseManager {
             if (buildNumber != null) {
                 return Integer.parseInt(buildNumber);
             } else {
-                return -1;
+                return 0;
             }
         }
     }
@@ -208,7 +208,7 @@ public class DatabaseManager {
             if (buildNumber != null) {
                 return Integer.parseInt(buildNumber);
             } else {
-                return -1;
+                return 0;
             }
         }
     }
@@ -219,7 +219,7 @@ public class DatabaseManager {
             if (buildNumber != null) {
                 return Integer.parseInt(buildNumber);
             } else {
-                return -1;
+                return 0;
             }
         }
     }
@@ -230,7 +230,7 @@ public class DatabaseManager {
             if (buildNumber != null) {
                 return Integer.parseInt(buildNumber);
             } else {
-                return -1;
+                return 0;
             }
         }
     }
@@ -241,7 +241,7 @@ public class DatabaseManager {
             if (buildNumber != null) {
                 return Integer.parseInt(buildNumber);
             } else {
-                return -1;
+                return 0;
             }
         }
     }

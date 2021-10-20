@@ -387,10 +387,10 @@ public class NetworkManager {
         ServerInfo serverInfo = null;
 
         int coreBuild = ((network == ALPHA)?alphaBuilds.get(Module.CORE):currentCoreBuildNumber);
-        int lobbyBuild = ((game.getModules().contains(Module.LOBBY)?((network == ALPHA)?alphaBuilds.get(Module.LOBBY):currentLobbyBuildNumber):-1));
-        int engineBuild = ((game.getModules().contains(Module.ENGINE)?((network == ALPHA)?alphaBuilds.get(Module.ENGINE):currentEngineBuildNumber):-1));
-        int gameBuild = ((game.getModules().contains(Module.GAME)?((network == ALPHA)?alphaBuilds.get(Module.GAME):currentGameBuildNumber):-1));
-        int buildBuild = ((game.getModules().contains(Module.BUILD)?((network == ALPHA)?alphaBuilds.get(Module.BUILD):currentBuildBuildNumber):-1));
+        int lobbyBuild = ((game.getModules().contains(Module.LOBBY)?((network == ALPHA)?alphaBuilds.get(Module.LOBBY):currentLobbyBuildNumber):0));
+        int engineBuild = ((game.getModules().contains(Module.ENGINE)?((network == ALPHA)?alphaBuilds.get(Module.ENGINE):currentEngineBuildNumber):0));
+        int gameBuild = ((game.getModules().contains(Module.GAME)?((network == ALPHA)?alphaBuilds.get(Module.GAME):currentGameBuildNumber):0));
+        int buildBuild = ((game.getModules().contains(Module.BUILD)?((network == ALPHA)?alphaBuilds.get(Module.BUILD):currentBuildBuildNumber):0));
 
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > game.getMemoryAllocation().getMegaBytes()) {
