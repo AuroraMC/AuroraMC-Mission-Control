@@ -47,7 +47,7 @@ public enum Statistic {
             case UNIQUE_PLAYER_TOTALS:
                 return MissionControl.getDbManager().getUniquePlayerTotals();
             case NETWORK_SERVER_TOTALS:
-                return MissionControl.getServers().get(ServerInfo.Network.MAIN).size();
+                return (int) MissionControl.getServers().get(ServerInfo.Network.MAIN).values().stream().filter(serverInfo -> serverInfo.getServerType().getString("game").equalsIgnoreCase(game.name())).count();
             default:
                 return 0;
         }
