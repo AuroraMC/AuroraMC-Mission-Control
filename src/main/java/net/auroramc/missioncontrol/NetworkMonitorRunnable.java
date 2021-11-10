@@ -5,7 +5,7 @@
 package net.auroramc.missioncontrol;
 
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
-import net.auroramc.missioncontrol.backend.Game;
+import net.auroramc.missioncontrol.backend.util.Game;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.Protocol;

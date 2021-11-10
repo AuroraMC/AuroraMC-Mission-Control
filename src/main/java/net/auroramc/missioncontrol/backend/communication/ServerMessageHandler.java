@@ -7,13 +7,8 @@ package net.auroramc.missioncontrol.backend.communication;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
-import net.auroramc.missioncontrol.NetworkMonitorRunnable;
-import net.auroramc.missioncontrol.NetworkRestarterThread;
-import net.auroramc.missioncontrol.backend.Game;
-import net.auroramc.missioncontrol.entities.ProxyInfo;
+import net.auroramc.missioncontrol.backend.util.Game;
 import net.auroramc.missioncontrol.entities.ServerInfo;
-
-import java.util.UUID;
 
 public class ServerMessageHandler {
 

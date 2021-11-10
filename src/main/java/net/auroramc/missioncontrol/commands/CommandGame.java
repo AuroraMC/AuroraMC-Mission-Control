@@ -6,7 +6,7 @@ package net.auroramc.missioncontrol.commands;
 
 import net.auroramc.missioncontrol.Command;
 import net.auroramc.missioncontrol.NetworkManager;
-import net.auroramc.missioncontrol.backend.Game;
+import net.auroramc.missioncontrol.backend.util.Game;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 
 import java.util.ArrayList;

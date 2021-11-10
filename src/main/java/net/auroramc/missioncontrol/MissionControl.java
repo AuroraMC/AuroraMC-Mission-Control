@@ -7,7 +7,7 @@ package net.auroramc.missioncontrol;
 import com.mattmalec.pterodactyl4j.application.entities.ApplicationServer;
 import jline.console.ConsoleReader;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
-import net.auroramc.missioncontrol.backend.Game;
+import net.auroramc.missioncontrol.backend.util.Game;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.backend.managers.HaProxyManager;
 import net.auroramc.missioncontrol.backend.managers.JenkinsManager;
@@ -21,7 +21,6 @@ import net.md_5.bungee.log.LoggingOutputStream;
 import org.fusesource.jansi.AnsiConsole;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.impl.JDK14LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintStream;

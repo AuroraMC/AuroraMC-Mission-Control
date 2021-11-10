@@ -7,7 +7,7 @@ package net.auroramc.missioncontrol;
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
-import net.auroramc.missioncontrol.backend.Module;
+import net.auroramc.missioncontrol.backend.util.Module;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.RestartServerResponse;
 import net.auroramc.missioncontrol.entities.ServerInfo;

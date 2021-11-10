@@ -5,7 +5,7 @@
 package net.auroramc.missioncontrol.backend.managers;
 
 import net.auroramc.missioncontrol.MissionControl;
-import net.auroramc.missioncontrol.backend.Module;
+import net.auroramc.missioncontrol.backend.util.Module;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;

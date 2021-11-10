@@ -2,7 +2,7 @@
  * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
  */
 
-package net.auroramc.missioncontrol.backend;
+package net.auroramc.missioncontrol.backend.util;
 
 import java.util.Arrays;
 import java.util.Collections;

@@ -2,7 +2,7 @@
  * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
  */
 
-package net.auroramc.missioncontrol.backend;
+package net.auroramc.missioncontrol.backend.runnables;
 
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
