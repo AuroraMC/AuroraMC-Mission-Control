@@ -6,12 +6,10 @@ package net.auroramc.missioncontrol.backend.communication;
 
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
-import net.auroramc.missioncontrol.NetworkMonitorRunnable;
 import net.auroramc.missioncontrol.NetworkRestarterThread;
-import net.auroramc.missioncontrol.backend.MaintenanceMode;
+import net.auroramc.missioncontrol.backend.util.MaintenanceMode;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
-import net.auroramc.proxy.api.backend.communication.Protocol;
 import net.auroramc.proxy.api.backend.communication.ProtocolMessage;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 

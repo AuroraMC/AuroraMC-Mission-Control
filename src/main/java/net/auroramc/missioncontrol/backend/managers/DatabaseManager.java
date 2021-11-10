@@ -5,10 +5,8 @@
 package net.auroramc.missioncontrol.backend.managers;
 
 import net.auroramc.missioncontrol.MissionControl;
-import net.auroramc.missioncontrol.backend.Game;
-import net.auroramc.missioncontrol.backend.MaintenanceMode;
-import net.auroramc.missioncontrol.backend.Module;
-import net.auroramc.missioncontrol.backend.MySQLConnectionPool;
+import net.auroramc.missioncontrol.backend.runnables.StatUpdateRunnable;
+import net.auroramc.missioncontrol.backend.util.*;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import org.json.JSONObject;
@@ -596,6 +594,69 @@ public class DatabaseManager {
     public void pushPlayerCount(ServerInfo.Network network, int amount) {
         try (Jedis connection = jedis.getResource()) {
             connection.set(String.format("playercount.%s", network.name().toLowerCase()), amount + "");
+        }
+    }
+
+    public int getPlayersPerGame(Game game, StatUpdateRunnable.StatisticPeriod frequency) {
+        try (Jedis connection = jedis.getResource()) {
+            String amount = connection.hget(String.format("stat.playerspergame.%s", game.name()), frequency.name());
+            if (amount == null) {
+                return 0;
+            }
+            int i = Integer.parseInt(amount);
+            connection.hdel(String.format("stat.playerspergame.%s", game.name()), frequency.name());
+            return i;
+        }
+    }
+
+    public int getGamesStarted(Game game, StatUpdateRunnable.StatisticPeriod frequency) {
+        try (Jedis connection = jedis.getResource()) {
+            String amount = connection.hget(String.format("stat.gamesstarted.%s", game.name()), frequency.name());
+            if (amount == null) {
+                return 0;
+            }
+            int i = Integer.parseInt(amount);
+            connection.hdel(String.format("stat.gamesstarted.%s", game.name()), frequency.name());
+            return i;
+        }
+    }
+
+    public int getUniquePlayerJoins(StatUpdateRunnable.StatisticPeriod frequency) {
+        try (Jedis connection = jedis.getResource()) {
+            String amount = connection.hget("stat.uniqueplayerjoins", frequency.name());
+            if (amount == null) {
+                return 0;
+            }
+            int i = Integer.parseInt(amount);
+            connection.hdel("stat.uniqueplayerjoins", frequency.name());
+            return i;
+        }
+    }
+
+    public int getUniquePlayerTotals() {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT id FROM auroramc_players ORDER BY id DESC LIMIT 1");
+            ResultSet set = statement.executeQuery();
+            if (set.next()) {
+                return set.getInt(1);
+            } else {
+                return 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    public void insertStatistic(Statistic statistic, StatUpdateRunnable.StatisticPeriod period, long timestamp, int value) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.sadd("stat." + statistic.name() + "." + period, timestamp + ";" + value);
+        }
+    }
+
+    public void insertStatistic(Statistic statistic, StatUpdateRunnable.StatisticPeriod period, long timestamp, int value, Game game) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.sadd("stat." + statistic.name() + "." + period, timestamp + ";" + value + ";" + game.name());
         }
     }
 

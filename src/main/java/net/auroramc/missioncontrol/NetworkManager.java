@@ -9,14 +9,16 @@ import com.mattmalec.pterodactyl4j.application.entities.Node;
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
-import net.auroramc.missioncontrol.backend.*;
 import net.auroramc.missioncontrol.backend.managers.CommandManager;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
+import net.auroramc.missioncontrol.backend.runnables.PlayerCountUpdateRunnable;
+import net.auroramc.missioncontrol.backend.runnables.RequestPlayerCountUpdateRunnable;
+import net.auroramc.missioncontrol.backend.runnables.StatUpdateRunnable;
+import net.auroramc.missioncontrol.backend.util.*;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
@@ -72,9 +74,8 @@ public class NetworkManager {
     private static Map<Module, String> alphaBranches;
     private static Map<Module, Integer> alphaBuilds;
 
-    private static Map<ServerInfo.Network, Boolean> serverMonitorEnabled;
+    private static final Map<ServerInfo.Network, Boolean> serverMonitorEnabled;
     private static boolean alphaEnabled;
-
 
     static {
 
@@ -105,7 +106,7 @@ public class NetworkManager {
 
         nodes = MissionControl.getPanelManager().getAllNodes();
 
-        scheduler = Executors.newScheduledThreadPool(4);
+        scheduler = Executors.newScheduledThreadPool(8);
         shutdown = false;
     }
 
@@ -190,6 +191,11 @@ public class NetworkManager {
 
         scheduler.scheduleWithFixedDelay(new PlayerCountUpdateRunnable(), 1, 1, TimeUnit.SECONDS);
         scheduler.scheduleWithFixedDelay(new RequestPlayerCountUpdateRunnable(), 5, 5, TimeUnit.MINUTES);
+
+        //Statistics updater
+        scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.DAILY), 1, 1, TimeUnit.MINUTES);
+        scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.WEEKLY), 10, 10, TimeUnit.MINUTES);
+        scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.ALLTIME), 1, 1, TimeUnit.DAYS);
 
         done();
     }

@@ -6,7 +6,6 @@ package net.auroramc.missioncontrol.backend.managers;
 
 import com.mattmalec.pterodactyl4j.DataType;
 import com.mattmalec.pterodactyl4j.EnvironmentValue;
-import com.mattmalec.pterodactyl4j.PowerAction;
 import com.mattmalec.pterodactyl4j.PteroBuilder;
 import com.mattmalec.pterodactyl4j.application.entities.Allocation;
 import com.mattmalec.pterodactyl4j.application.entities.ApplicationServer;
@@ -15,8 +14,8 @@ import com.mattmalec.pterodactyl4j.application.entities.PteroApplication;
 import com.mattmalec.pterodactyl4j.client.entities.PteroClient;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
-import net.auroramc.missioncontrol.backend.MemoryAllocation;
-import net.auroramc.missioncontrol.backend.Module;
+import net.auroramc.missioncontrol.backend.util.MemoryAllocation;
+import net.auroramc.missioncontrol.backend.util.Module;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 
