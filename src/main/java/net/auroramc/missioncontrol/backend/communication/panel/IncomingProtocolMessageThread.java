@@ -39,13 +39,15 @@ public class IncomingProtocolMessageThread extends Thread {
                 MissionControl.getLogger().log(Level.INFO, "Command received: " + message);
                 try {
                     String response = PanelMessageHandler.onMessage(message);
-                    MissionControl.getLogger().log(Level.INFO, "Response: " + message);
+                    MissionControl.getLogger().log(Level.INFO, "Response: " + response);
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
                     bw.write(response);
                     bw.flush();
+                    MissionControl.getLogger().log(Level.INFO, "Command Finished");
                 } catch (Exception e) {
                     MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a panel message. Stack trace: ", e);
                 }
+                connection.close();
             }
         } catch (SocketException e) {
             listening = false;
