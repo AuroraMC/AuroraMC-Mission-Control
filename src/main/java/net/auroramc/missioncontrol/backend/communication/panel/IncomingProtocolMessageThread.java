@@ -8,10 +8,7 @@ import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.backend.communication.ProxyMessageHandler;
 import net.auroramc.proxy.api.backend.communication.ProtocolMessage;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -41,8 +38,11 @@ public class IncomingProtocolMessageThread extends Thread {
                 String message = br.readLine();
                 MissionControl.getLogger().log(Level.INFO, "Command received: " + message);
                 try {
-                    connection.getOutputStream().write(PanelMessageHandler.onMessage(message).getBytes());
-                    connection.getOutputStream().flush();
+                    String response = PanelMessageHandler.onMessage(message);
+                    MissionControl.getLogger().log(Level.INFO, "Response: " + message);
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
+                    bw.write(response);
+                    bw.flush();
                 } catch (Exception e) {
                     MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a panel message. Stack trace: ", e);
                 }
