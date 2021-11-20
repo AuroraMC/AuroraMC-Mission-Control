@@ -8,7 +8,9 @@ import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.backend.communication.ProxyMessageHandler;
 import net.auroramc.proxy.api.backend.communication.ProtocolMessage;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -35,16 +37,8 @@ public class IncomingProtocolMessageThread extends Thread {
             while (listening) {
                 Socket connection = socket.accept();
                 MissionControl.getLogger().log(Level.INFO, "Accepted connection from panel.");
-                byte[] resultBuff = new byte[0];
-                byte[] buff = new byte[1024];
-                int k = -1;
-                while((k = connection.getInputStream().read(buff, 0, buff.length)) > -1) {
-                    byte[] tbuff = new byte[resultBuff.length + k]; // temp buffer size = bytes already read + bytes last read
-                    System.arraycopy(resultBuff, 0, tbuff, 0, resultBuff.length); // copy previous bytes
-                    System.arraycopy(buff, 0, tbuff, resultBuff.length, k);  // copy current lot
-                    resultBuff = tbuff; // call the temp buffer as your result buff
-                }
-                String message = new String(resultBuff);
+                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String message = br.readLine();
                 MissionControl.getLogger().log(Level.INFO, "Command received: " + message);
                 try {
                     connection.getOutputStream().write(PanelMessageHandler.onMessage(message).getBytes());
