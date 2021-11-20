@@ -20,7 +20,7 @@ public class PanelMessageHandler {
         String command = args.remove(0);
         switch (command.toLowerCase()) {
             case "createserver": {
-                if (args.size() == 2) {
+                if (args.size() >= 2) {
                     ServerInfo.Network network;
                     try {
                         network = ServerInfo.Network.valueOf(args.get(0));
@@ -46,7 +46,7 @@ public class PanelMessageHandler {
                     String serverName = null;
                     List<String> extraArgs = null;
 
-                    if (!args.get(2).equalsIgnoreCase("")) {
+                    if (args.size() >= 3) {
                         serverName = args.get(2);
                     }
 
@@ -54,7 +54,7 @@ public class PanelMessageHandler {
                         return "That server already exists on that network.";
                     }
 
-                    if (!args.get(3).equalsIgnoreCase("")) {
+                    if (args.size() >= 4) {
                         extraArgs = Arrays.asList(args.get(3).split(" "));
                     }
                     if (extraArgs != null && network == ServerInfo.Network.TEST) {
