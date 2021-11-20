@@ -63,7 +63,7 @@ public class NetworkRestarterThread extends Thread {
                 //Create 10 connection nodes, for each connection node, remove 1 from rotation and initiate shutdown on it.
                 for (int i = 0;i < 10;i++) {
                     ProxyInfo info = proxiesToRestart.remove(0);
-                    NetworkManager.createProxy(network, info.isForced());
+                    NetworkManager.createProxy(network, info.isForced(), true);
                     NetworkManager.removeProxyFromRotation(info);
                     net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                     ProxyCommunicationUtils.sendMessage(message);
@@ -137,7 +137,7 @@ public class NetworkRestarterThread extends Thread {
                         if (proxyRestartMode == RestartMode.BATCHES) {
                             //Previous connection node has been closed, open a new connection node then prompt another connection node to close.
                             NetworkManager.deleteProxy(((ProxyInfo) response.getInfo()));
-                            NetworkManager.createProxy(network, ((ProxyInfo) response.getInfo()).isForced());
+                            NetworkManager.createProxy(network, ((ProxyInfo) response.getInfo()).isForced(), true);
                             ProxyInfo info = proxiesToRestart.remove(0);
                             NetworkManager.removeProxyFromRotation(info);
                             net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");

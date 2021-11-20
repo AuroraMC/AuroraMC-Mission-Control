@@ -225,11 +225,6 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
-        MissionControl.getLogger().info(allocation.getIP() + ":" + allocation.getPort());
-        MissionControl.getLogger().info(altAllocation.getIP() + ":" + altAllocation.getPort());
-        MissionControl.getLogger().info(protocolAllocation.getIP() + ":" + protocolAllocation.getPort());
-        MissionControl.getLogger().info(altProtocolAllocation.getIP() + ":" + altProtocolAllocation.getPort());
-
         ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")

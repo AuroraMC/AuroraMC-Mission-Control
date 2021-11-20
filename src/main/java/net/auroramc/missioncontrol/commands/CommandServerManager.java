@@ -179,7 +179,7 @@ public class CommandServerManager extends Command {
                                             return;
                                         }
 
-                                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network, moduleBuilds.getOrDefault(Module.CORE, -1), moduleBranches.get(Module.CORE), moduleBuilds.getOrDefault(Module.LOBBY, -1), moduleBranches.get(Module.LOBBY), moduleBuilds.getOrDefault(Module.BUILD, -1), moduleBranches.get(Module.BUILD), moduleBuilds.getOrDefault(Module.GAME, -1), moduleBranches.get(Module.GAME), moduleBuilds.getOrDefault(Module.ENGINE, -1), moduleBranches.get(Module.ENGINE));
+                                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network, moduleBuilds.getOrDefault(Module.CORE, -1), moduleBranches.get(Module.CORE), moduleBuilds.getOrDefault(Module.LOBBY, -1), moduleBranches.get(Module.LOBBY), moduleBuilds.getOrDefault(Module.BUILD, -1), moduleBranches.get(Module.BUILD), moduleBuilds.getOrDefault(Module.GAME, -1), moduleBranches.get(Module.GAME), moduleBuilds.getOrDefault(Module.ENGINE, -1), moduleBranches.get(Module.ENGINE), true);
                                         if (info != null) {
                                             logger.info("Server '" + serverName + "' successfully created on network '" + network.name() + "'.");
                                         } else {
@@ -198,7 +198,7 @@ public class CommandServerManager extends Command {
                                             serverName = game.getServerCode() + "-" + id;
                                         }
 
-                                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network);
+                                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network, true);
                                         if (info != null) {
                                             logger.info("Server '" + serverName + "' successfully created on network '" + network.name() + "'.");
                                         } else {
@@ -333,7 +333,7 @@ public class CommandServerManager extends Command {
                                             return;
                                         }
 
-                                        ProxyInfo info = NetworkManager.createProxy(network, true, build, branch);
+                                        ProxyInfo info = NetworkManager.createProxy(network, true, build, branch, true);
                                         if (info != null) {
                                             logger.info("Proxy '" + info.getUuid().toString() + "' successfully created on network '" + network.name() + "'.");
                                         } else {
@@ -347,7 +347,7 @@ public class CommandServerManager extends Command {
                                             logger.info("You cannot provide extra details about proxies not on the test network. Continuing with default settings.");
                                         }
 
-                                        ProxyInfo info = NetworkManager.createProxy(network, true);
+                                        ProxyInfo info = NetworkManager.createProxy(network, true, true);
                                         if (info != null) {
                                             logger.info("Proxy '" + info.getUuid().toString() + "' successfully created on network '" + network.name() + "'.");
                                         } else {
