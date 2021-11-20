@@ -50,6 +50,7 @@ public class IncomingProtocolMessageThread extends Thread {
                 connection.close();
             }
         } catch (SocketException e) {
+            e.printStackTrace();
             listening = false;
         } catch (IOException e) {
             e.printStackTrace();
