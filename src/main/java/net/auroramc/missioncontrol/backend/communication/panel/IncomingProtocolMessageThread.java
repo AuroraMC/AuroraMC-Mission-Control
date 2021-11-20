@@ -41,7 +41,7 @@ public class IncomingProtocolMessageThread extends Thread {
                     String response = PanelMessageHandler.onMessage(message);
                     MissionControl.getLogger().log(Level.INFO, "Response: " + response);
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
-                    bw.write(response);
+                    bw.write(response + "\r\n");
                     bw.flush();
                     MissionControl.getLogger().log(Level.INFO, "Command Finished");
                 } catch (Exception e) {
