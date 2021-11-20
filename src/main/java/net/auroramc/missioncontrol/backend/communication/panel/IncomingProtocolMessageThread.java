@@ -36,14 +36,11 @@ public class IncomingProtocolMessageThread extends Thread {
                 MissionControl.getLogger().log(Level.INFO, "Accepted connection from panel.");
                 BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 String message = br.readLine();
-                MissionControl.getLogger().log(Level.INFO, "Command received: " + message);
                 try {
                     String response = PanelMessageHandler.onMessage(message);
-                    MissionControl.getLogger().log(Level.INFO, "Response: " + response);
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
                     bw.write(response + "\r\n");
                     bw.flush();
-                    MissionControl.getLogger().log(Level.INFO, "Command Finished");
                 } catch (Exception e) {
                     MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a panel message. Stack trace: ", e);
                 }
