@@ -7,6 +7,7 @@ package net.auroramc.missioncontrol;
 import com.mattmalec.pterodactyl4j.application.entities.ApplicationServer;
 import jline.console.ConsoleReader;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
+import net.auroramc.missioncontrol.backend.communication.panel.PanelCommunicationUtils;
 import net.auroramc.missioncontrol.backend.util.Game;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.backend.managers.HaProxyManager;
@@ -228,6 +229,7 @@ public class MissionControl {
 
         ServerCommunicationUtils.init();
         ProxyCommunicationUtils.init();
+        PanelCommunicationUtils.init();
 
         logger.info("Server/proxy messaging protocol listeners successfully started.");
         logger.info("AuroraMC Mission Control successfully started. Handing off to the network manager...");

@@ -9,6 +9,7 @@ import com.mattmalec.pterodactyl4j.application.entities.Node;
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
+import net.auroramc.missioncontrol.backend.communication.panel.PanelCommunicationUtils;
 import net.auroramc.missioncontrol.backend.managers.CommandManager;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.backend.runnables.PlayerCountUpdateRunnable;
@@ -534,6 +535,7 @@ public class NetworkManager {
         logger.info("Shutting down protocol threads...");
         ProxyCommunicationUtils.shutdown();
         ServerCommunicationUtils.shutdown();
+        PanelCommunicationUtils.shutdown();
         logger.info("Shutdown complete. Goodbye!");
         System.exit(0);
     }
