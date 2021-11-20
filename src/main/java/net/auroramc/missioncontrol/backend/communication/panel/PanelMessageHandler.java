@@ -12,8 +12,12 @@ import net.auroramc.missioncontrol.backend.util.Module;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class PanelMessageHandler {
+
+    private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
     public static String onMessage(String message) {
         List<String> args = new ArrayList<>(Arrays.asList(message.split(";")));
@@ -93,9 +97,9 @@ public class PanelMessageHandler {
                             return "You have not specified the branch and build number for all modules. Aborting.";
                         }
 
-                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network, moduleBuilds.getOrDefault(Module.CORE, -1), moduleBranches.get(Module.CORE), moduleBuilds.getOrDefault(Module.LOBBY, -1), moduleBranches.get(Module.LOBBY), moduleBuilds.getOrDefault(Module.BUILD, -1), moduleBranches.get(Module.BUILD), moduleBuilds.getOrDefault(Module.GAME, -1), moduleBranches.get(Module.GAME), moduleBuilds.getOrDefault(Module.ENGINE, -1), moduleBranches.get(Module.ENGINE));
+                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network, moduleBuilds.getOrDefault(Module.CORE, -1), moduleBranches.get(Module.CORE), moduleBuilds.getOrDefault(Module.LOBBY, -1), moduleBranches.get(Module.LOBBY), moduleBuilds.getOrDefault(Module.BUILD, -1), moduleBranches.get(Module.BUILD), moduleBuilds.getOrDefault(Module.GAME, -1), moduleBranches.get(Module.GAME), moduleBuilds.getOrDefault(Module.ENGINE, -1), moduleBranches.get(Module.ENGINE), false);
                         if (info != null) {
-                            return "Success";
+                            return "Server '" + serverName + "' successfully created on network '" + network.name() + "'. Please give the server time to start up properly.";
                         } else {
                             return "Server creation failed.";
                         }
@@ -111,9 +115,9 @@ public class PanelMessageHandler {
                             return "That server already exists on that network.";
                         }
 
-                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network);
+                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network, false);
                         if (info != null) {
-                            return "Success";
+                            return "Server '" + serverName + "' successfully created on network '" + network.name() + "'. Please give the server time to start up properly.";
                         } else {
                             return "Server creation failed.";
                         }

@@ -63,7 +63,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         //Not enough proxies.
                         logger.info("Not enough proxies are open for network '" + network.name() + "'. Creating " +  (totalProxiesNeeded - i) + " proxies.");
                         do {
-                            NetworkManager.createProxy(network, false);
+                            NetworkManager.createProxy(network, false, true);
                             i++;
                         } while (totalProxiesNeeded < i);
                     }
@@ -83,7 +83,7 @@ public class NetworkMonitorRunnable implements Runnable {
                     //While this should technically never be possible, if the network is just starting after all servers were closed, the servers need to be opened.
                     int i = uuids.size() - proxiesPendingRestart.size();
                     do {
-                        NetworkManager.createProxy(network, false);
+                        NetworkManager.createProxy(network, false, true);
                         i++;
                     } while (i < 2);
                 }
@@ -116,7 +116,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         logger.info("Not enough servers are open on network '" + network.name() + "' for game '" + game.name() + "'. Creating " +  (serversNeeded - serversOpen) + " servers.");
                         do {
                             int id = findLowestAvailableServerID(game, network);
-                            NetworkManager.createServer(game.getServerCode() + "-" + id, game, false, network);
+                            NetworkManager.createServer(game.getServerCode() + "-" + id, game, false, network, true);
                             i++;
                         } while (serversNeeded > i);
                     }
@@ -136,7 +136,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         //Open as many servers is necessary.
                         do {
                             int id = findLowestAvailableServerID(game, network);
-                            NetworkManager.createServer(game.getServerCode() + "-" + id, game, false, network);
+                            NetworkManager.createServer(game.getServerCode() + "-" + id, game, false, network, true);
                             i++;
                         } while (i < 2);
                     }
