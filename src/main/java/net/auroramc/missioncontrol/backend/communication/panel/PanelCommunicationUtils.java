@@ -4,8 +4,6 @@
 
 package net.auroramc.missioncontrol.backend.communication.panel;
 
-import net.auroramc.proxy.api.backend.communication.IncomingProtocolMessageThread;
-
 public class PanelCommunicationUtils {
 
     private static IncomingProtocolMessageThread task;
