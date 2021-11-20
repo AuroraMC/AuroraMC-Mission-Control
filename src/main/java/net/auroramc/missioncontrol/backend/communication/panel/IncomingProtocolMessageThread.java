@@ -34,7 +34,7 @@ public class IncomingProtocolMessageThread extends Thread {
             this.socket = socket;
             while (listening) {
                 Socket connection = socket.accept();
-                MissionControl.getLogger().log(Level.FINEST, "Accepted connection from panel.");
+                MissionControl.getLogger().log(Level.INFO, "Accepted connection from panel.");
                 byte[] resultBuff = new byte[0];
                 byte[] buff = new byte[1024];
                 int k = -1;
@@ -45,6 +45,7 @@ public class IncomingProtocolMessageThread extends Thread {
                     resultBuff = tbuff; // call the temp buffer as your result buff
                 }
                 String message = new String(resultBuff);
+                MissionControl.getLogger().log(Level.INFO, "Command received: " + message);
                 try {
                     connection.getOutputStream().write(PanelMessageHandler.onMessage(message).getBytes());
                     connection.getOutputStream().flush();
