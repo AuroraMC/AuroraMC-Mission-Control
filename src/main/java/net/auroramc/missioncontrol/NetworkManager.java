@@ -414,8 +414,6 @@ public class NetworkManager {
         MissionControl.getPanelManager().deleteServer(info.getUuid().toString(), info.getNetwork());
         MissionControl.getDbManager().deleteNode(info);
         MissionControl.getProxies().remove(info.getUuid());
-        networkPlayerTotal.put(info.getNetwork(), networkPlayerTotal.get(info.getNetwork()) - nodePlayerTotals.get(info.getNetwork()).get(info.getUuid()));
-        nodePlayerTotals.get(info.getNetwork()).remove(info.getUuid());
         nodes = MissionControl.getPanelManager().getAllNodes();
     }
 
