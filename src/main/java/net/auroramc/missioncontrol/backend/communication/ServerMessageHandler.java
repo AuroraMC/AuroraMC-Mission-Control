@@ -53,12 +53,12 @@ public class ServerMessageHandler {
                 if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().serverCloseConfirm(info);
                 } else {
-                    NetworkManager.closeServer(info);
                     if (message.getCommand().equalsIgnoreCase("restart")) {
                         MissionControl.getPanelManager().closeServer(info.getName(), network);
                         MissionControl.getPanelManager().updateServer(info);
                         MissionControl.getPanelManager().openServer(info.getName(), network);
                     } else {
+                        NetworkManager.closeServer(info);
                         if (network == ServerInfo.Network.ALPHA) {
                             NetworkManager.getAlphaMonitorRunnable().serverConfirmClose(info);
                         } else if (network == ServerInfo.Network.MAIN) {
