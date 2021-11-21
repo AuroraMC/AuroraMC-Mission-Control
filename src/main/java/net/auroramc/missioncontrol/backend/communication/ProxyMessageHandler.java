@@ -105,6 +105,13 @@ public class ProxyMessageHandler {
                         MissionControl.getPanelManager().closeServer(info.getUuid().toString(), network);
                         MissionControl.getPanelManager().updateProxy(info);
                         MissionControl.getPanelManager().openServer(info.getUuid().toString(), network);
+                        new Thread(() -> {
+                            try {
+                                NetworkManager.waitForServerResponse(network);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }).start();
                     } else {
                         NetworkManager.deleteProxy(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                         if (network == ServerInfo.Network.ALPHA && NetworkManager.isServerMonitoringEnabled(ServerInfo.Network.ALPHA)) {
