@@ -446,41 +446,11 @@ public class NetworkManager {
             nodes = MissionControl.getPanelManager().getAllNodes();
             try {
                 if (block) {
-                    ServerInfo server = serverBlockingQueue.poll(2, TimeUnit.MINUTES);
-                    if (server != null) {
-                        if (!server.getServerType().getString("type").equalsIgnoreCase("lobby") && !server.getServerType().getString("type").equalsIgnoreCase("build") && !server.getServerType().getString("type").equalsIgnoreCase("staff")) {
-                            //Send a message to all lobbies on that network that there is a new server online
-                            List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList());
-                            for (ServerInfo info : infos) {
-                                ProtocolMessage message = new ProtocolMessage(Protocol.SERVER_ONLINE ,info.getName(), "add", "Mission Control", server.getName());
-                                ServerCommunicationUtils.sendMessage(message, network);
-                            }
-
-                        }
-                        for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
-                            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_ONLINE, info.getUuid().toString(), "add", "Mission Control", server.getName());
-                            ProxyCommunicationUtils.sendMessage(message);
-                        }
-                    }
+                    waitForServerResponse(network);
                 } else {
                     new Thread(() -> {
                         try {
-                            ServerInfo server = serverBlockingQueue.poll(2, TimeUnit.MINUTES);
-                            if (server != null) {
-                                if (!server.getServerType().getString("type").equalsIgnoreCase("lobby") && !server.getServerType().getString("type").equalsIgnoreCase("build") && !server.getServerType().getString("type").equalsIgnoreCase("staff")) {
-                                    //Send a message to all lobbies on that network that there is a new server online
-                                    List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList());
-                                    for (ServerInfo info : infos) {
-                                        ProtocolMessage message = new ProtocolMessage(Protocol.SERVER_ONLINE ,info.getName(), "add", "Mission Control", server.getName());
-                                        ServerCommunicationUtils.sendMessage(message, network);
-                                    }
-
-                                }
-                                for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
-                                    net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_ONLINE, info.getUuid().toString(), "add", "Mission Control", server.getName());
-                                    ProxyCommunicationUtils.sendMessage(message);
-                                }
-                            }
+                            waitForServerResponse(network);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -495,6 +465,25 @@ public class NetworkManager {
         //No nodes were found with enough memory. Ignore request.
         logger.info("A server was attempted to be created but a node was not found with enough memory to create it.");
         return null;
+    }
+
+    public static void waitForServerResponse(ServerInfo.Network network) throws InterruptedException {
+        ServerInfo server = serverBlockingQueue.poll(2, TimeUnit.MINUTES);
+        if (server != null) {
+            if (!server.getServerType().getString("type").equalsIgnoreCase("lobby") && !server.getServerType().getString("type").equalsIgnoreCase("build") && !server.getServerType().getString("type").equalsIgnoreCase("staff")) {
+                //Send a message to all lobbies on that network that there is a new server online
+                List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList());
+                for (ServerInfo info : infos) {
+                    ProtocolMessage message = new ProtocolMessage(Protocol.SERVER_ONLINE ,info.getName(), "add", "Mission Control", server.getName());
+                    ServerCommunicationUtils.sendMessage(message, network);
+                }
+
+            }
+            for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+                net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_ONLINE, info.getUuid().toString(), "add", "Mission Control", server.getName());
+                ProxyCommunicationUtils.sendMessage(message);
+            }
+        }
     }
 
     public static ServerInfo createServer(String serverName, Game game, boolean forced, ServerInfo.Network network, int coreBuild, String coreBranch, int lobbyBuild, String lobbybranch, int buildBuild, String buildBranch, int gameBuild, String gameBranch, int engineBuild, String engineBranch, boolean block) {
@@ -545,24 +534,6 @@ public class NetworkManager {
         //No nodes were found with enough memory. Ignore request.
         logger.info("A server was attempted to be created but a node was not found with enough memory to create it.");
         return null;
-    }
-
-    private static void waitForServerResponse(ServerInfo.Network network) throws InterruptedException {
-        ServerInfo server = serverBlockingQueue.poll(2, TimeUnit.MINUTES);
-        if (server != null) {
-            if (!server.getServerType().getString("type").equalsIgnoreCase("lobby") && !server.getServerType().getString("type").equalsIgnoreCase("build") && !server.getServerType().getString("type").equalsIgnoreCase("staff")) {
-                //Send a message to all lobbies on that network that there is a new server online
-                List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList());
-                for (ServerInfo info : infos) {
-                    ProtocolMessage message = new ProtocolMessage(Protocol.SERVER_ONLINE ,info.getName(), "add", "Mission Control", server.getName());
-                    ServerCommunicationUtils.sendMessage(message, network);
-                }
-                for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
-                    net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_ONLINE, info.getUuid().toString(), "remove", "Mission Control", server.getName());
-                    ProxyCommunicationUtils.sendMessage(message);
-                }
-            }
-        }
     }
 
     public static void removeServerFromRotation(ServerInfo server) {
