@@ -76,6 +76,13 @@ public class ServerMessageHandler {
                     NetworkManager.getRestarterThread().serverStartConfirm(info);
                 } else {
                     NetworkManager.serverOpenConfirmation(info);
+                    new Thread(() -> {
+                        try {
+                            NetworkManager.waitForServerResponse(network);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
                 }
                 break;
             }

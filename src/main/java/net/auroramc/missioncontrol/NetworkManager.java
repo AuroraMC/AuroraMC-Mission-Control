@@ -397,6 +397,14 @@ public class NetworkManager {
         return null;
     }
 
+    public static void waitForProxyResponse() {
+        try {
+            proxyBlockingQueue.poll(2, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void removeProxyFromRotation(ProxyInfo info) {
         MissionControl.getProxyManager().removeServer(info.getUuid().toString(), info.getNetwork());
     }

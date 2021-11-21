@@ -237,7 +237,6 @@ public class PanelMessageHandler {
                         return "Proxy '" + uuid + "' does not exist.";
                     }
 
-                    NetworkManager.removeProxyFromRotation(info);
                     ProtocolMessage protocolMessage = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, uuid.toString(), "restart", "Mission Control", "");
                     ProxyCommunicationUtils.sendMessage(protocolMessage);
                     return "Proxy restart has been queued. Please allow up to 5 minutes for the proxy to restart properly.";
