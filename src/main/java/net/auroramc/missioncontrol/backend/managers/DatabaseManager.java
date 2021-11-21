@@ -64,7 +64,7 @@ public class DatabaseManager {
             servers.put(ServerInfo.Network.TEST, new HashMap<>());
             servers.put(ServerInfo.Network.ALPHA, new HashMap<>());
             while (set.next()) {
-                servers.get(ServerInfo.Network.valueOf(set.getString(4))).put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12)));
+                servers.get(ServerInfo.Network.valueOf(set.getString(4))).put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12), set.getString(13)));
             }
             return servers;
         } catch (SQLException e) {
@@ -80,7 +80,7 @@ public class DatabaseManager {
 
             Map<UUID, ProxyInfo> proxies = new HashMap<>();
             while (set.next()) {
-                proxies.put(UUID.fromString(set.getString(1)), new ProxyInfo(UUID.fromString(set.getString(1)), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), set.getInt(6), set.getInt(7)));
+                proxies.put(UUID.fromString(set.getString(1)), new ProxyInfo(UUID.fromString(set.getString(1)), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), set.getInt(6), set.getInt(7), set.getString(8)));
             }
             return proxies;
         } catch (SQLException e) {
@@ -91,7 +91,7 @@ public class DatabaseManager {
 
     public void createServer(ServerInfo info) {
         try (Connection connection = mysql.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
             statement.setString(1, info.getName());
             statement.setString(2, info.getIp());
             statement.setInt(3, info.getPort());
@@ -120,6 +120,7 @@ public class DatabaseManager {
             } else {
                 statement.setInt(12, info.getBuildBuildNumber());
             }
+            statement.setString(13, info.getAuthKey());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -148,7 +149,7 @@ public class DatabaseManager {
 
     public void createConnectionNode(ProxyInfo proxyInfo) {
         try (Connection connection = mysql.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO proxies VALUES (?,?,?,?,?,?,?)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO proxies VALUES (?,?,?,?,?,?,?,?)");
             statement.setString(1, proxyInfo.getUuid().toString());
             statement.setString(2, proxyInfo.getIp());
             statement.setInt(3, proxyInfo.getPort());
@@ -156,6 +157,7 @@ public class DatabaseManager {
             statement.setBoolean(5, proxyInfo.isForced());
             statement.setInt(6, proxyInfo.getProtocolPort());
             statement.setInt(7, proxyInfo.getBuildNumber());
+            statement.setString(8, proxyInfo.getAuthKey());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -168,7 +170,7 @@ public class DatabaseManager {
             statement.setString(1, name);
             ResultSet set = statement.executeQuery();
             if (set.next()) {
-                return new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12));
+                return new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12), set.getString(13));
             } else {
                 return null;
             }

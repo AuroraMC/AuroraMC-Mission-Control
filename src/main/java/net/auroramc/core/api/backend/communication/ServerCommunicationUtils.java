@@ -26,6 +26,9 @@ public class ServerCommunicationUtils {
     public static UUID sendMessage(ProtocolMessage message, ServerInfo.Network network) {
        ServerInfo info = MissionControl.getServers().get(network).get(message.getDestination());
         if (info != null) {
+            message.setServer(info.getName());
+            message.setAuthenticationKey(info.getAuthKey());
+            message.setNetwork(info.getNetwork().name());
             try (Socket socket = new Socket(info.getIp(), info.getProtocolPort())) {
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 outputStream.writeObject(message);

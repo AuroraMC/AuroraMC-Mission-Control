@@ -15,8 +15,9 @@ public class ProxyInfo implements Info {
     private int buildNumber;
     private final ServerInfo.Network network;
     private final boolean forced;
+    private final String authKey;
 
-    public ProxyInfo(UUID uuid, String ip, int port, ServerInfo.Network network, boolean forced, int protocolPort, int buildNumber) {
+    public ProxyInfo(UUID uuid, String ip, int port, ServerInfo.Network network, boolean forced, int protocolPort, int buildNumber, String authKey) {
         this.uuid = uuid;
         this.ip = ip;
         this.port = port;
@@ -24,6 +25,7 @@ public class ProxyInfo implements Info {
         this.buildNumber = buildNumber;
         this.network = network;
         this.forced = forced;
+        this.authKey = authKey;
     }
 
     public UUID getUuid() {
@@ -56,5 +58,9 @@ public class ProxyInfo implements Info {
 
     public boolean isForced() {
         return forced;
+    }
+
+    public String getAuthKey() {
+        return authKey;
     }
 }
