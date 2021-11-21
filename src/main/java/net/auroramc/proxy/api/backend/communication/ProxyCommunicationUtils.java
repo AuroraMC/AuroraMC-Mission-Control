@@ -27,6 +27,9 @@ public class ProxyCommunicationUtils {
     public static UUID sendMessage(ProtocolMessage message) {
         ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getDestination()));
         if (info != null) {
+            message.setProxy(info.getUuid());
+            message.setAuthenticationKey(info.getAuthKey());
+            message.setNetwork(info.getNetwork().name());
             MissionControl.getLogger().log(Level.FINEST, "Sending protocol message to " + info.getIp() + ":" + info.getProtocolPort());
             try (Socket socket = new Socket(info.getIp(), info.getProtocolPort())) {
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());

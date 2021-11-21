@@ -36,6 +36,10 @@ public class IncomingProtocolMessageThread extends Thread {
                 MissionControl.getLogger().log(Level.FINEST, "Accepted connection from proxy.");
                 ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
                 ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
+                if (!message.getAuthenticationKey().equals(MissionControl.getProxies().get(message.getProxy()).getAuthKey())) {
+                    //Check if the auth keys match.
+                    return;
+                }
                 try {
                     ProxyMessageHandler.onMessage(message);
                 } catch (Exception e) {
