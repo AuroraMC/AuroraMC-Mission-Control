@@ -4,12 +4,17 @@
 
 package net.auroramc.missioncontrol.backend.communication.panel;
 
+import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.NetworkMonitorRunnable;
 import net.auroramc.missioncontrol.backend.util.Game;
 import net.auroramc.missioncontrol.backend.util.Module;
+import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
+import net.auroramc.proxy.api.backend.communication.Protocol;
+import net.auroramc.proxy.api.backend.communication.ProtocolMessage;
+import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -29,10 +34,6 @@ public class PanelMessageHandler {
                     try {
                         network = ServerInfo.Network.valueOf(args.get(0));
                     } catch (IllegalArgumentException e) {
-                        List<String> networks = new ArrayList<>();
-                        for (ServerInfo.Network network2 : ServerInfo.Network.values()) {
-                            networks.add(network2.name());
-                        }
                         return "An invalid network was inputted.";
                     }
 
@@ -40,10 +41,6 @@ public class PanelMessageHandler {
                     try {
                         game = Game.valueOf(args.get(1));
                     } catch (IllegalArgumentException e) {
-                        List<String> games = new ArrayList<>();
-                        for (Game game2 : Game.values()) {
-                            games.add(game2.name());
-                        }
                         return "An invalid game was inputted.";
                     }
 
@@ -122,6 +119,152 @@ public class PanelMessageHandler {
                             return "Server creation failed.";
                         }
                     }
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "restartserver": {
+                if (args.size() == 2) {
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "An invalid network was inputted.";
+                    }
+
+                    String name = args.get(1);
+                    ServerInfo info = MissionControl.getServers().get(network).get(name);
+                    if (info == null) {
+                        return "That server does not exist!";
+                    }
+
+                    NetworkManager.removeServerFromRotation(info);
+                    net.auroramc.core.api.backend.communication.ProtocolMessage protocolMessage = new net.auroramc.core.api.backend.communication.ProtocolMessage(net.auroramc.core.api.backend.communication.Protocol.EMERGENCY_SHUTDOWN, info.getName(), "restart", "Mission Control", "");
+                    ServerCommunicationUtils.sendMessage(protocolMessage, network);
+                    return "Restart request sent. Please be patient, it can take some time for a server to be ready to restart.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "closeserver": {
+                if (args.size() == 2) {
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "An invalid network was inputted.";
+                    }
+
+                    String name = args.get(1);
+                    ServerInfo info = MissionControl.getServers().get(network).get(name);
+                    if (info == null) {
+                        return "That server does not exist!";
+                    }
+
+                    NetworkManager.removeServerFromRotation(info);
+                    net.auroramc.core.api.backend.communication.ProtocolMessage protocolMessage = new net.auroramc.core.api.backend.communication.ProtocolMessage(net.auroramc.core.api.backend.communication.Protocol.EMERGENCY_SHUTDOWN, info.getName(), "close", "Mission Control", "");
+                    ServerCommunicationUtils.sendMessage(protocolMessage, network);
+                    return "Close request sent. Please be patient, it can take some time for a server to be ready to close.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "createproxy": {
+                if (args.size() >= 1) {
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "An invalid network was inputted.";
+                    }
+                    String arg = null;
+                    if (args.size() == 2) {
+                        arg = args.get(1);
+                    }
+                    if (arg != null && network == ServerInfo.Network.TEST) {
+                        String[] branchArg = arg.split(":");
+
+                        if (branchArg.length != 2) {
+                            return "When creating proxies, the extra arg must be of format: branch:build";
+                        }
+
+                        String branch = branchArg[0];
+                        int build = Integer.parseInt(branchArg[1]);
+
+                        if (!MissionControl.getJenkinsManager().branchExists(Module.PROXY, branch)) {
+                            return "The branch '" + branch + "' does not exist for the PROXY module. If it should exist, make sure that the CI job has been executed before trying again.";
+                        }
+
+                        if (!MissionControl.getJenkinsManager().buildExists(Module.PROXY, branch, build)) {
+                            return "The build '" + build + "' does not exist for the PROXY module on this branch. If it should exist, make sure that the CI job has been executed before trying again.";
+                        }
+
+                        ProxyInfo info = NetworkManager.createProxy(network, true, build, branch, false);
+                        if (info != null) {
+                            return "Proxy '" + info.getUuid().toString() + "' successfully created on network '" + network.name() + "'.";
+                        } else {
+                            return "Failed to create a proxy.";
+                        }
+                    } else {
+                        if (network == ServerInfo.Network.TEST) {
+                            return "You must provide the branch/build details for the PROXY module the proxy will deploy with when creating a proxy on the test network.";
+                        }
+
+                        ProxyInfo info = NetworkManager.createProxy(network, true, false);
+                        if (info != null) {
+                            return "Proxy '" + info.getUuid().toString() + "' successfully created on network '" + network.name() + "'.";
+                        } else {
+                            return "Failed to create a proxy.";
+                        }
+                    }
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "restartproxy": {
+                if (args.size() == 2) {
+                    UUID uuid;
+
+                    try {
+                        uuid = UUID.fromString(args.get(1));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid UUID.";
+                    }
+
+                    ProxyInfo info = MissionControl.getProxies().get(uuid);
+
+                    if (info == null) {
+                        return "Proxy '" + uuid + "' does not exist.";
+                    }
+
+                    NetworkManager.removeProxyFromRotation(info);
+                    ProtocolMessage protocolMessage = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, uuid.toString(), "restart", "Mission Control", "");
+                    ProxyCommunicationUtils.sendMessage(protocolMessage);
+                    return "Proxy restart has been queued. Please allow up to 5 minutes for the proxy to restart properly.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "closeproxy": {
+                if (args.size() == 2) {
+                    UUID uuid;
+
+                    try {
+                        uuid = UUID.fromString(args.get(1));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid UUID.";
+                    }
+
+                    ProxyInfo info = MissionControl.getProxies().get(uuid);
+
+                    if (info == null) {
+                        return "Proxy '" + uuid + "' does not exist.";
+                    }
+
+                    NetworkManager.removeProxyFromRotation(info);
+                    ProtocolMessage protocolMessage = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, uuid.toString(), "close", "Mission Control", "");
+                    ProxyCommunicationUtils.sendMessage(protocolMessage);
+                    return "Proxy close has been requested. Please allow up to 5 minutes for the proxy to close properly.";
                 } else {
                     return "The command executed does not have correct arguments. Please try again.";
                 }
