@@ -207,8 +207,12 @@ public class NetworkManager {
         String command;
         try {
             while (!shutdown) {
-                lock3.wait();
+                synchronized (lock3) {
+                    lock3.wait();
+                }
             }
+        } catch (InterruptedException e) {
+            logger.log(Level.INFO, "Interrupt received, shutting down.", e);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "An error has occurred while trying to process commands. Shutting down. Stack trace: ", e);
         }
