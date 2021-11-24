@@ -55,6 +55,8 @@ public class ProxyMessageHandler {
                     case "enable": {
                         MissionControl.getDbManager().changeMaintenance(ServerInfo.Network.valueOf(args[1]), true);
                         NetworkManager.setMaintenance(ServerInfo.Network.valueOf(args[1]), true);
+                        MissionControl.getDbManager().changeMaintenanceMode(ServerInfo.Network.valueOf(args[1]),  MaintenanceMode.valueOf(args[0]));
+                        NetworkManager.setMaintenanceMode(ServerInfo.Network.valueOf(args[1]), MaintenanceMode.valueOf(args[0]));
                         break;
                     }
                     case "disable": {

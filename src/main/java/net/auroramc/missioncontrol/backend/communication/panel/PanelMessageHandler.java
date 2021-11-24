@@ -9,6 +9,7 @@ import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.NetworkMonitorRunnable;
 import net.auroramc.missioncontrol.backend.util.Game;
+import net.auroramc.missioncontrol.backend.util.MaintenanceMode;
 import net.auroramc.missioncontrol.backend.util.Module;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
@@ -19,6 +20,7 @@ import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 public class PanelMessageHandler {
 
@@ -264,6 +266,306 @@ public class PanelMessageHandler {
                     ProtocolMessage protocolMessage = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, uuid.toString(), "close", "Mission Control", "");
                     ProxyCommunicationUtils.sendMessage(protocolMessage);
                     return "Proxy close has been requested. Please allow up to 5 minutes for the proxy to close properly.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "disablenetwork": {
+                if (args.size() == 1) {
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "An invalid network was inputted.";
+                    }
+
+                    if (network == ServerInfo.Network.TEST) {
+                        return "You cannot disable server monitoring on the test network.";
+                    }
+                    if (!NetworkManager.isServerMonitoringEnabled(network)) {
+                        return "Server monitoring is already disabled for network '" + network.name() + "'.";
+                    }
+                    NetworkManager.setServerManagerEnabled(network, false);
+                    return "Server monitoring has been disabled for network '" + network.name() + "'.";
+
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "enablenetwork": {
+                if (args.size() == 1) {
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "An invalid network was inputted.";
+                    }
+
+                    if (network == ServerInfo.Network.TEST) {
+                        return "You cannot enable server monitoring on the test network.";
+                    }
+                    if (NetworkManager.isServerMonitoringEnabled(network)) {
+                        return "Server monitoring is already enabled for network '" + network.name() + "'.";
+                    }
+                    NetworkManager.setServerManagerEnabled(network, true);
+                    return "Server monitoring has been enabled for network '" + network.name() + "'.";
+
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "updatenetwork": {
+                if (args.size() == 1) {
+                    Map<Module, Integer> modulesToUpdate = new HashMap<>();
+                    String[] args2 = args.get(0).split(" ");
+                    for (String arg : args2) {
+                        String[] moduleInfo = arg.split(":");
+                        if (moduleInfo.length != 2) {
+                            return "One of the arguments is formatted incorrectly. Please correct this error and try again.";
+                        }
+                        Module module;
+                        try {
+                            module = Module.valueOf(moduleInfo[0].toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            return "Module '" + moduleInfo[0] + "' does not exist.";
+                        }
+                        int build;
+                        try {
+                            build = Integer.parseInt(moduleInfo[1]);
+                        } catch (NumberFormatException e) {
+                            return "One of your build numbers is not in the correct format. Please fix this error and try again.";
+                        }
+                        modulesToUpdate.put(module, build);
+                    }
+                    NetworkManager.pushUpdate(modulesToUpdate, ServerInfo.Network.MAIN);
+                    return "Initiated update for " + modulesToUpdate.size() + " modules.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "enablealpha": {
+                if (NetworkManager.isAlphaEnabled()) {
+                    return "The alpha network is already enabled.";
+                }
+                NetworkManager.setAlphaEnabled(true);
+                return "The alpha network has been enabled.";
+            }
+            case "disablealpha": {
+                if (!NetworkManager.isAlphaEnabled()) {
+                    return "The alpha network is already disabled.";
+                }
+                NetworkManager.setAlphaEnabled(false);
+                return "The alpha network has been disabled.";
+            }
+            case "updatealpha": {
+                if (args.size() == 1) {
+                    String[] args2 = args.get(0).split(" ");
+                    Map<Module, Integer> modulesToUpdate = new HashMap<>();
+                    for (String arg : args2) {
+                        if (arg.matches("[A-Za-z]{1,10}=[A-Za-z0-9_-]{1,255}:[0-9]{1,10}")) {
+                            String[] moduleArg = arg.split("=");
+                            String[] branchArg = moduleArg[1].split(":");
+
+                            String branch = branchArg[0];
+                            int build;
+                            try {
+                                build = Integer.parseInt(branchArg[1]);
+                            } catch (NumberFormatException e) {
+                                return "One of your build numbers is not in the correct format. Please fix this error and try again.";
+                            }
+                            Module module;
+                            try {
+                                module = Module.valueOf(moduleArg[0].toUpperCase());
+                            } catch (IllegalArgumentException e) {
+                                return "Module '" + moduleArg[0] + "' does not exist.";
+                            }
+
+                            if (!MissionControl.getJenkinsManager().branchExists(module, branch)) {
+                                return "The branch '" + branch + "' does not exist for this module. If it should exist, make sure that the CI job has been executed before trying again.";
+                            }
+
+                            if (!MissionControl.getJenkinsManager().buildExists(module, branch, build)) {
+                                return "The build '" + build + "' does not exist for this module/branch. If it should exist, make sure that the CI job has been executed before trying again.";
+                            }
+
+                            NetworkManager.getAlphaBranches().put(module, branch);
+                            modulesToUpdate.put(module, build);
+                        } else {
+                            return "Your argument is not formatted properly. It should be formatted as: branch:build";
+                        }
+                    }
+                    NetworkManager.pushUpdate(modulesToUpdate, ServerInfo.Network.ALPHA);
+                    return "Builds updated and network restart initiated.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "enablegame": {
+                if (args.size() == 2) {
+                    Game game;
+                    try {
+                        game = Game.valueOf(args.get(1));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid game.";
+                    }
+
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid network.";
+                    }
+
+                    if (NetworkManager.isGameEnabled(game, network)) {
+                        return "That game is already enabled!";
+                    }
+
+                    NetworkManager.enableGame(game, network);
+                    return "Game '" + game.name() + "' has been enabled on network '" + network.name() + "'.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "disablegame": {
+                if (args.size() == 2) {
+                    Game game;
+                    try {
+                        game = Game.valueOf(args.get(1));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid game.";
+                    }
+
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid network.";
+                    }
+
+                    if (!NetworkManager.isGameEnabled(game, network)) {
+                        return "That game is already enabled!";
+                    }
+
+                    NetworkManager.disableGame(game, network);
+                    return "Game '" + game.name() + "' has been disabled on network '" + network.name() + "'.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "monitorgame": {
+                if (args.size() == 3) {
+                    Game game;
+                    try {
+                        game = Game.valueOf(args.get(1));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid game.";
+                    }
+
+                    boolean monitor = Boolean.parseBoolean(args.get(2));
+
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid network.";
+                    }
+
+                    if (NetworkManager.isGameMonitored(game, network) == monitor) {
+                        return "That game is already " + ((monitor)?"enabled":"disabled") + "!";
+                    }
+
+                    NetworkManager.setMonitored(game, network, monitor);
+                    return "Monitoring for game '" + game.name() + "' has been " + ((monitor)?"enabled":"disabled") + " on network '" + network.name() + "'.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "maintenancemode": {
+                if (args.size() == 2) {
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid network.";
+                    }
+
+                    if (args.get(1).equals("OFF")) {
+                        if (NetworkManager.isMaintenance(network)) {
+                            MissionControl.getDbManager().changeMaintenance(network, false);
+                            NetworkManager.setMaintenance(network, false);
+                            for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+                                ProtocolMessage message1 = new ProtocolMessage(Protocol.UPDATE_MAINTENANCE_MODE, info.getUuid().toString(), "disable", "Mission Control", "");
+                                ProxyCommunicationUtils.sendMessage(message1);
+                            }
+                            return "Maintenance mode has been disabled.";
+                        } else {
+                            return "Maintenance mode is not enabled on that network.";
+                        }
+                    }
+
+                    MaintenanceMode mode = MaintenanceMode.valueOf(args.get(1));
+
+                    if (NetworkManager.isMaintenance(network)) {
+                        MissionControl.getDbManager().changeMaintenanceMode(network, mode);
+                        NetworkManager.setMaintenanceMode(network, mode);
+                        for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+                            ProtocolMessage message1 = new ProtocolMessage(Protocol.UPDATE_MAINTENANCE_MODE, info.getUuid().toString(), "update", "Mission Control", mode.name());
+                            ProxyCommunicationUtils.sendMessage(message1);
+                        }
+                        return "Maintenance mode has been updated.";
+                    } else {
+                        MissionControl.getDbManager().changeMaintenance(network, true);
+                        NetworkManager.setMaintenance(network, true);
+                        MissionControl.getDbManager().changeMaintenanceMode(network, mode);
+                        NetworkManager.setMaintenanceMode(network, mode);
+                        for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+                            ProtocolMessage message1 = new ProtocolMessage(Protocol.UPDATE_MAINTENANCE_MODE, info.getUuid().toString(), "enable", "Mission Control", mode.name());
+                            ProxyCommunicationUtils.sendMessage(message1);
+                        }
+                        return "Maintenance mode has been enabled.";
+                    }
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "maintenancemotd": {
+                if (args.size() == 2) {
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid network.";
+                    }
+
+                    NetworkManager.setMaintenanceMotd(network, args.get(1));
+                    MissionControl.getDbManager().changeMaintenanceMotd(network, args.get(1));
+
+                    for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+                        ProtocolMessage message1 = new ProtocolMessage(Protocol.UPDATE_MOTD, info.getUuid().toString(), "maintenance", "Mission Control", args.get(1));
+                        ProxyCommunicationUtils.sendMessage(message1);
+                    }
+                    return "Maintenance MOTD has been updated.";
+                } else {
+                    return "The command executed does not have correct arguments. Please try again.";
+                }
+            }
+            case "normalmotd": {
+                if (args.size() == 2) {
+                    ServerInfo.Network network;
+                    try {
+                        network = ServerInfo.Network.valueOf(args.get(0));
+                    } catch (IllegalArgumentException e) {
+                        return "That is not a valid network.";
+                    }
+
+                    NetworkManager.setMotd(network, args.get(1));
+                    MissionControl.getDbManager().changeMotd(network, args.get(1));
+
+                    for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+                        ProtocolMessage message1 = new ProtocolMessage(Protocol.UPDATE_MOTD, info.getUuid().toString(), "normal", "Mission Control", args.get(1));
+                        ProxyCommunicationUtils.sendMessage(message1);
+                    }
+                    return "MOTD has been updated.";
                 } else {
                     return "The command executed does not have correct arguments. Please try again.";
                 }
