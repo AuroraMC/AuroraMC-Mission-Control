@@ -206,8 +206,8 @@ public class NetworkManager {
         logger.info("Handoff complete.");
         String command;
         try {
-            while (!shutdown && ( command = MissionControl.getConsoleReader().readLine( ">" ) ) != null ) {
-                CommandManager.onCommand(command);
+            while (!shutdown) {
+                lock3.wait();
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "An error has occurred while trying to process commands. Shutting down. Stack trace: ", e);
@@ -218,6 +218,7 @@ public class NetworkManager {
 
     public static void interrupt() {
         shutdown = true;
+        lock3.notifyAll();
     }
 
     public static void pushUpdate(Map<Module, Integer> modules, ServerInfo.Network network) {
