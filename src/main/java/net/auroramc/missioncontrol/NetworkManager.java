@@ -810,6 +810,10 @@ public class NetworkManager {
         NetworkManager.maintenance.put(network, maintenance);
     }
 
+    public static boolean isMaintenance(ServerInfo.Network network) {
+        return NetworkManager.maintenance.get(network);
+    }
+
     public static void setMaintenanceMode(ServerInfo.Network network, MaintenanceMode mode) {
         NetworkManager.maintenanceMode.put(network, mode);
     }
