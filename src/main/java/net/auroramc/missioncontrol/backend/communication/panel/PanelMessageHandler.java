@@ -443,7 +443,7 @@ public class PanelMessageHandler {
                     }
 
                     if (!NetworkManager.isGameEnabled(game, network)) {
-                        return "That game is already enabled!";
+                        return "That game is already disabled!";
                     }
 
                     NetworkManager.disableGame(game, network);
@@ -489,7 +489,7 @@ public class PanelMessageHandler {
                         return "That is not a valid network.";
                     }
 
-                    if (args.get(1).equals("OFF")) {
+                    if (args.get(1).equals("DISABLED")) {
                         if (NetworkManager.isMaintenance(network)) {
                             MissionControl.getDbManager().changeMaintenance(network, false);
                             NetworkManager.setMaintenance(network, false);
