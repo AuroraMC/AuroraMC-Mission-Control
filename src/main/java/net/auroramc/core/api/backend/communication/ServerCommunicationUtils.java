@@ -10,6 +10,7 @@ import net.auroramc.missioncontrol.entities.ServerInfo;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class ServerCommunicationUtils {
 
@@ -35,6 +36,7 @@ public class ServerCommunicationUtils {
                 outputStream.flush();
                 return message.getUuid();
             } catch (Exception e) {
+                MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact server " + info.getName() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
                 e.printStackTrace();
                 return null;
             }
