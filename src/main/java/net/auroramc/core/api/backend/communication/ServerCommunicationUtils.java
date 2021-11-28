@@ -37,7 +37,6 @@ public class ServerCommunicationUtils {
                 return message.getUuid();
             } catch (Exception e) {
                 MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact server " + info.getName() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
-                e.printStackTrace();
                 return null;
             }
         }
