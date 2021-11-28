@@ -65,7 +65,8 @@ public class MissionControlLogger extends Logger
                 ExceptionUtils.getStackTrace(record.getThrown()) :""));
         try {
             webhook.execute();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         super.log( record );
     }
