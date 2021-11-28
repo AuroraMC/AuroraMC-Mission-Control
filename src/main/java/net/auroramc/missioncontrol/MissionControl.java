@@ -145,7 +145,7 @@ public class MissionControl {
             prefs.put("loadBalancerAuth", loadBalancerAuth);
         }
 
-        logger.info("Registering commands...");
+        logger.fine("Registering commands...");
         registerCommand(new CommandAlpha());
         registerCommand(new CommandGame());
         registerCommand(new CommandHelp());
@@ -253,16 +253,16 @@ public class MissionControl {
             if (copy.size() > 0 || proxyNames.size() > 0) {
                 logger.warning("HaProxy mismatch found for network " + network.name() + ", updating servers...");
                 for (JSONObject ob : copy) {
-                    logger.info("Removing proxy " + ob.getString("name") + " in HaProxy for network " + network.name() + ".");
+                    logger.fine("Removing proxy " + ob.getString("name") + " in HaProxy for network " + network.name() + ".");
                     proxyManager.removeServer(ob.getString("name"), network);
                 }
 
                 for (UUID uuid : proxyNames) {
-                    logger.info("Creating proxy " + uuid.toString() + " in HaProxy for network " + network.name() + ".");
+                    logger.fine("Creating proxy " + uuid.toString() + " in HaProxy for network " + network.name() + ".");
                     proxyManager.addServer(proxies.get(uuid));
                 }
             } else {
-                logger.warning("No HaProxy mismatch found for network " + network.name() + ".");
+                logger.fine("No HaProxy mismatch found for network " + network.name() + ".");
             }
         } else {
             logger.warning("There was an issue contacting the HaProxy Data Plane API.");

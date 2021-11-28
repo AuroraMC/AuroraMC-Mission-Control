@@ -14,7 +14,7 @@ import java.util.List;
 public class CommandManager {
 
     public static void onCommand(String message) {
-        MissionControl.getLogger().info("Console user executed: " + message);
+        MissionControl.getLogger().fine("Console user executed: " + message);
         ArrayList<String> args = new ArrayList<>(Arrays.asList(message.split(" ")));
         String commandLabel = args.remove(0);
         onCommand(commandLabel, args);

@@ -37,7 +37,7 @@ public class PanelManager {
     private final String mysqlHost, mysqlPort, mysqlUsername, mysqlPassword, mysqlDb, redisHost, redisAuth;
 
     public PanelManager(String baseURL, String apiKey, String apiUserKey, String jenkinsApiKey, String mysqlHost, String mysqlPort, String mysqlDb, String mysqlUsername, String mysqlPassword, String redisHost, String redisAuth) {
-        MissionControl.getLogger().info("Loading panel manager...");
+        MissionControl.getLogger().fine("Loading panel manager...");
         api = PteroBuilder.createApplication(baseURL, apiKey);
         apiClient = PteroBuilder.createClient(baseURL, apiUserKey);
         this.jenkinsApiKey = jenkinsApiKey;
@@ -50,15 +50,15 @@ public class PanelManager {
         this.redisHost = redisHost;
         this.redisAuth = redisAuth;
 
-        MissionControl.getLogger().info("Sending test API request...");
+        MissionControl.getLogger().fine("Sending test API request...");
         try {
             api.retrieveServers().execute();
-            MissionControl.getLogger().info("Test API request succeeded.");
+            MissionControl.getLogger().fine("Test API request succeeded.");
         } catch (Exception e) {
-            MissionControl.getLogger().log(Level.SEVERE,"Test API request failed. Stack trace:", e);
+            MissionControl.getLogger().log(Level.SEVERE,"Test Pterodactyl API request failed. Stack trace:", e);
         }
 
-        MissionControl.getLogger().info("Panel successfully loaded.");
+        MissionControl.getLogger().fine("Panel successfully loaded.");
     }
 
     public List<ApplicationServer> getAllServers() {
