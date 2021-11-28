@@ -24,7 +24,7 @@ public class JenkinsManager {
     private final String auth;
 
     public JenkinsManager(String baseURL, String apiKey) {
-        MissionControl.getLogger().info("Loading Jenkins manager...");
+        MissionControl.getLogger().fine("Loading Jenkins manager...");
         this.baseURL = baseURL;
         this.auth = "Basic " + new String(Base64.getEncoder().encode(("missioncontrol:" + apiKey).getBytes(StandardCharsets.UTF_8)));
 
@@ -53,13 +53,13 @@ public class JenkinsManager {
                 }
                 String version = con.getHeaderField("X-Jenkins");
                 JSONObject json = new JSONObject(content.toString());
-                MissionControl.getLogger().info("Test API request succeeded, Jenkins version " + version + " detected.");
+                MissionControl.getLogger().info("Test Jenkins API request succeeded, Jenkins version " + version + " detected.");
             }
         } catch (IOException e) {
-            MissionControl.getLogger().log(Level.SEVERE,"Failed to send test API request. Stack trace:", e);
+            MissionControl.getLogger().log(Level.SEVERE,"Failed to send test Jenkins API request. Stack trace:", e);
         }
 
-        MissionControl.getLogger().info("Jenkins successfully loaded.");
+        MissionControl.getLogger().fine("Jenkins successfully loaded.");
     }
 
     public boolean branchExists(Module module, String branch) {

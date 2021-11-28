@@ -26,7 +26,7 @@ public class HaProxyManager {
     private int lastVersion;
 
     public HaProxyManager(String baseURL, String auth) {
-        MissionControl.getLogger().info("Loading Load Balancer manager...");
+        MissionControl.getLogger().fine("Loading Load Balancer manager...");
         this.auth = "Basic " + new String(Base64.getEncoder().encode(("missioncontrol:" + auth).getBytes(StandardCharsets.UTF_8)));
         this.baseURL = baseURL;
 
@@ -53,13 +53,13 @@ public class HaProxyManager {
                     content.append(System.lineSeparator());
                 }
                 JSONObject json = new JSONObject(content.toString());
-                MissionControl.getLogger().info("Test API request succeeded, HaProxy API version " + json.getJSONObject("api").getString("version") + " detected.");
+                MissionControl.getLogger().info("Test HaProxy API request succeeded, HaProxy API version " + json.getJSONObject("api").getString("version") + " detected.");
             }
         } catch (IOException e) {
-            MissionControl.getLogger().log(Level.SEVERE,"Failed to send test API request. Stack trace:", e);
+            MissionControl.getLogger().log(Level.SEVERE,"Failed to send test API request to HaProxy. Stack trace:", e);
         }
 
-        MissionControl.getLogger().info("Load Balancer manager successfully loaded.");
+        MissionControl.getLogger().fine("Load Balancer manager successfully loaded.");
     }
 
 
