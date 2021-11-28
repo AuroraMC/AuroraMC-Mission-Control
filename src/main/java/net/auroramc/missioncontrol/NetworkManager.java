@@ -192,11 +192,11 @@ public class NetworkManager {
         }
 
         scheduler.scheduleWithFixedDelay(new PlayerCountUpdateRunnable(), 1, 1, TimeUnit.SECONDS);
-        scheduler.scheduleWithFixedDelay(new RequestPlayerCountUpdateRunnable(), 5, 5, TimeUnit.MINUTES);
+        scheduler.scheduleWithFixedDelay(new RequestPlayerCountUpdateRunnable(), 1, 1, TimeUnit.MINUTES);
 
         //Statistics updater
-        scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.DAILY), 0, 1, TimeUnit.MINUTES);
-        scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.WEEKLY), 0, 10, TimeUnit.MINUTES);
+        scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.DAILY), 0, 10, TimeUnit.MINUTES);
+        scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.WEEKLY), 0, 1, TimeUnit.HOURS);
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.ALLTIME), 0, 1, TimeUnit.DAYS);
 
         done();
