@@ -159,12 +159,12 @@ public class MissionControl {
         panelManager = new PanelManager(panelBaseURL, panelAPIKey, panelUserAPIKey, ciAPIKey, mysqlHost, mysqlPort, mysqlDb, mysqlServerUsername, mysqlServerPassword, redisHost, redisAuth);
         jenkinsManager = new JenkinsManager(ciBaseURL, ciAPIKey);
 
-        logger.info("Loading current server/connection node configuration...");
+        logger.fine("Loading current server/connection node configuration...");
 
         servers = dbManager.getAllServers();
         proxies = dbManager.getAllConnectionNodes();
 
-        logger.info("Checking HaProxy and Pterodactyl configuration for mismatches...");
+        logger.fine("Checking HaProxy and Pterodactyl configuration for mismatches...");
 
         List<ApplicationServer> panelServers = panelManager.getAllServers();
         List<ApplicationServer> panelServersCopy = new ArrayList<>(panelServers);
@@ -199,25 +199,25 @@ public class MissionControl {
         }
 
         if (panelServersCopy.size() > 0 || totalServers > 0 || proxyNames.size() > 0) {
-            logger.warning("Pterodactyl mismatch found, updating panel servers...");
+            logger.fine("Pterodactyl mismatch found, updating panel servers...");
             for (ApplicationServer server : panelServersCopy) {
-                logger.info("Deleting server " + server.getName() + " from the panel.");
+                logger.fine("Deleting server " + server.getName() + " from the panel.");
                 panelManager.deleteServer(server);
             }
 
             for (ServerInfo.Network network : ServerInfo.Network.values()) {
                 for (String server : serverNameSets.get(network)) {
-                    logger.info("Creating server " + server + " on the panel for network " + network.name() + ".");
+                    logger.fine("Creating server " + server + " on the panel for network " + network.name() + ".");
                     panelManager.createServer(servers.get(network).get(server), Game.valueOf(servers.get(network).get(server).getServerType().getString("game").toUpperCase(Locale.ROOT)).getMemoryAllocation());
                 }
             }
 
             for (UUID proxy : proxyNames) {
-                logger.info("Creating Proxy " + proxy.toString() + " on the panel.");
+                logger.fine("Creating Proxy " + proxy.toString() + " on the panel.");
                 panelManager.createProxy(proxies.get(proxy));
             }
         } else {
-            logger.info("No Pterodactyl mismatch found.");
+            logger.fine("No Pterodactyl mismatch found.");
         }
 
         checkMissingProxies(proxyManager.getBackendServers(ServerInfo.Network.MAIN), ServerInfo.Network.MAIN);
@@ -225,13 +225,13 @@ public class MissionControl {
         checkMissingProxies(proxyManager.getBackendServers(ServerInfo.Network.TEST), ServerInfo.Network.TEST);
 
 
-        logger.info("Starting server/proxy messaging protocol listeners...");
+        logger.fine("Starting server/proxy messaging protocol listeners...");
 
         ServerCommunicationUtils.init();
         ProxyCommunicationUtils.init();
         PanelCommunicationUtils.init();
 
-        logger.info("Server/proxy messaging protocol listeners successfully started.");
+        logger.fine("Server/proxy messaging protocol listeners successfully started.");
         logger.info("AuroraMC Mission Control successfully started. Handing off to the network manager...");
         NetworkManager.handoff();
     }
