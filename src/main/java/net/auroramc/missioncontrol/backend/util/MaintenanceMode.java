@@ -12,7 +12,8 @@ public enum MaintenanceMode {
 
     STAFF_ONLY("Staff Only"),
     LEADERSHIP_ONLY("Leadership Only"),
-    LOCKDOWN("Essential Staff Only");
+    LOCKDOWN("Essential Staff Only"),
+    NOT_OPEN("Not Open");
 
     private final String title;
 
