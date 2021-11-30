@@ -61,12 +61,12 @@ public class MissionControlLogger extends Logger
     void doLog(LogRecord record)
     {
         DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/914598634094485514/pMAeCxyzWwCHlDNhmr_hSvGGGjuQgRNgUPJW-Jq_7jVFf4NEcYykrHq7v_kxrPl5XxUs");
-        webhook.setContent("**[" + record.getLevel().getName() + "]** " + record.getMessage() + ((record.getThrown() != null)?"\n" +
-                ExceptionUtils.getStackTrace(record.getThrown()) :""));
+        webhook.setContent("**[" + record.getLevel().getName() + "]** " + record.getMessage()/* +  ((record.getThrown() != null)?"\n" +
+                ExceptionUtils.getStackTrace(record.getThrown()) :"")*/ );
         try {
             webhook.execute();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         super.log( record );
     }
