@@ -79,12 +79,12 @@ public class ProxyMessageHandler {
             case UPDATE_PLAYER_COUNT: {
                 String[] args = message.getExtraInfo().split("\n");
                 if (args.length == 2) {
-                    NetworkManager.reportProxyTotal(UUID.fromString(message.getSender()), Integer.parseInt(args[0]), ServerInfo.Network.valueOf(args[1]));
+                    NetworkManager.reportProxyTotal(UUID.fromString(message.getSender()), Integer.parseInt(args[0]));
                 }
                 break;
             }
             case PROXY_ONLINE: {
-                NetworkManager.reportProxyTotal(UUID.fromString(message.getSender()), 0, ServerInfo.Network.valueOf(message.getExtraInfo()));
+                NetworkManager.reportProxyTotal(UUID.fromString(message.getSender()), 0);
                 if (NetworkManager.isUpdate()) {
                     if (NetworkManager.getRestarterThread().getProxyRestartMode() == NetworkRestarterThread.RestartMode.SOLO) {
                         NetworkManager.getRestarterThread().proxyStartConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
@@ -97,7 +97,6 @@ public class ProxyMessageHandler {
                 break;
             }
             case CONFIRM_SHUTDOWN: {
-                NetworkManager.proxyClose(UUID.fromString(message.getSender()), ServerInfo.Network.valueOf(message.getExtraInfo()));
                 if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().proxyCloseConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                 } else {
@@ -124,9 +123,9 @@ public class ProxyMessageHandler {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 UUID uuid = UUID.fromString(message.getSender());
                 if (message.getCommand().equalsIgnoreCase("join")) {
-                    NetworkManager.playerJoinedNetwork(uuid, network);
+                    NetworkManager.playerJoinedNetwork(uuid);
                 } else {
-                    NetworkManager.playerLeftNetwork(uuid, network);
+                    NetworkManager.playerLeftNetwork(uuid);
                 }
                 break;
             }

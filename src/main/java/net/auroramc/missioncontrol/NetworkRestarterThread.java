@@ -161,7 +161,7 @@ public class NetworkRestarterThread extends Thread {
                         if (proxyRestartMode == RestartMode.SOLO) {
                             //The connection node has started and is ready to accept connections, add it to the rotation and then queue another node to restart.
                             MissionControl.getProxyManager().addServer((ProxyInfo) response.getInfo());
-                            NetworkManager.getNodePlayerTotals().get(network).put(((ProxyInfo) response.getInfo()).getUuid(), 0);
+
                             if (totalUpdates == 0) {
                                 NetworkManager.updateComplete();
                                 return;
@@ -172,7 +172,7 @@ public class NetworkRestarterThread extends Thread {
                             ProxyCommunicationUtils.sendMessage(message);
                         }
                     } else {
-                        NetworkManager.getServerPlayerTotals().get(network).put(((ServerInfo) response.getInfo()).getName(), 0);
+                        ((ServerInfo) response.getInfo()).setPlayerCount((byte) 0);
                         if (totalUpdates == 0) {
                             NetworkManager.updateComplete();
                             return;

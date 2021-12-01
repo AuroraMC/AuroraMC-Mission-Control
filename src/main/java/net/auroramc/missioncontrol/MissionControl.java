@@ -13,7 +13,6 @@ import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.backend.managers.HaProxyManager;
 import net.auroramc.missioncontrol.backend.managers.JenkinsManager;
 import net.auroramc.missioncontrol.backend.managers.PanelManager;
-import net.auroramc.missioncontrol.commands.*;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
@@ -144,14 +143,6 @@ public class MissionControl {
             prefs.put("loadBalancerBaseURL", loadBalancerBaseURL);
             prefs.put("loadBalancerAuth", loadBalancerAuth);
         }
-
-        logger.fine("Registering commands...");
-        registerCommand(new CommandAlpha());
-        registerCommand(new CommandGame());
-        registerCommand(new CommandHelp());
-        registerCommand(new CommandServerManager());
-        registerCommand(new CommandUpdate());
-        registerCommand(new CommandExit());
 
         dbManager = new DatabaseManager(mysqlHost, mysqlPort, mysqlDb, mysqlUsername, mysqlPassword, redisHost, redisAuth);
 
