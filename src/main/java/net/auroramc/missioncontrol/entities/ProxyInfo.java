@@ -16,6 +16,7 @@ public class ProxyInfo implements Info {
     private final ServerInfo.Network network;
     private final boolean forced;
     private final String authKey;
+    private byte playerCount;
 
     public ProxyInfo(UUID uuid, String ip, int port, ServerInfo.Network network, boolean forced, int protocolPort, int buildNumber, String authKey) {
         this.uuid = uuid;
@@ -26,6 +27,7 @@ public class ProxyInfo implements Info {
         this.network = network;
         this.forced = forced;
         this.authKey = authKey;
+        this.playerCount = -1;
     }
 
     public UUID getUuid() {
@@ -62,5 +64,21 @@ public class ProxyInfo implements Info {
 
     public String getAuthKey() {
         return authKey;
+    }
+
+    public synchronized byte getPlayerCount() {
+        return playerCount;
+    }
+
+    public synchronized void setPlayerCount(byte playerCount) {
+        this.playerCount = playerCount;
+    }
+
+    public synchronized void playerJoin() {
+        playerCount++;
+    }
+
+    public synchronized void playerLeave() {
+        playerCount--;
     }
 }
