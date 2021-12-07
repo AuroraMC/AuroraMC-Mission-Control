@@ -47,26 +47,28 @@ public class NetworkRestarterThread extends Thread {
             //Open and close proxies in batches of 10 to prevent using too many resources.
             proxiesToRestart.addAll(MissionControl.getProxies().values().stream().filter(info -> info.getNetwork() == network).collect(Collectors.toList()));
             totalUpdates = proxiesToRestart.size();
-            for (ProxyInfo info : proxiesToRestart) {
-                info.setBuildNumber(NetworkManager.getCurrentProxyBuildNumber());
-            }
-            if (proxiesToRestart.size() <= 20) {
-                //As there are only 20 open, just restart them 1 at a time.
-                proxyRestartMode = RestartMode.SOLO;
-                ProxyInfo info = proxiesToRestart.remove(0);
-                if (info != null) {
-                    NetworkManager.removeProxyFromRotation(info);
-                    net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
-                    ProxyCommunicationUtils.sendMessage(message);
+            if (totalUpdates != 0) {
+                for (ProxyInfo info : proxiesToRestart) {
+                    info.setBuildNumber(NetworkManager.getCurrentProxyBuildNumber());
                 }
-            } else {
-                //Create 10 connection nodes, for each connection node, remove 1 from rotation and initiate shutdown on it.
-                for (int i = 0;i < 10;i++) {
+                if (proxiesToRestart.size() <= 20) {
+                    //As there are only 20 open, just restart them 1 at a time.
+                    proxyRestartMode = RestartMode.SOLO;
                     ProxyInfo info = proxiesToRestart.remove(0);
-                    NetworkManager.createProxy(network, info.isForced(), true);
-                    NetworkManager.removeProxyFromRotation(info);
-                    net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
-                    ProxyCommunicationUtils.sendMessage(message);
+                    if (info != null) {
+                        NetworkManager.removeProxyFromRotation(info);
+                        net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
+                        ProxyCommunicationUtils.sendMessage(message);
+                    }
+                } else {
+                    //Create 10 connection nodes, for each connection node, remove 1 from rotation and initiate shutdown on it.
+                    for (int i = 0;i < 10;i++) {
+                        ProxyInfo info = proxiesToRestart.remove(0);
+                        NetworkManager.createProxy(network, info.isForced(), true);
+                        NetworkManager.removeProxyFromRotation(info);
+                        net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
+                        ProxyCommunicationUtils.sendMessage(message);
+                    }
                 }
             }
         }
@@ -81,16 +83,21 @@ public class NetworkRestarterThread extends Thread {
                 }
             }
 
+            //There are no updates, don't bother.
+            if (lobbiesToRestart.size() == 0 && serversToRestart.size() == 0) {
+                NetworkManager.updateComplete();
+            }
+
             updateLobbies();
             updateServers();
         } else {
             if (modules.contains(Module.BUILD)) {
                 //Restart any build servers.
                 List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("build") && server.getNetwork() == network).collect(Collectors.toList());
+                serversToRestart.addAll(servers);
+                //There are no updates, don't bother.
                 for (ServerInfo info : servers) {
                     info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
-                    ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                    ServerCommunicationUtils.sendMessage(message, network);
                 }
             }
             if (modules.contains(Module.ENGINE) || modules.contains(Module.GAME)) {
@@ -100,7 +107,6 @@ public class NetworkRestarterThread extends Thread {
                     info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
                     info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
                 }
-                updateServers();
             }
             if (modules.contains(Module.LOBBY)) {
                 //Restart any lobby servers.
@@ -108,15 +114,19 @@ public class NetworkRestarterThread extends Thread {
                 for (ServerInfo info : serversToRestart) {
                     info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                 }
-                updateLobbies();
             }
             if (modules.contains(Module.EVENT)) {
                 //Restart any event servers currently active. Does not include servers that have been turned into event servers.
-                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event") && server.getNetwork() == network).collect(Collectors.toList());
-                for (ServerInfo info : servers) {
-                    ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                    ServerCommunicationUtils.sendMessage(message, network);
-                }
+                serversToRestart.addAll(MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event") && server.getNetwork() == network).collect(Collectors.toList()));
+            }
+
+            if (serversToRestart.size() == 0 && lobbiesToRestart.size() == 0) NetworkManager.updateComplete();
+
+            if (serversToRestart.size() > 0) {
+                updateServers();
+            }
+            if (lobbiesToRestart.size() > 0) {
+                updateLobbies();
             }
         }
 
