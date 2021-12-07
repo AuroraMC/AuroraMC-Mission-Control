@@ -41,10 +41,16 @@ public class NetworkMonitorRunnable implements Runnable {
         //If an update is not in progress, check player counts.
         if (!update && enabled) {
             logger.info("Checking servers for network '" + network.name() + "'.");
+            int networkTotal = 0;
+            for (ProxyInfo info : MissionControl.getProxies().values()) {
+                if (info.getNetwork() == ServerInfo.Network.MAIN) {
+                    networkTotal += info.getPlayerCount();
+                }
+            }
             //Check to see if there are sufficient/too many connection nodes open. Open/close as many as are needed. Keep open as many connection nodes are needed to support all the players + 1. (or +2 if there is no-one online)
-            if (NetworkManager.getNetworkPlayerTotal().get(network) > 0) {
+            if (networkTotal > 0) {
                 List<UUID> uuids = MissionControl.getProxies().keySet().stream().filter(uuid -> MissionControl.getProxies().get(uuid).getNetwork() == network).collect(Collectors.toList());
-                int totalProxiesNeeded = (NetworkManager.getNetworkPlayerTotal().get(network) / 200) + ((NetworkManager.getNetworkPlayerTotal().get(network) % 200 > 0)?1:0) + 1;
+                int totalProxiesNeeded = (networkTotal / 200) + ((networkTotal % 200 > 100)?1:0) + 1;
                 if (uuids.size() - proxiesPendingRestart.size() != totalProxiesNeeded) {
                     //There are not enough/too many proxies open. Close/open some.
                     int i = uuids.size() - proxiesPendingRestart.size();
@@ -94,10 +100,18 @@ public class NetworkMonitorRunnable implements Runnable {
                 if (!NetworkManager.isGameEnabled(game, network) || !NetworkManager.isGameMonitored(game, network)) {
                     continue;
                 }
+
+                int gameTotal = 0;
+                for (ServerInfo info : MissionControl.getServers().get(network).values()) {
+                    if (info.getServerType().getString("game").equals(game.name())) {
+                        gameTotal += info.getPlayerCount();
+                    }
+                }
+
                 List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getNetwork() == network && info.getServerType().getString("type").equalsIgnoreCase("game") && info.getServerType().getString("game").equalsIgnoreCase(game.name())).collect(Collectors.toList());
-                int serversNeeded = (NetworkManager.getGamePlayerTotals().get(network).get(game) / game.getMaxPlayers()) + ((NetworkManager.getGamePlayerTotals().get(network).get(game) % game.getMaxPlayers() > 0)?1:0) + 1;
+                int serversNeeded = (gameTotal / game.getMaxPlayers()) + ((gameTotal % game.getMaxPlayers() > (game.getMaxPlayers()/2))?1:0) + 1;
                 long serversOpen = infos.size() - serversPendingRestart.stream().filter(info -> info.getServerType().getString("game").equalsIgnoreCase(game.name())).count();
-                if (NetworkManager.getGamePlayerTotals().get(network).get(game) > 0) {
+                if (gameTotal > 0) {
                     int i = (int) serversOpen;
                     if (serversNeeded < serversOpen) {
                         //Too many servers are open, close as many are needed.
