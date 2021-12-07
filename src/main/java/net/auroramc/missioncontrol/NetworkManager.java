@@ -52,10 +52,6 @@ public class NetworkManager {
     private static int currentEngineBuildNumber;
     private static int currentGameBuildNumber;
 
-    private static final Map<ServerInfo.Network, Integer> networkPlayerTotal;
-    private static final Map<ServerInfo.Network, Map<Game, Integer>> gamePlayerTotals;
-    private static final Map<ServerInfo.Network, Map<String, Integer>> serverPlayerTotals;
-    private static final Map<ServerInfo.Network, Map<UUID, Integer>> nodePlayerTotals;
     private static final Logger logger;
     private static final DatabaseManager dbManager;
     private static final ScheduledExecutorService scheduler;
@@ -84,23 +80,9 @@ public class NetworkManager {
         logger = MissionControl.getLogger();
         dbManager = MissionControl.getDbManager();
 
-        networkPlayerTotal = new HashMap<>();
-        gamePlayerTotals = new HashMap<>();
-        serverPlayerTotals = new HashMap<>();
-        nodePlayerTotals = new HashMap<>();
         serverMonitorEnabled = new HashMap<>();
 
         for (ServerInfo.Network network : ServerInfo.Network.values()) {
-            networkPlayerTotal.put(network, 0);
-
-            Map<Game, Integer> gameTotals = new HashMap<>();
-            for (Game game : Game.values()) {
-                gameTotals.put(game, 0);
-            }
-
-            gamePlayerTotals.put(network, gameTotals);
-            serverPlayerTotals.put(network, new HashMap<>());
-            nodePlayerTotals.put(network, new HashMap<>());
             if (network == TEST) continue;
             serverMonitorEnabled.put(network, dbManager.isServerManagerEnabled(network));
 
@@ -157,18 +139,30 @@ public class NetworkManager {
         try {
             synchronized (lock2) {
                 for (int i = 0;i <= 6;i++) {
-                    int totalServerTotals = serverPlayerTotals.get(MAIN).size() + serverPlayerTotals.get(TEST).size() + serverPlayerTotals.get(ALPHA).size();
-                    int totalProxyTotals = nodePlayerTotals.get(MAIN).size() + nodePlayerTotals.get(TEST).size() + nodePlayerTotals.get(ALPHA).size();
+                    int leftToReceive = 0;
 
-                    int totalServers = MissionControl.getServers().get(MAIN).size() + MissionControl.getServers().get(TEST).size() + MissionControl.getServers().get(ALPHA).size();
-                    if (totalServerTotals == totalServers && totalProxyTotals == MissionControl.getProxies().size()) {
+                    for (ServerInfo.Network network : ServerInfo.Network.values()) {
+                        for (ServerInfo info : MissionControl.getServers().get(network).values()) {
+                                if (info.getPlayerCount() == -1) {
+                                    leftToReceive++;
+                                }
+                        }
+                    }
+
+                    for (ProxyInfo info : MissionControl.getProxies().values()) {
+                        if (info.getPlayerCount() == -1) {
+                            leftToReceive++;
+                        }
+                    }
+
+                    if (leftToReceive == 0) {
                         logger.info("All responses received, starting network monitoring thread...");
                         break;
                     }
                     if (i == 6) {
                         logger.info("Not all responses received but timeout reached, starting network monitoring thread...");
                     } else {
-                        logger.info("Still waiting for " + ((totalServers - totalServerTotals) + (MissionControl.getProxies().size() - totalProxyTotals)) + " responses...");
+                        logger.info("Still waiting for " + leftToReceive + " responses...");
                         lock2.wait(10000);
                     }
                 }
@@ -563,7 +557,6 @@ public class NetworkManager {
         MissionControl.getPanelManager().deleteServer(info.getName(), info.getNetwork());
         MissionControl.getDbManager().deleteServer(info);
         MissionControl.getServers().get(info.getNetwork()).remove(info.getName());
-        serverPlayerTotals.get(info.getNetwork()).remove(info.getName());
         nodes = MissionControl.getPanelManager().getAllNodes();
     }
 
@@ -586,114 +579,28 @@ public class NetworkManager {
         System.exit(0);
     }
 
-    public static void playerJoinedNetwork(UUID proxy, ServerInfo.Network network) {
-        synchronized (lock) {
-            networkPlayerTotal.put(network, networkPlayerTotal.get(network) + 1);
-            if (nodePlayerTotals.get(network).containsKey(proxy)) {
-                nodePlayerTotals.get(network).put(proxy, nodePlayerTotals.get(network).get(proxy) + 1);
-            } else {
-                nodePlayerTotals.get(network).put(proxy, 1);
-            }
-        }
+    public static void playerJoinedNetwork(UUID proxy) {
+        MissionControl.getProxies().get(proxy).playerJoin();
     }
 
-    public static void playerLeftNetwork(UUID proxy, ServerInfo.Network network) {
-        synchronized (lock) {
-            networkPlayerTotal.put(network, networkPlayerTotal.get(network) - 1);
-            if (nodePlayerTotals.get(network).containsKey(proxy)) {
-                int newTotal = nodePlayerTotals.get(network).get(proxy) - 1;
-                if (newTotal <= 0) {
-                    nodePlayerTotals.get(network).remove(proxy);
-                    return;
-                }
-                nodePlayerTotals.get(network).put(proxy, newTotal);
-            }
-        }
+    public static void playerLeftNetwork(UUID proxy) {
+        MissionControl.getProxies().get(proxy).playerLeave();
     }
 
-    public static void playerJoinedServer(String newServer, Game game, ServerInfo.Network network) {
-        synchronized (lock) {
-            if (serverPlayerTotals.get(network).containsKey(newServer)) {
-                serverPlayerTotals.get(network).put(newServer, serverPlayerTotals.get(network).get(newServer) + 1);
-            } else {
-                serverPlayerTotals.get(network).put(newServer, 1);
-            }
-            if (game != null) {
-                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) + 1);
-            }
-        }
+    public static void playerJoinedServer(String server, ServerInfo.Network network) {
+        MissionControl.getServers().get(network).get(server).playerJoin();
     }
 
-    public static void playerLeftServer(String oldServer, Game game, ServerInfo.Network network) {
-        synchronized (lock) {
-            if (serverPlayerTotals.get(network).containsKey(oldServer)) {
-                int newTotal = serverPlayerTotals.get(network).get(oldServer) - 1;
-                if (newTotal <= 0) {
-                    serverPlayerTotals.get(network).remove(oldServer);
-                    return;
-                }
-                serverPlayerTotals.get(network).put(oldServer, newTotal);
-            }
-            if (game != null) {
-                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) - 1);
-            }
-        }
+    public static void playerLeftServer(String server, ServerInfo.Network network) {
+        MissionControl.getServers().get(network).get(server).playerLeave();
     }
 
-    public static void reportServerTotal(String server, Game game, int amount, ServerInfo.Network network) {
-        synchronized (lock) {
-            if (serverPlayerTotals.get(network).containsKey(server)) {
-                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) - serverPlayerTotals.get(network).get(server));
-            }
-            serverPlayerTotals.get(network).put(server, amount);
-            if (game != null) {
-                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) + amount);
-            }
-        }
+    public static void reportServerTotal(String server, int amount, ServerInfo.Network network) {
+        MissionControl.getServers().get(network).get(server).setPlayerCount((byte) amount);
     }
 
-    public static void reportProxyTotal(UUID proxy, int amount, ServerInfo.Network network) {
-        synchronized (lock) {
-            if (nodePlayerTotals.get(network).containsKey(proxy)) {
-                networkPlayerTotal.put(network, networkPlayerTotal.get(network) - nodePlayerTotals.get(network).get(proxy));
-            }
-            nodePlayerTotals.get(network).put(proxy, amount);
-            networkPlayerTotal.put(network, networkPlayerTotal.get(network) + amount);
-        }
-    }
-
-    public static void proxyClose(UUID proxy, ServerInfo.Network network) {
-        synchronized (lock) {
-            if (nodePlayerTotals.get(network).containsKey(proxy)) {
-                networkPlayerTotal.put(network, networkPlayerTotal.get(network) - nodePlayerTotals.get(network).get(proxy));
-            }
-            nodePlayerTotals.get(network).remove(proxy);
-        }
-    }
-
-    public static void serverClose(String server, Game game, ServerInfo.Network network) {
-        synchronized (lock) {
-            if (serverPlayerTotals.get(network).containsKey(server)) {
-                gamePlayerTotals.get(network).put(game, gamePlayerTotals.get(network).get(game) - serverPlayerTotals.get(network).get(server));
-            }
-            serverPlayerTotals.get(network).remove(server);
-        }
-    }
-
-    public static Map<ServerInfo.Network, Integer> getNetworkPlayerTotal() {
-        return networkPlayerTotal;
-    }
-
-    public static Map<ServerInfo.Network, Map<Game, Integer>> getGamePlayerTotals() {
-        return gamePlayerTotals;
-    }
-
-    public static Map<ServerInfo.Network, Map<String, Integer>> getServerPlayerTotals() {
-        return serverPlayerTotals;
-    }
-
-    public static Map<ServerInfo.Network, Map<UUID, Integer>> getNodePlayerTotals() {
-        return nodePlayerTotals;
+    public static void reportProxyTotal(UUID proxy, int amount) {
+        MissionControl.getProxies().get(proxy).setPlayerCount((byte) amount);
     }
 
     public static int getCurrentBuildBuildNumber() {

@@ -4,9 +4,11 @@
 
 package net.auroramc.missioncontrol.backend.util;
 
+import com.mattmalec.pterodactyl4j.entities.Server;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.backend.runnables.StatUpdateRunnable;
+import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 
 public enum Statistic {
@@ -32,16 +34,30 @@ public enum Statistic {
 
     public int getStat(Game game, StatUpdateRunnable.StatisticPeriod updateFrequency) {
         switch (this) {
-            case NETWORK_PLAYER_TOTALS:
-                return NetworkManager.getNetworkPlayerTotal().get(ServerInfo.Network.MAIN);
+            case NETWORK_PLAYER_TOTALS: {
+                int amount = 0;
+                for (ProxyInfo info : MissionControl.getProxies().values()) {
+                    if (info.getNetwork() == ServerInfo.Network.MAIN) {
+                        amount += info.getPlayerCount();
+                    }
+                }
+                return amount;
+            }
             case NETWORK_PROXY_TOTALS:
                 return (int) MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == ServerInfo.Network.MAIN).count();
             case GAMES_STARTED:
                 return MissionControl.getDbManager().getGamesStarted(game, updateFrequency);
             case PLAYERS_PER_GAME:
                 return MissionControl.getDbManager().getPlayersPerGame(game, updateFrequency);
-            case GAME_PLAYER_TOTAL:
-                return NetworkManager.getGamePlayerTotals().get(ServerInfo.Network.MAIN).get(game);
+            case GAME_PLAYER_TOTAL: {
+                int amount = 0;
+                for (ServerInfo info : MissionControl.getServers().get(ServerInfo.Network.MAIN).values()) {
+                    if (info.getServerType().getString("game").equals(game.name())) {
+                        amount += info.getPlayerCount();
+                    }
+                }
+                return amount;
+            }
             case UNIQUE_PLAYER_JOINS:
                 return MissionControl.getDbManager().getUniquePlayerJoins(updateFrequency);
             case UNIQUE_PLAYER_TOTALS:

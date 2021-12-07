@@ -13,15 +13,24 @@ import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 
 public class IncomingProtocolMessageThread extends Thread {
+
+    private static final ScheduledExecutorService scheduler;
+
+    static {
+        scheduler = Executors.newScheduledThreadPool(100);
+    }
 
     private int port;
     private boolean listening;
     private ServerSocket socket;
 
     public IncomingProtocolMessageThread(int port) {
+
         this.port = port;
         this.setName("Incoming Server Protocol Messages Thread");
         this.setDaemon(true);
@@ -37,16 +46,18 @@ public class IncomingProtocolMessageThread extends Thread {
                 MissionControl.getLogger().log(Level.FINEST, "Accepted connection from server.");
                 ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
                 ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
+                connection.close();
                 if (!message.getAuthenticationKey().equals(MissionControl.getServers().get(ServerInfo.Network.valueOf(message.getNetwork())).get(message.getServer()).getAuthKey())) {
                     //Check if the auth keys match.
                     return;
                 }
-                try {
-                    ServerMessageHandler.onMessage(message);
-                } catch (Exception e) {
-                    MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a server message. Stack trace: ", e);
-                }
-                connection.close();
+                scheduler.execute(() -> {
+                    try {
+                        ServerMessageHandler.onMessage(message);
+                    } catch (Exception e) {
+                        MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a server message. Stack trace: ", e);
+                    }
+                });
             }
         } catch (SocketException e) {
             listening = false;
