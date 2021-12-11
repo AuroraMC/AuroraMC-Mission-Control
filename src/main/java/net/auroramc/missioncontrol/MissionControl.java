@@ -169,6 +169,7 @@ public class MissionControl {
 
         outer:
         for (ApplicationServer server : panelServers) {
+
             for (ServerInfo.Network network : ServerInfo.Network.values()) {
                 if (servers.get(network).containsKey(server.getName().replace("-" + network.name(), ""))) {
                     panelServersCopy.remove(server);
@@ -177,9 +178,9 @@ public class MissionControl {
                 }
             }
             if (server.getName().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}-[A-Z]{4,5}$")) {
-                if (proxies.containsKey(UUID.fromString(server.getName().substring(0, 37)))) {
+                if (proxies.containsKey(UUID.fromString(server.getName().substring(0, 36)))) {
                     panelServersCopy.remove(server);
-                    proxyNames.remove(UUID.fromString(server.getName().substring(0, 37)));
+                    proxyNames.remove(UUID.fromString(server.getName().substring(0, 36)));
                 }
             }
         }
