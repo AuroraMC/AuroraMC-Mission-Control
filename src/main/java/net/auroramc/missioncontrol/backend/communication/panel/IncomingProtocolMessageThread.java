@@ -48,6 +48,7 @@ public class IncomingProtocolMessageThread extends Thread {
             }
         } catch (SocketException e) {
             listening = false;
+            MissionControl.getLogger().log(Level.FINE, "An error occurred in the Panel socket, stack trace:", e);
         } catch (IOException e) {
             e.printStackTrace();
         }
