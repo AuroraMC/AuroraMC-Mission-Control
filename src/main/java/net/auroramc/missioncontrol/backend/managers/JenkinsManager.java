@@ -38,8 +38,6 @@ public class JenkinsManager {
 
             con.setRequestProperty("Authorization", this.auth);
 
-
-
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()))) {
 
