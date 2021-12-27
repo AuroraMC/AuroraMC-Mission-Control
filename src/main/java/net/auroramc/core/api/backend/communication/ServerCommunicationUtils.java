@@ -5,6 +5,7 @@
 package net.auroramc.core.api.backend.communication;
 
 import net.auroramc.missioncontrol.MissionControl;
+import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 
 import java.io.ObjectOutputStream;
@@ -36,7 +37,9 @@ public class ServerCommunicationUtils {
                 outputStream.flush();
                 return message.getUuid();
             } catch (Exception e) {
-                MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact server " + info.getName() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
+                if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isUpdate()) {
+                    MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact server " + info.getName() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
+                }
                 return null;
             }
         }
