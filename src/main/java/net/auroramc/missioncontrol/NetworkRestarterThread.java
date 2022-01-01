@@ -163,6 +163,7 @@ public class NetworkRestarterThread extends Thread {
                             ProxyCommunicationUtils.sendMessage(message);
                         } else {
                             //A connection node has closed, update then re-open the connection node.
+                            ((ProxyInfo) response.getInfo()).setStatus(ProxyInfo.ProxyStatus.RESTARTING);
                             MissionControl.getPanelManager().closeServer(((ProxyInfo) response.getInfo()).getUuid().toString(), network);
                             MissionControl.getPanelManager().updateProxy((ProxyInfo) response.getInfo());
                             MissionControl.getPanelManager().openServer(((ProxyInfo) response.getInfo()).getUuid().toString(), network);
@@ -170,6 +171,7 @@ public class NetworkRestarterThread extends Thread {
                     } else {
                         ServerInfo info = (ServerInfo) response.getInfo();
                         //Close the server, update it, then restart it.
+                        info.setStatus(ServerInfo.ServerStatus.RESTARTING);
                         MissionControl.getPanelManager().closeServer(info.getName(), network);
                         MissionControl.getPanelManager().updateServer(info);
                         MissionControl.getPanelManager().openServer(info.getName(), network);
@@ -179,15 +181,18 @@ public class NetworkRestarterThread extends Thread {
                         if (proxyRestartMode == RestartMode.SOLO) {
                             //The connection node has started and is ready to accept connections, add it to the rotation and then queue another node to restart.
                             MissionControl.getProxyManager().addServer((ProxyInfo) response.getInfo());
+                            ((ProxyInfo) response.getInfo()).setStatus(ProxyInfo.ProxyStatus.ONLINE);
 
                             if (proxiesToRestart.size() == 0) {
                                 if (lobbiesToRestart.size() > 0) {
                                     ServerInfo info = lobbiesToRestart.remove(0);
+                                    info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
                                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
                                     ServerCommunicationUtils.sendMessage(message, network);
                                     continue;
                                 } else if (serversToRestart.size() > 0) {
                                     ServerInfo info = serversToRestart.remove(0);
+                                    info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
                                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
                                     ServerCommunicationUtils.sendMessage(message, network);
                                     continue;
@@ -197,15 +202,18 @@ public class NetworkRestarterThread extends Thread {
                                 }
                             }
                             ProxyInfo info = proxiesToRestart.remove(0);
+                            info.setStatus(ProxyInfo.ProxyStatus.PENDING_RESTART);
                             NetworkManager.removeProxyFromRotation(info);
                             net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                             ProxyCommunicationUtils.sendMessage(message);
                         }
                     } else {
                         ((ServerInfo) response.getInfo()).setPlayerCount((byte) 0);
+                        ((ServerInfo) response.getInfo()).setStatus(ServerInfo.ServerStatus.ONLINE);
                         if (lobbiesToRestart.size() == 0 && serversToRestart.size() == 0) {
                             if (proxiesToRestart.size() > 0) {
                                 ProxyInfo info = proxiesToRestart.remove(0);
+                                info.setStatus(ProxyInfo.ProxyStatus.PENDING_RESTART);
                                 NetworkManager.removeProxyFromRotation(info);
                                 net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                                 ProxyCommunicationUtils.sendMessage(message);
@@ -228,6 +236,7 @@ public class NetworkRestarterThread extends Thread {
                         if (info != null) {
                             ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
                             ServerCommunicationUtils.sendMessage(message, network);
+                            info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
                         }
                     }
                 }

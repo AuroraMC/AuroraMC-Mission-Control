@@ -17,6 +17,7 @@ public class ServerInfo implements Info {
     private final String authKey;
     //Any playercount value of -1 means the value has yet to be sent back to mission control.
     private byte playerCount;
+    private ServerStatus status;
 
     public ServerInfo(String name, String ip, int port, Network network, boolean forced, JSONObject serverType, int protocolPort, int buildNumber, int lobbyBuildNumber, int engineBuildNumber, int gameBuildNumber, int buildBuildNumber, String authKey) {
         this.name = name;
@@ -33,6 +34,7 @@ public class ServerInfo implements Info {
         this.forced = forced;
         this.authKey = authKey;
         this.playerCount = -1;
+        this.status = ServerStatus.STARTING;
     }
 
     public String getName() {
@@ -122,5 +124,16 @@ public class ServerInfo implements Info {
     public synchronized void playerLeave() {
         playerCount--;
     }
+
+
+    public ServerStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ServerStatus status) {
+        this.status = status;
+    }
+
     public enum Network {MAIN, TEST, ALPHA}
+    public enum ServerStatus {STARTING, ONLINE, PENDING_RESTART, RESTARTING}
 }

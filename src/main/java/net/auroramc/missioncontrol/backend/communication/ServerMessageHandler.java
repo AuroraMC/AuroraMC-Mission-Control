@@ -42,6 +42,7 @@ public class ServerMessageHandler {
                 //This is a restart initiated by the server.
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
+                info.setStatus(ServerInfo.ServerStatus.RESTARTING);
                 MissionControl.getPanelManager().closeServer(info.getName(), network);
                 MissionControl.getPanelManager().openServer(info.getName(), network);
             }
@@ -55,13 +56,17 @@ public class ServerMessageHandler {
                         MissionControl.getPanelManager().closeServer(info.getName(), network);
                         MissionControl.getPanelManager().updateServer(info);
                         MissionControl.getPanelManager().openServer(info.getName(), network);
-                    } else {
-                        NetworkManager.closeServer(info);
-                        if (network == ServerInfo.Network.ALPHA) {
-                            NetworkManager.getAlphaMonitorRunnable().serverConfirmClose(info);
-                        } else if (network == ServerInfo.Network.MAIN) {
-                            NetworkManager.getMonitorRunnable().serverConfirmClose(info);
+                    } else if (!message.getCommand().equalsIgnoreCase("force")) {
+                        if (info.getStatus() == ServerInfo.ServerStatus.ONLINE) {
+                            NetworkManager.closeServer(info);
+                            if (network == ServerInfo.Network.ALPHA) {
+                                NetworkManager.getAlphaMonitorRunnable().serverConfirmClose(info);
+                            } else if (network == ServerInfo.Network.MAIN) {
+                                NetworkManager.getMonitorRunnable().serverConfirmClose(info);
+                            }
                         }
+                    } else {
+                        info.setStatus(ServerInfo.ServerStatus.RESTARTING);
                     }
                 }
                 break;
@@ -73,14 +78,9 @@ public class ServerMessageHandler {
                 if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().serverStartConfirm(info);
                 } else {
-                    NetworkManager.serverOpenConfirmation(info);
-                    new Thread(() -> {
-                        try {
-                            NetworkManager.waitForServerResponse(network);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
+                    if (info.getStatus() == ServerInfo.ServerStatus.STARTING) {
+                        NetworkManager.serverOpenConfirmation(info);
+                    }
                 }
                 break;
             }
