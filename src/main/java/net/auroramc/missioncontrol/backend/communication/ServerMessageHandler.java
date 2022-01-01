@@ -75,6 +75,7 @@ public class ServerMessageHandler {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
                 NetworkManager.reportServerTotal(info.getName(), 0, network);
+                info.setStatus(ServerInfo.ServerStatus.ONLINE);
                 if (NetworkManager.isUpdate()) {
                     NetworkManager.getRestarterThread().serverStartConfirm(info);
                 } else {

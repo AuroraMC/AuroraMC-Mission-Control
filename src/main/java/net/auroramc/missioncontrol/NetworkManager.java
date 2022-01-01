@@ -311,7 +311,6 @@ public class NetworkManager {
                     info = new ProxyInfo(uuid, allocation.getIP(), allocation.getPortInt(), network, forced, allocation.getPortInt() + 100, (network == ALPHA)?alphaBuilds.get(Module.PROXY):currentProxyBuildNumber, authKey);
                     MissionControl.getDbManager().createConnectionNode(info);
                     MissionControl.getPanelManager().createProxy(info, allocation, protocolAllocation, altProtocolAllocation);
-                    MissionControl.getProxyManager().addServer(info);
                     MissionControl.getProxies().put(uuid, info);
                     update = true;
                 }
