@@ -87,12 +87,16 @@ public class ProxyMessageHandler {
                 NetworkManager.reportProxyTotal(UUID.fromString(message.getSender()), 0);
                 if (NetworkManager.isUpdate()) {
                     if (NetworkManager.getRestarterThread().getProxyRestartMode() == NetworkRestarterThread.RestartMode.SOLO) {
+                        ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
+                        info.setStatus(ProxyInfo.ProxyStatus.ONLINE);
                         NetworkManager.getRestarterThread().proxyStartConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
-                    } else {
-                        NetworkManager.proxyOpenConfirmation(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                     }
                 } else {
-                    NetworkManager.proxyOpenConfirmation(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
+                    ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
+                    if (info.getStatus() == ProxyInfo.ProxyStatus.STARTING) {
+                        NetworkManager.proxyOpenConfirmation(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
+                        info.setStatus(ProxyInfo.ProxyStatus.ONLINE);
+                    }
                 }
                 break;
             }
@@ -106,14 +110,17 @@ public class ProxyMessageHandler {
                         MissionControl.getPanelManager().closeServer(info.getUuid().toString(), network);
                         MissionControl.getPanelManager().updateProxy(info);
                         MissionControl.getPanelManager().openServer(info.getUuid().toString(), network);
+                        info.setStatus(ProxyInfo.ProxyStatus.RESTARTING);
                         new Thread(NetworkManager::waitForProxyResponse).start();
-                    } else {
+                    } else if (message.getCommand().equalsIgnoreCase("close")) {
                         NetworkManager.deleteProxy(info);
                         if (network == ServerInfo.Network.ALPHA && NetworkManager.isServerMonitoringEnabled(ServerInfo.Network.ALPHA)) {
                             NetworkManager.getAlphaMonitorRunnable().proxyConfirmClose(info);
                         } else if (network == ServerInfo.Network.MAIN && NetworkManager.isServerMonitoringEnabled(ServerInfo.Network.MAIN)) {
                             NetworkManager.getMonitorRunnable().proxyConfirmClose(info);
                         }
+                    } else if (message.getCommand().equalsIgnoreCase("forced")) {
+                        info.setStatus(ProxyInfo.ProxyStatus.RESTARTING);
                     }
 
                 }

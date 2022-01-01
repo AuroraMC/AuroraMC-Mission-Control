@@ -597,10 +597,17 @@ public class NetworkManager {
 
     public static void reportServerTotal(String server, int amount, ServerInfo.Network network) {
         MissionControl.getServers().get(network).get(server).setPlayerCount((byte) amount);
+        if (MissionControl.getServers().get(network).get(server).getStatus() != ServerInfo.ServerStatus.PENDING_RESTART) {
+            MissionControl.getServers().get(network).get(server).setStatus(ServerInfo.ServerStatus.ONLINE);
+        }
     }
 
     public static void reportProxyTotal(UUID proxy, int amount) {
         MissionControl.getProxies().get(proxy).setPlayerCount((byte) amount);
+        if (MissionControl.getProxies().get(proxy).getStatus() != ProxyInfo.ProxyStatus.PENDING_RESTART) {
+            MissionControl.getProxies().get(proxy).setStatus(ProxyInfo.ProxyStatus.ONLINE);
+        }
+
     }
 
     public static int getCurrentBuildBuildNumber() {

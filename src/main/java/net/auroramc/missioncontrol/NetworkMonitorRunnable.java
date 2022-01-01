@@ -60,6 +60,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         do {
                             ProxyInfo info = MissionControl.getProxies().get(uuids.remove(0));
                             NetworkManager.removeProxyFromRotation(info);
+                            info.setStatus(ProxyInfo.ProxyStatus.PENDING_RESTART);
                             proxiesPendingRestart.add(info);
                             ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getUuid().toString(), "close", "Mission Control", "");
                             ProxyCommunicationUtils.sendMessage(message);

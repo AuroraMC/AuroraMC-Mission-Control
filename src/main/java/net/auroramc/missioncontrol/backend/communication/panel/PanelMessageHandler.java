@@ -140,6 +140,8 @@ public class PanelMessageHandler {
                         return "That server does not exist!";
                     }
 
+                    info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
+
                     NetworkManager.removeServerFromRotation(info);
                     net.auroramc.core.api.backend.communication.ProtocolMessage protocolMessage = new net.auroramc.core.api.backend.communication.ProtocolMessage(net.auroramc.core.api.backend.communication.Protocol.EMERGENCY_SHUTDOWN, info.getName(), "restart", "Mission Control", "");
                     ServerCommunicationUtils.sendMessage(protocolMessage, network);
@@ -239,6 +241,8 @@ public class PanelMessageHandler {
                         return "Proxy '" + uuid + "' does not exist.";
                     }
 
+                    info.setStatus(ProxyInfo.ProxyStatus.RESTARTING);
+
                     ProtocolMessage protocolMessage = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, uuid.toString(), "restart", "Mission Control", "");
                     ProxyCommunicationUtils.sendMessage(protocolMessage);
                     return "Proxy restart has been queued. Please allow up to 5 minutes for the proxy to restart properly.";
@@ -262,7 +266,6 @@ public class PanelMessageHandler {
                         return "Proxy '" + uuid + "' does not exist.";
                     }
 
-                    NetworkManager.removeProxyFromRotation(info);
                     ProtocolMessage protocolMessage = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, uuid.toString(), "close", "Mission Control", "");
                     ProxyCommunicationUtils.sendMessage(protocolMessage);
                     return "Proxy close has been requested. Please allow up to 5 minutes for the proxy to close properly.";
