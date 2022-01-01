@@ -140,7 +140,6 @@ public class NetworkRestarterThread extends Thread {
 
         //Update has been started. Now listen for changes then restart more servers.
         while (true) {
-            MissionControl.getLogger().info("test1.125");
             RestartServerResponse response;
             try {
                 response = queue.poll(10, TimeUnit.MINUTES);
