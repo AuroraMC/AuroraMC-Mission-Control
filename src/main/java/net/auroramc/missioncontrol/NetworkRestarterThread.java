@@ -42,6 +42,7 @@ public class NetworkRestarterThread extends Thread {
     @Override
     public void run() {
         logger.info("Initiating restart for network '" + network.name() + "', restarting " + modules.size() + " modules.");
+        int initialUpdates = 0;
         if (modules.contains(Module.PROXY)) {
             //Open and close proxies in batches of 10 to prevent using too many resources.
             proxiesToRestart.addAll(MissionControl.getProxies().values().stream().filter(info -> info.getNetwork() == network).collect(Collectors.toList()));
@@ -54,6 +55,7 @@ public class NetworkRestarterThread extends Thread {
                     proxyRestartMode = RestartMode.SOLO;
                     ProxyInfo info = proxiesToRestart.remove(0);
                     if (info != null) {
+                        initialUpdates++;
                         net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                         ProxyCommunicationUtils.sendMessage(message);
                     }
@@ -61,6 +63,7 @@ public class NetworkRestarterThread extends Thread {
                     proxyRestartMode = RestartMode.BATCHES;
                     //Create 10 connection nodes, for each connection node, remove 1 from rotation and initiate shutdown on it.
                     for (int i = 0;i < 10;i++) {
+                        initialUpdates++;
                         ProxyInfo info = proxiesToRestart.remove(0);
                         NetworkManager.createProxy(network, info.isForced(), true);
                         net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
@@ -88,11 +91,13 @@ public class NetworkRestarterThread extends Thread {
                 } else {
                     serversToRestart.add(info);
                 }
+                initialUpdates++;
             }
 
             //There are no updates, don't bother.
-            if (serversToRestart.size() == 0 && lobbiesToRestart.size() == 0 && proxiesToRestart.size() == 0) {
+            if (initialUpdates == 0) {
                 NetworkManager.updateComplete();
+                return;
             }
 
             updateLobbies();
@@ -101,34 +106,45 @@ public class NetworkRestarterThread extends Thread {
             if (modules.contains(Module.BUILD)) {
                 //Restart any build servers.
                 List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("build") && server.getNetwork() == network).collect(Collectors.toList());
-                serversToRestart.addAll(servers);
                 //There are no updates, don't bother.
                 for (ServerInfo info : servers) {
+                    initialUpdates++;
                     info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
                 }
+                serversToRestart.addAll(servers);
             }
             if (modules.contains(Module.ENGINE) || modules.contains(Module.GAME)) {
                 //Restart any game servers.
-                serversToRestart.addAll(MissionControl.getServers().get(network).values().stream().filter(info -> !info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList()));
-                for (ServerInfo info : serversToRestart) {
+                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(info -> !info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList());
+                for (ServerInfo info : servers) {
+                    initialUpdates++;
                     info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
                     info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
                 }
+                serversToRestart.addAll(servers);
             }
             if (modules.contains(Module.LOBBY)) {
                 //Restart any lobby servers.
-                lobbiesToRestart.addAll(MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList()));
-                for (ServerInfo info : serversToRestart) {
+                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList());
+
+                for (ServerInfo info : servers) {
+                    initialUpdates++;
                     info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                 }
+                lobbiesToRestart.addAll(servers);
             }
             if (modules.contains(Module.EVENT)) {
                 //Restart any event servers currently active. Does not include servers that have been turned into event servers.
-                serversToRestart.addAll(MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event") && server.getNetwork() == network).collect(Collectors.toList()));
+                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(server -> server.getServerType().getString("type").equalsIgnoreCase("game") && server.getServerType().getBoolean("event") && server.getNetwork() == network).collect(Collectors.toList());
+                serversToRestart.addAll(servers);
+                initialUpdates += servers.size();
             }
 
 
-            if (serversToRestart.size() == 0 && lobbiesToRestart.size() == 0 && proxiesToRestart.size() == 0) NetworkManager.updateComplete();
+            if (initialUpdates == 0) {
+                NetworkManager.updateComplete();
+                return;
+            }
 
             if (serversToRestart.size() > 0) {
                 updateServers();
@@ -146,7 +162,6 @@ public class NetworkRestarterThread extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 NetworkManager.updateComplete();
-                MissionControl.getLogger().info(queue.size() + "");
                 return;
             }
             if (response != null) {
