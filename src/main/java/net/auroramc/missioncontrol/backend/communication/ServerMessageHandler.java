@@ -56,7 +56,7 @@ public class ServerMessageHandler {
                         MissionControl.getPanelManager().closeServer(info.getName(), network);
                         MissionControl.getPanelManager().updateServer(info);
                         MissionControl.getPanelManager().openServer(info.getName(), network);
-                    } else if (!message.getCommand().equalsIgnoreCase("force")) {
+                    } else if (!message.getCommand().equalsIgnoreCase("forced")) {
                         if (info.getStatus() == ServerInfo.ServerStatus.ONLINE) {
                             NetworkManager.closeServer(info);
                             if (network == ServerInfo.Network.ALPHA) {
