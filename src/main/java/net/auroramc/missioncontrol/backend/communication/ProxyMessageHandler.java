@@ -85,17 +85,16 @@ public class ProxyMessageHandler {
             }
             case PROXY_ONLINE: {
                 NetworkManager.reportProxyTotal(UUID.fromString(message.getSender()), 0);
+                ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
+                info.setStatus(ProxyInfo.ProxyStatus.ONLINE);
+                MissionControl.getProxyManager().addServer(info);
                 if (NetworkManager.isUpdate()) {
                     if (NetworkManager.getRestarterThread().getProxyRestartMode() == NetworkRestarterThread.RestartMode.SOLO) {
-                        ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
-                        info.setStatus(ProxyInfo.ProxyStatus.ONLINE);
                         NetworkManager.getRestarterThread().proxyStartConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                     }
                 } else {
-                    ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
                     if (info.getStatus() == ProxyInfo.ProxyStatus.STARTING) {
                         NetworkManager.proxyOpenConfirmation(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
-                        info.setStatus(ProxyInfo.ProxyStatus.ONLINE);
                     }
                 }
                 break;

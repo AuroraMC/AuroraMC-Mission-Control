@@ -54,16 +54,15 @@ public class NetworkRestarterThread extends Thread {
                     proxyRestartMode = RestartMode.SOLO;
                     ProxyInfo info = proxiesToRestart.remove(0);
                     if (info != null) {
-                        NetworkManager.removeProxyFromRotation(info);
                         net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                         ProxyCommunicationUtils.sendMessage(message);
                     }
                 } else {
+                    proxyRestartMode = RestartMode.BATCHES;
                     //Create 10 connection nodes, for each connection node, remove 1 from rotation and initiate shutdown on it.
                     for (int i = 0;i < 10;i++) {
                         ProxyInfo info = proxiesToRestart.remove(0);
                         NetworkManager.createProxy(network, info.isForced(), true);
-                        NetworkManager.removeProxyFromRotation(info);
                         net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                         ProxyCommunicationUtils.sendMessage(message);
                     }
@@ -141,12 +140,14 @@ public class NetworkRestarterThread extends Thread {
 
         //Update has been started. Now listen for changes then restart more servers.
         while (true) {
+            MissionControl.getLogger().info("test1.125");
             RestartServerResponse response;
             try {
                 response = queue.poll(10, TimeUnit.MINUTES);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 NetworkManager.updateComplete();
+                MissionControl.getLogger().info(queue.size() + "");
                 return;
             }
             if (response != null) {
@@ -164,6 +165,7 @@ public class NetworkRestarterThread extends Thread {
                         } else {
                             //A connection node has closed, update then re-open the connection node.
                             ((ProxyInfo) response.getInfo()).setStatus(ProxyInfo.ProxyStatus.RESTARTING);
+                            NetworkManager.removeProxyFromRotation(((ProxyInfo) response.getInfo()));
                             MissionControl.getPanelManager().closeServer(((ProxyInfo) response.getInfo()).getUuid().toString(), network);
                             MissionControl.getPanelManager().updateProxy((ProxyInfo) response.getInfo());
                             MissionControl.getPanelManager().openServer(((ProxyInfo) response.getInfo()).getUuid().toString(), network);
@@ -196,14 +198,15 @@ public class NetworkRestarterThread extends Thread {
                                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
                                     ServerCommunicationUtils.sendMessage(message, network);
                                     continue;
-                                } else {
+                                } else if (queue.size() == 0) {
                                     NetworkManager.updateComplete();
                                     return;
+                                } else {
+                                    continue;
                                 }
                             }
                             ProxyInfo info = proxiesToRestart.remove(0);
                             info.setStatus(ProxyInfo.ProxyStatus.PENDING_RESTART);
-                            NetworkManager.removeProxyFromRotation(info);
                             net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                             ProxyCommunicationUtils.sendMessage(message);
                         }
@@ -214,13 +217,14 @@ public class NetworkRestarterThread extends Thread {
                             if (proxiesToRestart.size() > 0) {
                                 ProxyInfo info = proxiesToRestart.remove(0);
                                 info.setStatus(ProxyInfo.ProxyStatus.PENDING_RESTART);
-                                NetworkManager.removeProxyFromRotation(info);
                                 net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SHUTDOWN, info.getUuid().toString(), "update", "Mission Control", "");
                                 ProxyCommunicationUtils.sendMessage(message);
                                 continue;
-                            } else {
+                            } else if (queue.size() == 0) {
                                 NetworkManager.updateComplete();
                                 return;
+                            } else {
+                                continue;
                             }
                         }
                         ServerInfo info = null;
@@ -242,7 +246,7 @@ public class NetworkRestarterThread extends Thread {
                 }
             }
 
-            if (serversToRestart.size() == 0 && lobbiesToRestart.size() == 0 && proxiesToRestart.size() == 0) {
+            if (serversToRestart.size() == 0 && lobbiesToRestart.size() == 0 && proxiesToRestart.size() == 0 && queue.size() == 0) {
                 NetworkManager.updateComplete();
                 return;
             }
