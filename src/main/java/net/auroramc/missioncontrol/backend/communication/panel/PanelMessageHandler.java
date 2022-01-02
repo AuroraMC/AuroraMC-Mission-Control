@@ -573,6 +573,28 @@ public class PanelMessageHandler {
                     return "The command executed does not have correct arguments. Please try again.";
                 }
             }
+            case "updaterules": {
+                for (ServerInfo.Network network : ServerInfo.Network.values()) {
+                    for (ServerInfo info : MissionControl.getServers().get(network).values()) {
+                        net.auroramc.core.api.backend.communication.ProtocolMessage msg = new net.auroramc.core.api.backend.communication.ProtocolMessage(net.auroramc.core.api.backend.communication.Protocol.UPDATE_RULES, info.getName(), "update", "MissionControl", "");
+                        ServerCommunicationUtils.sendMessage(msg, network);
+                    }
+                }
+                for (ProxyInfo info : MissionControl.getProxies().values()) {
+                    ProtocolMessage msg = new ProtocolMessage(Protocol.UPDATE_RULES, info.getUuid().toString(), "update", "MissionControl", "");
+                    ProxyCommunicationUtils.sendMessage(msg);
+                }
+                return "Rules have been updated on all servers and proxies.";
+            }
+            case "updatemaps": {
+                for (ServerInfo.Network network : ServerInfo.Network.values()) {
+                    for (ServerInfo info : MissionControl.getServers().get(network).values()) {
+                        net.auroramc.core.api.backend.communication.ProtocolMessage msg = new net.auroramc.core.api.backend.communication.ProtocolMessage(net.auroramc.core.api.backend.communication.Protocol.UPDATE_MAPS, info.getName(), "update", "MissionControl", "");
+                        ServerCommunicationUtils.sendMessage(msg, network);
+                    }
+                }
+                return "Map lists have been updated on all servers.";
+            }
         }
         return "The command executed was not recognised by Mission Control. Please try again.";
     }
