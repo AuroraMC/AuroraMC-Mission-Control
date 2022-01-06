@@ -76,14 +76,14 @@ public class NetworkRestarterThread extends Thread {
             //Restart the entire network.
             for (ServerInfo info : MissionControl.getServers().get(network).values().stream().filter(inf -> inf.getNetwork() == network).collect(Collectors.toList())) {
                 info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
-                if (modules.contains(Module.BUILD)) {
+                if (modules.contains(Module.BUILD) && info.getBuildBuildNumber() != 0) {
                         info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
                 }
-                if (modules.contains(Module.ENGINE) || modules.contains(Module.GAME)) {
+                if ((modules.contains(Module.ENGINE) && info.getEngineBuildNumber() != 0) || (modules.contains(Module.GAME) && info.getGameBuildNumber() != 0)) {
                         info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
                         info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
                 }
-                if (modules.contains(Module.LOBBY)) {
+                if (modules.contains(Module.LOBBY) && info.getLobbyBuildNumber() != 0) {
                         info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                 }
                 if (info.getServerType().getString("type").equalsIgnoreCase("lobby")) {
@@ -115,7 +115,7 @@ public class NetworkRestarterThread extends Thread {
             }
             if (modules.contains(Module.ENGINE) || modules.contains(Module.GAME)) {
                 //Restart any game servers.
-                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(info -> !info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == network).collect(Collectors.toList());
+                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(info -> (!info.getServerType().getString("type").equalsIgnoreCase("lobby") || !info.getServerType().getString("type").equalsIgnoreCase("build")) && info.getNetwork() == network).collect(Collectors.toList());
                 for (ServerInfo info : servers) {
                     initialUpdates++;
                     info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
