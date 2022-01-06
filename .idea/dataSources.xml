@@ -5,7 +5,7 @@
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://auroramc.block2block.me:3306/auroramc</jdbc-url>
+      <jdbc-url>jdbc:mysql://db.block2block.me:3306/auroramc</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <driver-properties>
         <property name="serverTimezone" value="Europe/Vilnius" />

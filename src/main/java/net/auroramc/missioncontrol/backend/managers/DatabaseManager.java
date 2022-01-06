@@ -18,6 +18,7 @@ import redis.clients.jedis.Pipeline;
 import java.sql.*;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -52,6 +53,338 @@ public class DatabaseManager {
         config.setBlockWhenExhausted(true);
         jedis = new JedisPool(config, redisHost, 6379, 2000, redisAuth);
         MissionControl.getLogger().fine("Database connection pools initialised.");
+    }
+
+    public int newUser(UUID uuid, String name) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO auroramc_players(uuid, `name`) VALUES (?, ?);");
+            statement.setString(1, uuid.toString());
+            statement.setString(2, name);
+
+            statement.execute();
+
+            int id = getAuroraMCID(uuid);
+            //Creating records in necessary databases.
+
+            statement = connection.prepareStatement("INSERT INTO ignored(amc_id, users) VALUES (?,'');");
+            statement.setInt(1, id);
+            statement.execute();
+
+            statement = connection.prepareStatement("INSERT INTO ranks(amc_id, rank) VALUES (?, 0);");
+            statement.setInt(1, id);
+            statement.execute();
+
+            try (Jedis con = jedis.getResource()) {
+                //Setting core stats stuff as otherwise the server core wont be able to load player stats properly.
+                Pipeline pipeline = con.pipelined();
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "xpEarned", 0);
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "xpIntoLevel", 0);
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "level", 0);
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "lobbyTimeMs", 0);
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "gameTimeMs", 0);
+                pipeline.hset(String.format("stats.%s.core", uuid), "firstJoinTimestamp", System.currentTimeMillis() + "");
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "crownsEarned", 0);
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "ticketsEarned", 0);
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "gamesPlayed", 0);
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "gamesWon", 0);
+                pipeline.hincrBy(String.format("stats.%s.core", uuid), "gamesLost", 0);
+                pipeline.hincrBy(String.format("bank.%s", uuid), "crowns", 0);
+                pipeline.hincrBy(String.format("bank.%s", uuid), "tickets", 0);
+                pipeline.hset(String.format("friends.%s", uuid), "visibility", "ALL");
+                pipeline.hset(String.format("friends.%s", uuid), "status", "101");
+                pipeline.hset(String.format("prefs.%s", uuid), "channel", "ALL");
+                pipeline.hset(String.format("prefs.%s", uuid), "friendRequests", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "partyRequests", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "muteInformMode", "DISABLED");
+                pipeline.hset(String.format("prefs.%s", uuid), "chatVisibility", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "privateMessageMode", "ALL");
+                pipeline.hset(String.format("prefs.%s", uuid), "pingOnPrivateMessage", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "pingOnPartyChat", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "pingOnChatMention", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "hubVisibility", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "hubSpeed", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "hubFlight", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "reportNotifications", "true");
+                pipeline.hset(String.format("prefs.%s", uuid), "hubInvisibility", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "ignoreHubKnockback", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "socialMediaNotifications", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "staffLoginNotifications", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "approvalNotifications", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "approvalProcessedNotifications", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "hubForcefield", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "hideDisguiseName", "false");
+                pipeline.hset(String.format("prefs.%s", uuid), "pingOnChatMention", "true");
+                pipeline.sync();
+            }
+
+            return id;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -2;
+        }
+    }
+
+    public int getAuroraMCID(UUID uuid) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT id FROM auroramc_players WHERE uuid = ?");
+            statement.setString(1, uuid.toString());
+
+            ResultSet set = statement.executeQuery();
+            if (set.next()) {
+                return set.getInt(1);
+            } else {
+                //NEW USER
+                return -1;
+            }
+
+        } catch (SQLException e) {
+            return -2;
+        }
+    }
+
+    public void insertPayment(int paymentId, String transactionId, int amcId, List<String> packages, List<String> crateUUIDs) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM store_payments WHERE transaction_id = ?");
+            statement.setInt(1, paymentId);
+            ResultSet set = statement.executeQuery();
+            if (!set.next()) {
+                statement = connection.prepareStatement("INSERT INTO store_payments(payment_id, amc_id, transaction_id, packages_purchased, crate_uuids, status) VALUES (?,?,?,?,?,'PROCESSED')");
+                statement.setInt(1, paymentId);
+                statement.setInt(2, amcId);
+                statement.setString(3, transactionId);
+                statement.setString(4, String.join(",", packages));
+                statement.setString(5, String.join(",", crateUUIDs));
+                statement.execute();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void refundPayment(int paymentId) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE store_payments SET status = 'REFUNDED' WHERE transaction_id = ?");
+            statement.setInt(1, paymentId);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void chargebackPayment(int paymentId) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE store_payments SET status = 'CHARGEDBACK' WHERE transaction_id = ?");
+            statement.setInt(1, paymentId);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean hasActiveSession(UUID uuid) {
+        try (Jedis connection = jedis.getResource()) {
+            return connection.exists(String.format("server.MAIN.%s", uuid)) && connection.exists(String.format("proxy.MAIN.%s", uuid));
+        }
+    }
+
+    public synchronized UUID getProxy(UUID uuid) {
+        try (Jedis connection = jedis.getResource()) {
+            return UUID.fromString(connection.get(String.format("proxy.MAIN.%s", uuid)));
+        }
+    }
+
+    public boolean setRank(int id, int rank, int oldRank) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE ranks SET rank = ? WHERE amc_id = ?");
+            statement.setInt(1, rank);
+            statement.setLong(2, id);
+            boolean success = statement.execute();
+
+            statement = connection.prepareStatement("SELECT discord_id FROM dc_links WHERE amc_id = ?");
+            statement.setLong(1, id);
+
+            ResultSet results = statement.executeQuery();
+            if (results.next()) {
+                //The user has an active discord link, update ranks for discord.
+                String discordId = results.getString(1);
+                statement = connection.prepareStatement("SELECT * FROM rank_changes WHERE discord_id = ?");
+                statement.setString(1, discordId);
+                results = statement.executeQuery();
+
+                if (results.next()) {
+                    //There are already registered rank/subrank changes in the database. Check to see if a rank update has already occured.
+                    if (results.getString(2) != null) {
+                        if (results.getString(2).equals(rank + "")) {
+                            statement = connection.prepareStatement("DELETE FROM rank_changes WHERE discord_id = ? AND old_rank = ?");
+                            statement.setString(1, discordId);
+                            statement.setString(2, results.getString(2));
+                            statement.execute();
+                            return success;
+                        }
+                        //The first result was a rank change, just update the new_rank column then return.
+                        statement = connection.prepareStatement("UPDATE rank_changes SET new_rank = ? WHERE discord_id = ? AND old_rank = ?");
+                        statement.setString(1, rank + "");
+                        statement.setString(2, discordId);
+                        statement.setString(3, results.getString(2));
+                        statement.execute();
+                        return success;
+                    }
+                    while (results.next()) {
+                        if (results.getString(2) != null) {
+                            if (results.getString(2).equals(rank + "")) {
+                                statement = connection.prepareStatement("DELETE FROM rank_changes WHERE discord_id = ? AND old_rank = ?");
+                                statement.setString(1, discordId);
+                                statement.setString(2, results.getString(2));
+                                statement.execute();
+                                return success;
+                            }
+                            //The first result was a rank change, just update the new_rank column then return.
+                            statement = connection.prepareStatement("UPDATE rank_changes SET new_rank = ? WHERE discord_id = ? AND old_rank = ?");
+                            statement.setString(1, rank + "");
+                            statement.setString(2, discordId);
+                            statement.setString(3, results.getString(2));
+                            statement.execute();
+                            return success;
+                        }
+                    }
+
+                    //If not returned by now, its not already in the database, so just insert it.
+                    statement = connection.prepareStatement("INSERT INTO rank_changes(discord_id, old_rank, new_rank) VALUES (?,?,?)");
+                    statement.setString(1, discordId);
+                    statement.setString(2, oldRank + "");
+                    statement.setString(3, rank + "");
+                    statement.execute();
+                } else {
+                    //Just insert, it is the only rank update so far.
+                    statement = connection.prepareStatement("INSERT INTO rank_changes(discord_id, old_rank, new_rank) VALUES (?,?,?)");
+                    statement.setString(1, discordId);
+                    statement.setString(2, oldRank + "");
+                    statement.setString(3, rank + "");
+                    statement.execute();
+                }
+            }
+
+            return success;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int getRank(int id) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT rank FROM `ranks` WHERE amc_id = ?");
+            statement.setLong(1, id);
+
+            ResultSet set = statement.executeQuery();
+            if (set.next()) {
+
+                return set.getInt(1);
+            } else {
+                //NEW USER
+                return 0;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public void issuePunishment(String code, int amc_id, int ruleID, String extraNotes, int punisherID, long issued, long expire, int status, String uuid) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO punishments(punishment_id,amc_id,rule_id,notes,punisher,issued,expire,status) VALUES (?,?,?,?,?,?,?,?)");
+            statement.setString(1, code);
+            statement.setInt(2, amc_id);
+            statement.setInt(3, ruleID);
+            statement.setString(4, extraNotes);
+            statement.setInt(5, punisherID);
+            statement.setString(6, issued + "");
+            statement.setString(7, expire + "");
+            statement.setString(8, status + "");
+
+            statement.execute();
+
+            //Insert into redis.
+            if (uuid != null) {
+                try (Jedis con = jedis.getResource()) {
+                    if (con.sismember("bans", uuid)) {
+                        //This is a check to ensure that the oldest expiry time remains in the redis, so as not to add a short punishment length to the redis, resulting in bans not applying properly.
+                        //This is a super rare case but is possible. Better safe than sorry.
+                        if (con.exists(String.format("bans.%s", uuid))) {
+                            long ttl = con.ttl(String.format("bans.%s", uuid));
+
+                            if (ttl == -1) {
+                                //this means that its a perma ban. do not remove it from the database.
+                                return;
+                            } else {
+                                if (ttl > (int) ((expire-issued)/1000)) {
+                                    //The time to live is longer, meaning it will expire after this one would, so do not add this to the redis.
+                                    return;
+                                }
+                            }
+                        }
+                    } else {
+                        con.sadd("bans", uuid);
+                    }
+                    con.set(String.format("bans.%s", uuid), ruleID + ";" + extraNotes + ";" + status + ";" + issued + ";" + expire + ";" + code);
+
+                    if (expire != -1) {
+                        con.expire(String.format("bans.%s", uuid), (int) ((expire-issued)/1000));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void extend(UUID uuid, int days) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.hincrBy(String.format("plus.%s",uuid), "daysSubscribed", days);
+            long expire = (Long.parseLong(connection.hget(String.format("plus.%s", uuid), "expire")) + (((long) days) * 86400000));
+            connection.hset(String.format("plus.%s", uuid), "expire", expire + "");
+        }
+    }
+
+    public long getExpire(UUID uuid) {
+        try (Jedis connection = jedis.getResource()) {
+            if (connection.hexists(String.format("plus.%s", uuid), "expire")) {
+                return Long.parseLong(connection.hget(String.format("plus.%s", uuid), "expire"));
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public void newSubscription(UUID uuid, int days) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.hincrBy(String.format("plus.%s",uuid), "daysSubscribed", days);
+            long expire = System.currentTimeMillis() + ((long) days) * 86400000L;
+            connection.hset(String.format("plus.%s", uuid), "expire", expire + "");
+            connection.hset(String.format("plus.%s", uuid), "streakStart", System.currentTimeMillis() + "");
+            connection.hset(String.format("plus.%s", uuid), "streak", "0");
+        }
+    }
+
+    public boolean hasUnlockedCosmetic(UUID uuid, int id) {
+        try (Jedis connection = jedis.getResource()) {
+            return connection.sismember(String.format("cosmetics.unlocked.%s", uuid.toString()), id + "");
+        }
+    }
+
+    public void addCosmetic(UUID uuid, int cosmetic) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.sadd(String.format("cosmetics.unlocked.%s", uuid.toString()), cosmetic + "");
+        }
+    }
+
+    public void removeCosmetic(UUID uuid, int cosmetic) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.srem(String.format("cosmetics.unlocked.%s", uuid.toString()), cosmetic + "");
+        }
     }
 
     public Map<ServerInfo.Network, Map<String, ServerInfo>> getAllServers() {
