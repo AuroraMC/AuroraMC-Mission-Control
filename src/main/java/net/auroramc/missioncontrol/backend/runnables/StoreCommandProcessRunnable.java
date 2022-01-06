@@ -79,6 +79,8 @@ public class StoreCommandProcessRunnable implements Runnable {
                     MissionControl.getDbManager().insertPayment(Integer.parseInt(payment.meta.paymentId), payment.meta.transactionId, id, amount, packages, crates);
                 }
             }
+
+            commandManager.updateCommandsToExecuted(updateCommandExecutedRequest);
         } catch (Exception e) {
             e.printStackTrace();
         }
