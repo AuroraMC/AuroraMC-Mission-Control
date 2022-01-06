@@ -28,6 +28,10 @@ public class PaymentProcessor {
 
         Package aPackage = packages.get(command);
 
+        if (aPackage == null) {
+            return new CommandResponse(-1, new ArrayList<>(), chargeback, refund);
+        }
+
         List<UUID> crates = new ArrayList<>();
         if (chargeback || refund) {
             crates.addAll(aPackage.onChargeback(user, uuid));
