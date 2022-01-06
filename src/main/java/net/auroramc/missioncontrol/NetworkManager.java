@@ -10,11 +10,11 @@ import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.backend.communication.panel.PanelCommunicationUtils;
-import net.auroramc.missioncontrol.backend.managers.CommandManager;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.backend.runnables.PlayerCountUpdateRunnable;
 import net.auroramc.missioncontrol.backend.runnables.RequestPlayerCountUpdateRunnable;
 import net.auroramc.missioncontrol.backend.runnables.StatUpdateRunnable;
+import net.auroramc.missioncontrol.backend.runnables.StoreCommandProcessRunnable;
 import net.auroramc.missioncontrol.backend.store.PaymentProcessor;
 import net.auroramc.missioncontrol.backend.store.packages.bundles.Celebration;
 import net.auroramc.missioncontrol.backend.store.packages.bundles.Starter;
@@ -28,6 +28,7 @@ import net.auroramc.missioncontrol.backend.util.*;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
+import net.donationstore.commands.CommandManager;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.*;
@@ -99,12 +100,12 @@ public class NetworkManager {
 
         nodes = MissionControl.getPanelManager().getAllNodes();
 
-        scheduler = Executors.newScheduledThreadPool(8);
+        scheduler = Executors.newScheduledThreadPool(9);
         shutdown = false;
     }
 
 
-    public static void handoff() {
+    public static void handoff(String storeURL, String storeApiKey) {
         logger.info("Fetching pushed builds...");
         currentCoreBuildNumber = dbManager.getCurrentCoreBuildNumber();
         currentBuildBuildNumber = dbManager.getCurrentBuildBuildNumber();
@@ -211,6 +212,9 @@ public class NetworkManager {
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.DAILY), 0, 10, TimeUnit.MINUTES);
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.WEEKLY), 0, 1, TimeUnit.HOURS);
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.ALLTIME), 0, 1, TimeUnit.DAYS);
+
+        CommandManager commandManager = new CommandManager(storeApiKey, storeURL);
+        scheduler.scheduleWithFixedDelay(new StoreCommandProcessRunnable(commandManager), 0, 10, TimeUnit.MINUTES);
 
         done();
     }
