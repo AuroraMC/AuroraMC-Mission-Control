@@ -15,6 +15,15 @@ import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.backend.runnables.PlayerCountUpdateRunnable;
 import net.auroramc.missioncontrol.backend.runnables.RequestPlayerCountUpdateRunnable;
 import net.auroramc.missioncontrol.backend.runnables.StatUpdateRunnable;
+import net.auroramc.missioncontrol.backend.store.PaymentProcessor;
+import net.auroramc.missioncontrol.backend.store.packages.bundles.Celebration;
+import net.auroramc.missioncontrol.backend.store.packages.bundles.Starter;
+import net.auroramc.missioncontrol.backend.store.packages.plus.Plus180;
+import net.auroramc.missioncontrol.backend.store.packages.plus.Plus30;
+import net.auroramc.missioncontrol.backend.store.packages.plus.Plus365;
+import net.auroramc.missioncontrol.backend.store.packages.plus.Plus90;
+import net.auroramc.missioncontrol.backend.store.packages.ranks.Elite;
+import net.auroramc.missioncontrol.backend.store.packages.ranks.Master;
 import net.auroramc.missioncontrol.backend.util.*;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
@@ -111,6 +120,16 @@ public class NetworkManager {
 
         alphaBranches = dbManager.getBranchMappings();
         alphaBuilds = dbManager.getBuildMappings();
+
+        //Load in all known store packages.
+        PaymentProcessor.registerPackage("elite", new Elite());
+        PaymentProcessor.registerPackage("master", new Master());
+        PaymentProcessor.registerPackage("plus30", new Plus30());
+        PaymentProcessor.registerPackage("plus90", new Plus90());
+        PaymentProcessor.registerPackage("plus180", new Plus180());
+        PaymentProcessor.registerPackage("plus365", new Plus365());
+        PaymentProcessor.registerPackage("celebration", new Celebration());
+        PaymentProcessor.registerPackage("starter", new Starter());
 
         gameEnabled = new HashMap<>();
         for (ServerInfo.Network network : ServerInfo.Network .values()) {
