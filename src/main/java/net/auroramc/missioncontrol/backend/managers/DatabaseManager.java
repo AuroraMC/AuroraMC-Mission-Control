@@ -143,18 +143,19 @@ public class DatabaseManager {
         }
     }
 
-    public void insertPayment(int paymentId, String transactionId, int amcId, List<String> packages, List<String> crateUUIDs) {
+    public void insertPayment(int paymentId, String transactionId, int amcId, double amountPaid, List<String> packages, List<String> crateUUIDs) {
         try (Connection connection = mysql.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM store_payments WHERE transaction_id = ?");
             statement.setInt(1, paymentId);
             ResultSet set = statement.executeQuery();
             if (!set.next()) {
-                statement = connection.prepareStatement("INSERT INTO store_payments(payment_id, amc_id, transaction_id, packages_purchased, crate_uuids, status) VALUES (?,?,?,?,?,'PROCESSED')");
+                statement = connection.prepareStatement("INSERT INTO store_payments(payment_id, amc_id, transaction_id, packages_purchased, crate_uuids, status, amount_paid) VALUES (?,?,?,?,?,'PROCESSED',?)");
                 statement.setInt(1, paymentId);
                 statement.setInt(2, amcId);
                 statement.setString(3, transactionId);
                 statement.setString(4, String.join(",", packages));
                 statement.setString(5, String.join(",", crateUUIDs));
+                statement.setDouble(5, amountPaid);
                 statement.execute();
             }
         } catch (SQLException e) {
