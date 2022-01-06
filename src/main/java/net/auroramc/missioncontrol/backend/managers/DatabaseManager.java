@@ -155,7 +155,7 @@ public class DatabaseManager {
                 statement.setString(3, transactionId);
                 statement.setString(4, String.join(",", packages));
                 statement.setString(5, String.join(",", crateUUIDs));
-                statement.setDouble(5, amountPaid);
+                statement.setDouble(6, amountPaid);
                 statement.execute();
             }
         } catch (SQLException e) {
