@@ -14,7 +14,7 @@ public class PaymentProcessor {
         packages = new HashMap<>();
     }
 
-    public static CommandResponse onCommand(String command, int amount, int user, UUID uuid) {
+    public static CommandResponse onCommand(String command, int user, UUID uuid) {
         boolean chargeback = false;
         boolean refund = false;
         if (command.startsWith("chargeback")) {
@@ -30,13 +30,9 @@ public class PaymentProcessor {
 
         List<UUID> crates = new ArrayList<>();
         if (chargeback || refund) {
-            for (int i = 0; i < amount;i++) {
-                crates.addAll(aPackage.onChargeback(user, uuid));
-            }
+            crates.addAll(aPackage.onChargeback(user, uuid));
         } else {
-            for (int i = 0; i < amount;i++) {
-                crates.addAll(aPackage.onReceive(user, uuid));
-            }
+            crates.addAll(aPackage.onReceive(user, uuid));
         }
         return new CommandResponse(aPackage.packageId, crates, chargeback, refund);
     }

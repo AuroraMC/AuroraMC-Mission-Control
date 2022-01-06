@@ -47,8 +47,10 @@ public class StoreCommandProcessRunnable implements Runnable {
                 List<String> crates = new ArrayList<>();
                 boolean chargeback = false;
                 boolean refund = false;
+                double amount = 0;
                 for (Command command : payment.commands) {
-                    CommandResponse response1 = PaymentProcessor.onCommand(command.command, Integer.parseInt(command.amount), id, uuid);
+                    CommandResponse response1 = PaymentProcessor.onCommand(command.command, id, uuid);
+                    amount += Double.parseDouble(command.amount);
                     for (UUID uuid1 : response1.getCratesGiven()) {
                         crates.add(uuid1.toString());
                     }
@@ -74,7 +76,7 @@ public class StoreCommandProcessRunnable implements Runnable {
                         ProtocolMessage message = new ProtocolMessage(Protocol.MESSAGE, MissionControl.getDbManager().getProxy(uuid).toString(), uuid.toString(), "Mission Control", "store");
                         ProxyCommunicationUtils.sendMessage(message);
                     }
-                    MissionControl.getDbManager().insertPayment(Integer.parseInt(payment.meta.paymentId), payment.meta.transactionId, id, packages, crates);
+                    MissionControl.getDbManager().insertPayment(Integer.parseInt(payment.meta.paymentId), payment.meta.transactionId, id, amount, packages, crates);
                 }
             }
         } catch (Exception e) {
