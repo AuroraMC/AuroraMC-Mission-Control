@@ -72,11 +72,11 @@ public class StoreCommandProcessRunnable implements Runnable {
                         ProxyCommunicationUtils.sendMessage(message);
                     }
                 } else {
+                    MissionControl.getDbManager().insertPayment(Integer.parseInt(payment.meta.paymentId), payment.meta.transactionId, id, amount, packages, crates);
                     if (MissionControl.getDbManager().hasActiveSession(uuid)) {
                         ProtocolMessage message = new ProtocolMessage(Protocol.MESSAGE, MissionControl.getDbManager().getProxy(uuid).toString(), uuid.toString(), "Mission Control", "store");
                         ProxyCommunicationUtils.sendMessage(message);
                     }
-                    MissionControl.getDbManager().insertPayment(Integer.parseInt(payment.meta.paymentId), payment.meta.transactionId, id, amount, packages, crates);
                 }
             }
 
