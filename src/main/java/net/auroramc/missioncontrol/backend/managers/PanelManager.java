@@ -405,7 +405,7 @@ public class PanelManager {
     }
 
     public void openServer(String name, ServerInfo.Network network) {
-        apiClient.retrieveServersByName(name + "-" + network.name(), false).delay(10, TimeUnit.SECONDS).execute().get(0).start().delay(10, TimeUnit.SECONDS).execute();
+        apiClient.retrieveServersByName(name + "-" + network.name(), false).delay(15, TimeUnit.SECONDS).execute().get(0).start().delay(15, TimeUnit.SECONDS).execute();
     }
 
     public void createProxy(ProxyInfo info) {
