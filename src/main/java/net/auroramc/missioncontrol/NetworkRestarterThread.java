@@ -115,7 +115,7 @@ public class NetworkRestarterThread extends Thread {
             }
             if (modules.contains(Module.ENGINE) || modules.contains(Module.GAME)) {
                 //Restart any game servers.
-                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(info -> (!info.getServerType().getString("type").equalsIgnoreCase("lobby") || !info.getServerType().getString("type").equalsIgnoreCase("build")) && info.getNetwork() == network).collect(Collectors.toList());
+                List<ServerInfo> servers = MissionControl.getServers().get(network).values().stream().filter(info -> (!info.getServerType().getString("type").equalsIgnoreCase("lobby") && !info.getServerType().getString("type").equalsIgnoreCase("build")) && info.getNetwork() == network).collect(Collectors.toList());
                 for (ServerInfo info : servers) {
                     initialUpdates++;
                     info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
