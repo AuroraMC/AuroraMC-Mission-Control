@@ -9,6 +9,7 @@ import net.auroramc.missioncontrol.backend.communication.ProxyMessageHandler;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.StreamCorruptedException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -40,22 +41,25 @@ public class IncomingProtocolMessageThread extends Thread {
         try (ServerSocket socket = new ServerSocket(port)) {
             this.socket = socket;
             while (listening) {
-                Socket connection = socket.accept();
-                MissionControl.getLogger().log(Level.FINEST, "Accepted connection from proxy.");
-                ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
-                ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
-                connection.close();
-                if (!message.getAuthenticationKey().equals(MissionControl.getProxies().get(message.getProxy()).getAuthKey())) {
-                    //Check if the auth keys match.
-                    return;
-                }
-                scheduler.execute(() -> {
-                    try {
-                        ProxyMessageHandler.onMessage(message);
-                    } catch (Exception e) {
-                        MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a proxy message. Stack trace: ", e);
+                try (Socket connection = socket.accept()) {
+                    MissionControl.getLogger().log(Level.FINEST, "Accepted connection from proxy.");
+                    ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
+                    ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
+                    connection.close();
+                    if (!message.getAuthenticationKey().equals(MissionControl.getProxies().get(message.getProxy()).getAuthKey())) {
+                        //Check if the auth keys match.
+                        return;
                     }
-                });
+                    scheduler.execute(() -> {
+                        try {
+                            ProxyMessageHandler.onMessage(message);
+                        } catch (Exception e) {
+                            MissionControl.getLogger().log(Level.WARNING,"An error occurred when attempting to handle a proxy message. Stack trace: ", e);
+                        }
+                    });
+                } catch (StreamCorruptedException e) {
+                    e.printStackTrace();
+                }
             }
         } catch (SocketException e) {
             listening = false;
