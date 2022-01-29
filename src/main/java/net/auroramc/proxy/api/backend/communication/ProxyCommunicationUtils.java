@@ -31,13 +31,14 @@ public class ProxyCommunicationUtils {
             message.setProxy(info.getUuid());
             message.setAuthenticationKey(info.getAuthKey());
             message.setNetwork(info.getNetwork().name());
-            MissionControl.getLogger().log(Level.FINEST, "Sending protocol message to " + info.getIp() + ":" + info.getProtocolPort());
+            MissionControl.getLogger().log(Level.FINEST, "Sending protocol message to " + info.getIp() + ":" + info.getProtocolPort() + " under protocol " + message.getProtocol().name());
             try (Socket socket = new Socket(info.getIp(), info.getProtocolPort())) {
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 outputStream.writeObject(message);
                 outputStream.flush();
                 return message.getUuid();
             } catch (Exception e) {
+                e.printStackTrace();
                 if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isUpdate()) {
                     return sendMessage(message, 1);
                 }
@@ -60,6 +61,7 @@ public class ProxyCommunicationUtils {
                 outputStream.flush();
                 return message.getUuid();
             } catch (Exception e) {
+                e.printStackTrace();
                 if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isUpdate()) {
                     if (level > 4) {
                         MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact proxy " + info.getUuid().toString() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
