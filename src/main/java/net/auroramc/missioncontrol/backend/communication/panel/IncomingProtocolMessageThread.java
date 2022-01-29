@@ -33,7 +33,7 @@ public class IncomingProtocolMessageThread extends Thread {
             this.socket = socket;
             while (listening) {
                 Socket connection = socket.accept();
-                MissionControl.getLogger().log(Level.INFO, "Accepted connection from panel.");
+                MissionControl.getLogger().log(Level.FINEST, "Accepted connection from panel.");
                 BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 String message = br.readLine();
                 try {
