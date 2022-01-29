@@ -225,6 +225,7 @@ public class NetworkRestarterThread extends Thread {
                             ProxyCommunicationUtils.sendMessage(message);
                         }
                     } else {
+                        logger.info("There are " + lobbiesToRestart.size() + " lobbies to restart and " + serversToRestart.size() + " servers left to restart.");
                         ((ServerInfo) response.getInfo()).setPlayerCount((byte) 0);
                         ((ServerInfo) response.getInfo()).setStatus(ServerInfo.ServerStatus.ONLINE);
                         if (lobbiesToRestart.size() == 0 && serversToRestart.size() == 0) {
@@ -268,10 +269,12 @@ public class NetworkRestarterThread extends Thread {
     }
 
     private void updateLobbies() {
+        logger.info("Restarting " + lobbiesToRestart.size() + " lobbies.");
         update(lobbiesToRestart);
     }
 
     private void updateServers() {
+        logger.info("Restarting " + serversToRestart.size() + " servers.");
         update(serversToRestart);
     }
 
