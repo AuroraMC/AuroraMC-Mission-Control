@@ -44,7 +44,6 @@ public class IncomingProtocolMessageThread extends Thread {
             this.socket = socket;
             while (listening) {
                 try (Socket connection = socket.accept()) {
-                    MissionControl.getLogger().log(Level.FINEST, "Accepted connection from server.");
                     ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
                     ProtocolMessage message = (ProtocolMessage) objectInputStream.readObject();
                     connection.close();
@@ -52,6 +51,7 @@ public class IncomingProtocolMessageThread extends Thread {
                         //Check if the auth keys match.
                         return;
                     }
+                    MissionControl.getLogger().log(Level.FINEST, "Accepted connection from server " + message.getSender() + " under protocol " + message.getProtocol().name() + ".");
                     scheduler.execute(() -> {
                         try {
                             ServerMessageHandler.onMessage(message);
