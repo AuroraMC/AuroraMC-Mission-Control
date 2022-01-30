@@ -8,6 +8,7 @@ import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.NetworkMonitorRunnable;
+import net.auroramc.missioncontrol.NetworkRestarterThread;
 import net.auroramc.missioncontrol.backend.util.Game;
 import net.auroramc.missioncontrol.backend.util.MaintenanceMode;
 import net.auroramc.missioncontrol.backend.util.Module;
@@ -319,6 +320,9 @@ public class PanelMessageHandler {
             }
             case "updatenetwork": {
                 if (args.size() == 1) {
+                    if (NetworkManager.isUpdate()) {
+                        return "There is already an update in progress, please wait before starting another one.";
+                    }
                     Map<Module, Integer> modulesToUpdate = new HashMap<>();
                     String[] args2 = args.get(0).split(" ");
                     for (String arg : args2) {
