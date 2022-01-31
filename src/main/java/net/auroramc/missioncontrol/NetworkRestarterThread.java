@@ -26,7 +26,6 @@ public class NetworkRestarterThread extends Thread {
 
     private final List<Module> modules;
     private final List<ServerInfo> serversToRestart = new ArrayList<>();
-    private final List<ServerInfo> lobbiesToRestart = new ArrayList<>();
     private final List<ProxyInfo> proxiesToRestart = new ArrayList<>();
     private RestartMode proxyRestartMode;
     private Logger logger;
@@ -86,11 +85,7 @@ public class NetworkRestarterThread extends Thread {
                 if (modules.contains(Module.LOBBY) && info.getLobbyBuildNumber() != 0) {
                         info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                 }
-                if (info.getServerType().getString("type").equalsIgnoreCase("lobby")) {
-                    lobbiesToRestart.add(info);
-                } else {
-                    serversToRestart.add(info);
-                }
+                serversToRestart.add(info);
                 initialUpdates++;
             }
 
@@ -100,7 +95,6 @@ public class NetworkRestarterThread extends Thread {
                 return;
             }
 
-            updateLobbies();
             updateServers();
         } else {
             if (modules.contains(Module.BUILD)) {
@@ -131,7 +125,7 @@ public class NetworkRestarterThread extends Thread {
                     initialUpdates++;
                     info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                 }
-                lobbiesToRestart.addAll(servers);
+                serversToRestart.addAll(servers);
             }
             if (modules.contains(Module.EVENT)) {
                 //Restart any event servers currently active. Does not include servers that have been turned into event servers.
@@ -148,9 +142,6 @@ public class NetworkRestarterThread extends Thread {
 
             if (serversToRestart.size() > 0) {
                 updateServers();
-            }
-            if (lobbiesToRestart.size() > 0) {
-                updateLobbies();
             }
         }
 
@@ -200,13 +191,7 @@ public class NetworkRestarterThread extends Thread {
                             ((ProxyInfo) response.getInfo()).setStatus(ProxyInfo.ProxyStatus.ONLINE);
 
                             if (proxiesToRestart.size() == 0) {
-                                if (lobbiesToRestart.size() > 0) {
-                                    ServerInfo info = lobbiesToRestart.remove(0);
-                                    info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
-                                    ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
-                                    ServerCommunicationUtils.sendMessage(message, network);
-                                    continue;
-                                } else if (serversToRestart.size() > 0) {
+                                if (serversToRestart.size() > 0) {
                                     ServerInfo info = serversToRestart.remove(0);
                                     info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
                                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
@@ -225,10 +210,10 @@ public class NetworkRestarterThread extends Thread {
                             ProxyCommunicationUtils.sendMessage(message);
                         }
                     } else {
-                        logger.info("There are " + lobbiesToRestart.size() + " lobbies to restart and " + serversToRestart.size() + " servers left to restart.");
+                        logger.info("There are " + serversToRestart.size() + " servers left to restart.");
                         ((ServerInfo) response.getInfo()).setPlayerCount((byte) 0);
                         ((ServerInfo) response.getInfo()).setStatus(ServerInfo.ServerStatus.ONLINE);
-                        if (lobbiesToRestart.size() == 0 && serversToRestart.size() == 0) {
+                        if (serversToRestart.size() == 0) {
                             if (proxiesToRestart.size() > 0) {
                                 ProxyInfo info = proxiesToRestart.remove(0);
                                 info.setStatus(ProxyInfo.ProxyStatus.PENDING_RESTART);
@@ -242,35 +227,24 @@ public class NetworkRestarterThread extends Thread {
                                 continue;
                             }
                         }
-                        ServerInfo info = null;
-                        if (((ServerInfo) response.getInfo()).getServerType().getString("type").equalsIgnoreCase("lobby")) {
-                            if (lobbiesToRestart.size() > 0) {
-                                info = lobbiesToRestart.remove(0);
-                            }
-                        } else {
-                            if (serversToRestart.size() > 0) {
-                                info = serversToRestart.remove(0);
-                            }
-                        }
+                        ServerInfo info = serversToRestart.remove(0);;
+
+
                         if (info != null) {
                             ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN, info.getName(), "update", "Mission Control", "");
                             ServerCommunicationUtils.sendMessage(message, network);
                             info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
+                            continue;
                         }
                     }
                 }
             }
 
-            if (serversToRestart.size() == 0 && lobbiesToRestart.size() == 0 && proxiesToRestart.size() == 0 && queue.size() == 0) {
+            if (serversToRestart.size() == 0 && proxiesToRestart.size() == 0 && queue.size() == 0) {
                 NetworkManager.updateComplete();
                 return;
             }
         }
-    }
-
-    private void updateLobbies() {
-        logger.info("Restarting " + lobbiesToRestart.size() + " lobbies.");
-        update(lobbiesToRestart);
     }
 
     private void updateServers() {

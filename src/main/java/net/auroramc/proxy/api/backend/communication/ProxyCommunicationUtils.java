@@ -31,7 +31,7 @@ public class ProxyCommunicationUtils {
             message.setProxy(info.getUuid());
             message.setAuthenticationKey(info.getAuthKey());
             message.setNetwork(info.getNetwork().name());
-            MissionControl.getLogger().log(Level.FINEST, "Sending protocol message to " + info.getIp() + ":" + info.getProtocolPort() + " under protocol " + message.getProtocol().name());
+            MissionControl.getLogger().log(Level.FINEST, "Sending protocol message to " + message.getProxy().toString() + " under protocol " + message.getProtocol().name());
             try (Socket socket = new Socket(info.getIp(), info.getProtocolPort())) {
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 outputStream.writeObject(message);

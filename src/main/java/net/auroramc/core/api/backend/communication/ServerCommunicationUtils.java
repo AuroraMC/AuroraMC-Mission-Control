@@ -31,6 +31,7 @@ public class ServerCommunicationUtils {
             message.setServer(info.getName());
             message.setAuthenticationKey(info.getAuthKey());
             message.setNetwork(info.getNetwork().name());
+            MissionControl.getLogger().log(Level.FINEST, "Sending protocol message to " + info.getName() + " under protocol " + message.getProtocol().name());
             try (Socket socket = new Socket(info.getIp(), info.getProtocolPort())) {
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 outputStream.writeObject(message);
