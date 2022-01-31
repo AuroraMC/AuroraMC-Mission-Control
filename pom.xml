@@ -79,7 +79,7 @@
                                     <Jenkins-Build-Url>${BUILD_URL}</Jenkins-Build-Url>
                                     <Git-Commit>${GIT_COMMIT}</Git-Commit>
                                     <Implementation-Version>${project.version}.${GIT_COMMIT}.${BUILD_NUMBER}</Implementation-Version>
-                                    <Module-Name>AuroraMC-Core</Module-Name>
+                                    <Module-Name>AuroraMC-Mission-Control</Module-Name>
                                 </manifestEntries>
                                 </transformer>
                             </transformers>
