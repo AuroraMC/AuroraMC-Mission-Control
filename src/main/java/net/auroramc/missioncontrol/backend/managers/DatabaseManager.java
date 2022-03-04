@@ -996,4 +996,11 @@ public class DatabaseManager {
         }
     }
 
+    public void setPanelCode(UUID uuid, String code) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set("panel.code." + uuid.toString(), code);
+            connection.expire("panel.code." + uuid, 60);
+        }
+    }
+
 }

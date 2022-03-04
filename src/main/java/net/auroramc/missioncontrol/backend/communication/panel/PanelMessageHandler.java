@@ -9,6 +9,7 @@ import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.NetworkMonitorRunnable;
 import net.auroramc.missioncontrol.NetworkRestarterThread;
+import net.auroramc.missioncontrol.backend.util.DiscordWebhook;
 import net.auroramc.missioncontrol.backend.util.Game;
 import net.auroramc.missioncontrol.backend.util.MaintenanceMode;
 import net.auroramc.missioncontrol.backend.util.Module;
@@ -17,7 +18,9 @@ import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.Protocol;
 import net.auroramc.proxy.api.backend.communication.ProtocolMessage;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -598,6 +601,23 @@ public class PanelMessageHandler {
                     }
                 }
                 return "Map lists have been updated on all servers.";
+            }
+            case "gencode": {
+                if (args.size() == 2) {
+                    UUID uuid = UUID.fromString(args.get(0));
+                    String name = args.get(1);
+                    String code = RandomStringUtils.randomAlphanumeric(8).toUpperCase();
+                    DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/949257673747091476/0LVtkHY0l6qxwWLRYJTFVrsxQ-KJ0eJhjWj02A3AqbevnGH_QMgFkK_M0lKxN-gJgHiz");
+                    webhook.setContent("Generated Panel Code for user ** " + name + "** is `" + code + "`");
+                    try {
+                        webhook.execute();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    MissionControl.getDbManager().setPanelCode(uuid, code);
+                    return "Code generated.";
+                }
+                return "The command executed does not have correct arguments. Please try again.";
             }
         }
         return "The command executed was not recognised by Mission Control. Please try again.";
