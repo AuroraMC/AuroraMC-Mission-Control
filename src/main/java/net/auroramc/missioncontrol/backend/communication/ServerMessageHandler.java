@@ -5,10 +5,15 @@
 package net.auroramc.missioncontrol.backend.communication;
 
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
+import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.backend.util.Game;
+import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
+import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
+
+import java.util.stream.Collectors;
 
 public class ServerMessageHandler {
 
@@ -25,6 +30,13 @@ public class ServerMessageHandler {
                     } else {
                         NetworkManager.playerLeftServer(server, network);
                     }
+                }
+                break;
+            }
+            case VERSION_UPDATE: {
+                for (ServerInfo info : MissionControl.getServers().get(ServerInfo.Network.MAIN).values().stream().filter(serverInfo -> serverInfo.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList())) {
+                    ProtocolMessage message1 = new ProtocolMessage(message.getProtocol(), info.getName(), message.getCommand(), message.getSender(), message.getExtraInfo());
+                    ServerCommunicationUtils.sendMessage(message1, info.getNetwork());
                 }
                 break;
             }
