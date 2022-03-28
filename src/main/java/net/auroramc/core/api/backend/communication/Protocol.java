@@ -53,5 +53,9 @@ public enum Protocol {
     /**
      * When the alpha network is closing.
      */
-    ALPHA_CHANGE
+    ALPHA_CHANGE,
+    /**
+     * Update to lobby versions.
+     */
+    VERSION_UPDATE
 }
