@@ -497,7 +497,7 @@ public class NetworkManager {
     public static void waitForServerResponse(ServerInfo.Network network) throws InterruptedException {
         ServerInfo server = serverBlockingQueue.poll(2, TimeUnit.MINUTES);
         if (server != null) {
-            if (!server.getServerType().getString("type").equalsIgnoreCase("lobby") && !server.getServerType().getString("type").equalsIgnoreCase("build") && !server.getServerType().getString("type").equalsIgnoreCase("staff")) {
+            if (!server.getServerType().getString("type").equalsIgnoreCase("build") && !server.getServerType().getString("type").equalsIgnoreCase("staff")) {
                 //Send a message to all lobbies on that network that there is a new server online
                 List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList());
                 for (ServerInfo info : infos) {
