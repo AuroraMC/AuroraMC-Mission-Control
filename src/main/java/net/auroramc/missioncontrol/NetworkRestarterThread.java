@@ -77,17 +77,33 @@ public class NetworkRestarterThread extends Thread {
                     info.setStatus(ServerInfo.ServerStatus.RESTARTING);
                     MissionControl.getPanelManager().updateServer(info);
                     if (network != ServerInfo.Network.ALPHA) {
-                        info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
-                        info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
-                        info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
+                        if (info.getBuildBuildNumber() > 0) {
+                            info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
+                        }
+                        if (info.getEngineBuildNumber() > 0) {
+                            info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
+                        }
+                        if (info.getGameBuildNumber() > 0) {
+                            info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
+                        }
+                        if (info.getLobbyBuildNumber() > 0) {
+                            info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
+                        }
                         info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
-                        info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                     } else {
-                        info.setBuildBuildNumber(NetworkManager.getAlphaBuilds().get(Module.BUILD));
-                        info.setEngineBuildNumber(NetworkManager.getAlphaBuilds().get(Module.ENGINE));
-                        info.setGameBuildNumber(NetworkManager.getAlphaBuilds().get(Module.GAME));
+                        if (info.getBuildBuildNumber() > 0) {
+                            info.setBuildBuildNumber(NetworkManager.getAlphaBuilds().get(Module.BUILD));
+                        }
+                        if (info.getEngineBuildNumber() > 0) {
+                            info.setEngineBuildNumber(NetworkManager.getAlphaBuilds().get(Module.ENGINE));
+                        }
+                        if (info.getGameBuildNumber() > 0) {
+                            info.setGameBuildNumber(NetworkManager.getAlphaBuilds().get(Module.GAME));
+                        }
+                        if (info.getLobbyBuildNumber() > 0) {
+                            info.setLobbyBuildNumber(NetworkManager.getAlphaBuilds().get(Module.LOBBY));
+                        }
                         info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
-                        info.setLobbyBuildNumber(NetworkManager.getAlphaBuilds().get(Module.LOBBY));
                     }
                 } else {
                     ServerInfo info = (ServerInfo) response.getInfo();
