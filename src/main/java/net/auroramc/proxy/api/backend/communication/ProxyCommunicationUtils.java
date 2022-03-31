@@ -38,8 +38,7 @@ public class ProxyCommunicationUtils {
                 outputStream.flush();
                 return message.getUuid();
             } catch (Exception e) {
-                e.printStackTrace();
-                if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isUpdate()) {
+                if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isProxyUpdate()) {
                     return sendMessage(message, 1);
                 }
                 return null;
@@ -61,8 +60,7 @@ public class ProxyCommunicationUtils {
                 outputStream.flush();
                 return message.getUuid();
             } catch (Exception e) {
-                e.printStackTrace();
-                if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isUpdate()) {
+                if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isProxyUpdate()) {
                     if (level > 4) {
                         MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact proxy " + info.getUuid().toString() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
                         return null;
