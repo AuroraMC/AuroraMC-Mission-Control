@@ -76,11 +76,19 @@ public class NetworkRestarterThread extends Thread {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     info.setStatus(ServerInfo.ServerStatus.RESTARTING);
                     MissionControl.getPanelManager().updateServer(info);
-                    info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
-                    info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
-                    info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
-                    info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
-                    info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
+                    if (network != ServerInfo.Network.ALPHA) {
+                        info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
+                        info.setEngineBuildNumber(NetworkManager.getCurrentEngineBuildNumber());
+                        info.setGameBuildNumber(NetworkManager.getCurrentGameBuildNumber());
+                        info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
+                        info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
+                    } else {
+                        info.setBuildBuildNumber(NetworkManager.getAlphaBuilds().get(Module.BUILD));
+                        info.setEngineBuildNumber(NetworkManager.getAlphaBuilds().get(Module.ENGINE));
+                        info.setGameBuildNumber(NetworkManager.getAlphaBuilds().get(Module.GAME));
+                        info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
+                        info.setLobbyBuildNumber(NetworkManager.getAlphaBuilds().get(Module.LOBBY));
+                    }
                 } else {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     serversPendingRestart.remove(info);
@@ -97,29 +105,58 @@ public class NetworkRestarterThread extends Thread {
                 }
             } else {
                 boolean more = false;
-                for (ServerInfo info : serversToRestart) {
-                    if (modules.contains(Module.CORE)) {
-                        if (info.getBuildNumber() != NetworkManager.getCurrentCoreBuildNumber()) {
-                            more  = true;
-                            break;
+                if (network != ServerInfo.Network.ALPHA) {
+                    for (ServerInfo info : serversToRestart) {
+                        if (modules.contains(Module.CORE)) {
+                            if (info.getBuildNumber() != NetworkManager.getCurrentCoreBuildNumber()) {
+                                more  = true;
+                                break;
+                            }
+                        }
+                        if (modules.contains(Module.LOBBY)) {
+                            if (info.getLobbyBuildNumber() != NetworkManager.getCurrentLobbyBuildNumber()) {
+                                more  = true;
+                                break;
+                            }
+                        }
+                        if (modules.contains(Module.GAME) || modules.contains(Module.ENGINE)) {
+                            if (info.getEngineBuildNumber() != NetworkManager.getCurrentEngineBuildNumber() || info.getGameBuildNumber() != NetworkManager.getCurrentGameBuildNumber()) {
+                                more  = true;
+                                break;
+                            }
+                        }
+                        if (modules.contains(Module.BUILD)) {
+                            if (info.getBuildBuildNumber() != NetworkManager.getCurrentBuildBuildNumber()) {
+                                more  = true;
+                                break;
+                            }
                         }
                     }
-                    if (modules.contains(Module.LOBBY)) {
-                        if (info.getLobbyBuildNumber() != NetworkManager.getCurrentLobbyBuildNumber()) {
-                            more  = true;
-                            break;
+                } else {
+                    for (ServerInfo info : serversToRestart) {
+                        if (modules.contains(Module.CORE)) {
+                            if (info.getBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.CORE)) {
+                                more  = true;
+                                break;
+                            }
                         }
-                    }
-                    if (modules.contains(Module.GAME) || modules.contains(Module.ENGINE)) {
-                        if (info.getEngineBuildNumber() != NetworkManager.getCurrentEngineBuildNumber() || info.getGameBuildNumber() != NetworkManager.getCurrentGameBuildNumber()) {
-                            more  = true;
-                            break;
+                        if (modules.contains(Module.LOBBY)) {
+                            if (info.getLobbyBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.LOBBY)) {
+                                more  = true;
+                                break;
+                            }
                         }
-                    }
-                    if (modules.contains(Module.BUILD)) {
-                        if (info.getBuildBuildNumber() != NetworkManager.getCurrentBuildBuildNumber()) {
-                            more  = true;
-                            break;
+                        if (modules.contains(Module.GAME) || modules.contains(Module.ENGINE)) {
+                            if (info.getEngineBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.ENGINE) || info.getGameBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.GAME)) {
+                                more  = true;
+                                break;
+                            }
+                        }
+                        if (modules.contains(Module.BUILD)) {
+                            if (info.getBuildBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.BUILD)) {
+                                more  = true;
+                                break;
+                            }
                         }
                     }
                 }

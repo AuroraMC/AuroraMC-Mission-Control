@@ -72,7 +72,8 @@ public class NetworkManager {
     private static Map<ServerInfo.Network, String> maintenanceMotd;
 
     private static List<Node> nodes;
-    private static NetworkRestarterThread restarterThread;
+    private static NetworkRestarterThread serverRestarterThread;
+    private static ProxyRestarterThread proxyRestarterThread;
     private static NetworkMonitorRunnable monitorRunnable;
     private static NetworkMonitorRunnable alphaMonitorRunnable;
 
@@ -288,23 +289,50 @@ public class NetworkManager {
                 MissionControl.getDbManager().setCurrentProxyBuildNumber(currentProxyBuildNumber);
             }
         }
-
-        restarterThread = new NetworkRestarterThread(new ArrayList<>(modules.keySet()), network);
-        restarterThread.start();
+        if (modules.containsKey(Module.PROXY)) {
+            proxyRestarterThread = new ProxyRestarterThread(network);
+            proxyRestarterThread.start();
+        }
+        if (modules.size() > 1 || !modules.containsKey(Module.PROXY)) {
+            serverRestarterThread = new NetworkRestarterThread(new ArrayList<>(modules.keySet()), network);
+            serverRestarterThread.start();
+        }
     }
 
     public static void updateComplete() {
-        ServerInfo.Network network = restarterThread.getNetwork();
+        ServerInfo.Network network = serverRestarterThread.getNetwork();
+        serverRestarterThread = null;
         if (network == MAIN) {
-            if (monitorRunnable != null) {
+            if (monitorRunnable != null && proxyRestarterThread == null) {
                 monitorRunnable.setUpdate(false);
             }
         } else if (network == ALPHA) {
-            if (alphaMonitorRunnable != null) {
+            if (alphaMonitorRunnable != null && proxyRestarterThread == null) {
                 alphaMonitorRunnable.setUpdate(false);
             }
         }
-        restarterThread = null;
+
+        logger.info("Update complete.");
+
+        //Update the MOTD to what it was before.
+        for (ProxyInfo uuid : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
+            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_MOTD, uuid.getUuid().toString(), "update", "Mission Control", motd.get(MissionControl.getProxies().get(uuid.getUuid()).getNetwork()));
+            ProxyCommunicationUtils.sendMessage(message);
+        }
+    }
+
+    public static void proxyUpdateComplete() {
+        ServerInfo.Network network = proxyRestarterThread.getNetwork();
+        proxyRestarterThread = null;
+        if (network == MAIN) {
+            if (monitorRunnable != null && serverRestarterThread == null) {
+                monitorRunnable.setUpdate(false);
+            }
+        } else if (network == ALPHA) {
+            if (alphaMonitorRunnable != null && serverRestarterThread == null) {
+                alphaMonitorRunnable.setUpdate(false);
+            }
+        }
 
         logger.info("Update complete.");
 
@@ -665,7 +693,11 @@ public class NetworkManager {
     }
 
     public static NetworkRestarterThread getRestarterThread() {
-        return restarterThread;
+        return serverRestarterThread;
+    }
+
+    public static ProxyRestarterThread getProxyRestarterThread() {
+        return proxyRestarterThread;
     }
 
     public static boolean isAlphaEnabled() {
@@ -736,7 +768,11 @@ public class NetworkManager {
     }
 
     public static boolean isUpdate() {
-        return restarterThread != null;
+        return serverRestarterThread != null;
+    }
+
+    public static boolean isProxyUpdate() {
+        return proxyRestarterThread != null;
     }
 
     public static void setMotd(ServerInfo.Network network, String motd) {

@@ -323,7 +323,7 @@ public class PanelMessageHandler {
             }
             case "updatenetwork": {
                 if (args.size() == 1) {
-                    if (NetworkManager.isUpdate()) {
+                    if (NetworkManager.isUpdate() || NetworkManager.isProxyUpdate()) {
                         return "There is already an update in progress, please wait before starting another one.";
                     }
                     Map<Module, Integer> modulesToUpdate = new HashMap<>();

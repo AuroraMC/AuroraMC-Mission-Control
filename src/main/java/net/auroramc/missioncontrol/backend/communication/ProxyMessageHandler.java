@@ -88,8 +88,8 @@ public class ProxyMessageHandler {
                 ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
                 info.setStatus(ProxyInfo.ProxyStatus.ONLINE);
                 MissionControl.getProxyManager().addServer(info);
-                if (NetworkManager.isUpdate()) {
-
+                if (NetworkManager.isProxyUpdate()) {
+                    NetworkManager.getProxyRestarterThread().proxyStartConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                 } else {
                     if (info.getStatus() == ProxyInfo.ProxyStatus.STARTING) {
                         NetworkManager.proxyOpenConfirmation(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
@@ -98,8 +98,8 @@ public class ProxyMessageHandler {
                 break;
             }
             case CONFIRM_SHUTDOWN: {
-                if (NetworkManager.isUpdate()) {
-                    //NetworkManager.getRestarterThread().proxyCloseConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
+                if (NetworkManager.isProxyUpdate()) {
+                    NetworkManager.getProxyRestarterThread().proxyCloseConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                 } else {
                     ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                     ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
