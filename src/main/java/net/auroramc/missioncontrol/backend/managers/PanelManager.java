@@ -7,7 +7,7 @@ package net.auroramc.missioncontrol.backend.managers;
 import com.mattmalec.pterodactyl4j.DataType;
 import com.mattmalec.pterodactyl4j.EnvironmentValue;
 import com.mattmalec.pterodactyl4j.PteroBuilder;
-import com.mattmalec.pterodactyl4j.application.entities.Allocation;
+import com.mattmalec.pterodactyl4j.application.entities.ApplicationAllocation;
 import com.mattmalec.pterodactyl4j.application.entities.ApplicationServer;
 import com.mattmalec.pterodactyl4j.application.entities.Node;
 import com.mattmalec.pterodactyl4j.application.entities.PteroApplication;
@@ -69,7 +69,7 @@ public class PanelManager {
         api.retrieveServersByName(name + "-" + network.name(), false).execute().get(0).getController().delete(true).execute();
     }
 
-    public List<Allocation> getAvailableAllocations() {
+    public List<ApplicationAllocation> getAvailableAllocations() {
         return api.retrieveAllocations().execute().stream().filter(allocation -> !allocation.getServer().isPresent()).collect(Collectors.toList());
     }
 
@@ -161,7 +161,7 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
-    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation, Allocation altAllocation, Allocation altProtocolAllocation) {
+    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation) {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
@@ -242,7 +242,7 @@ public class PanelManager {
 
     }
 
-    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, Allocation allocation, Allocation protocolAllocation, Allocation altAllocation, Allocation altProtocolAllocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch) {
+    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch) {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
@@ -445,7 +445,7 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
-    public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation, Allocation altProtocolAllocation) {
+    public void createProxy(ProxyInfo info, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altProtocolAllocation) {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() == ServerInfo.Network.ALPHA) {
@@ -481,7 +481,7 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
-    public void createProxy(ProxyInfo info, Allocation allocation, Allocation protocolAllocation, Allocation altProtocolAllocation, String branch) {
+    public void createProxy(ProxyInfo info, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altProtocolAllocation, String branch) {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() == ServerInfo.Network.ALPHA) {

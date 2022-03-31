@@ -4,7 +4,7 @@
 
 package net.auroramc.missioncontrol;
 
-import com.mattmalec.pterodactyl4j.application.entities.Allocation;
+import com.mattmalec.pterodactyl4j.application.entities.ApplicationAllocation;
 import com.mattmalec.pterodactyl4j.application.entities.Node;
 import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
@@ -325,11 +325,11 @@ public class NetworkManager {
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > MemoryAllocation.PROXY.getMegaBytes()) {
                 //There is enough memory in this node
-                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
+                List<ApplicationAllocation> allocations = node.retrieveAllocations().all().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
-                    Allocation allocation = allocations.get(0);
-                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
-                    Allocation altProtocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation allocation = allocations.get(0);
+                    ApplicationAllocation protocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
                     info = new ProxyInfo(uuid, allocation.getIP(), allocation.getPortInt(), network, forced, allocation.getPortInt() + 100, (network == ALPHA)?alphaBuilds.get(Module.PROXY):currentProxyBuildNumber, authKey);
                     MissionControl.getDbManager().createConnectionNode(info);
@@ -376,11 +376,11 @@ public class NetworkManager {
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > MemoryAllocation.PROXY.getMegaBytes()) {
                 //There is enough memory in this node
-                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
+                List<ApplicationAllocation> allocations = node.retrieveAllocations().all().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
-                    Allocation allocation = allocations.get(0);
-                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
-                    Allocation altProtocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation allocation = allocations.get(0);
+                    ApplicationAllocation protocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
                     info = new ProxyInfo(uuid, allocation.getIP(), allocation.getPortInt(), network, forced, allocation.getPortInt() + 100, coreBuild, authKey);
                     MissionControl.getDbManager().createConnectionNode(info);
@@ -452,12 +452,12 @@ public class NetworkManager {
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > game.getMemoryAllocation().getMegaBytes()) {
                 //There is enough memory in this node
-                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
+                List<ApplicationAllocation> allocations = node.retrieveAllocations().all().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
-                    Allocation allocation = allocations.get(0);
-                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
-                    Allocation altAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
-                    Allocation altProtocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation allocation = allocations.get(0);
+                    ApplicationAllocation protocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
                     serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, game.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
@@ -521,12 +521,12 @@ public class NetworkManager {
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > game.getMemoryAllocation().getMegaBytes()) {
                 //There is enough memory in this node
-                List<Allocation> allocations = node.getAllocations().retrieve().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
+                List<ApplicationAllocation> allocations = node.retrieveAllocations().all().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
-                    Allocation allocation = allocations.get(0);
-                    Allocation protocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
-                    Allocation altAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
-                    Allocation altProtocolAllocation = node.getAllocations().retrieve().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation allocation = allocations.get(0);
+                    ApplicationAllocation protocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
                     serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, game.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
