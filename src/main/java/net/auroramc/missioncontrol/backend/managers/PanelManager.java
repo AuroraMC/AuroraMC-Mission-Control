@@ -371,8 +371,34 @@ public class PanelManager {
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
 
         api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
-        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setSkipScripts(false).execute();
-        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).delay(20, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
+        runSetup(info,0);
+        startServer(info, 0);
+
+    }
+
+    private void runSetup(ServerInfo info, int attempts) {
+        try {
+            api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setSkipScripts(false).execute();
+            api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).delay(5, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
+        } catch (Exception e) {
+            if (attempts > 5) {
+                e.printStackTrace();
+                return;
+            }
+            runSetup(info, attempts + 1);
+        }
+    }
+
+    private void startServer(ServerInfo info, int attempts) {
+        try {
+            apiClient.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).delay(15, TimeUnit.SECONDS).execute().get(0).start().delay(15, TimeUnit.SECONDS).execute();
+        } catch (Exception e) {
+            if (attempts > 5) {
+                e.printStackTrace();
+                return;
+            }
+            startServer(info, attempts + 1);
+        }
     }
 
     public void updateProxy(ProxyInfo info) {
@@ -395,8 +421,33 @@ public class PanelManager {
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
 
         api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
-        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setSkipScripts(false).execute();
-        api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).delay(20, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
+        runProxySetup(info, 0);
+        startProxy(info, 0);
+    }
+
+    private void runProxySetup(ProxyInfo info, int attempts) {
+        try {
+            api.retrieveServersByName(info.getUuid() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setSkipScripts(false).execute();
+            api.retrieveServersByName(info.getUuid() + "-" + info.getNetwork().name(), false).delay(5, TimeUnit.SECONDS).execute().get(0).getController().reinstall().execute();
+        } catch (Exception e) {
+            if (attempts > 5) {
+                e.printStackTrace();
+                return;
+            }
+            runProxySetup(info, attempts + 1);
+        }
+    }
+
+    private void startProxy(ProxyInfo info, int attempts) {
+        try {
+            apiClient.retrieveServersByName(info.getUuid() + "-" + info.getNetwork().name(), false).delay(15, TimeUnit.SECONDS).execute().get(0).start().delay(15, TimeUnit.SECONDS).execute();
+        } catch (Exception e) {
+            if (attempts > 5) {
+                e.printStackTrace();
+                return;
+            }
+            startProxy(info, attempts + 1);
+        }
     }
 
     public void closeServer(String name, ServerInfo.Network network) {
