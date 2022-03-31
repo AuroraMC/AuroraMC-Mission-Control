@@ -39,6 +39,13 @@ public class ProxyRestarterThread extends Thread {
     public void run() {
         logger.info("Initiating proxy restart for network '" + network.name() + "'.");
         addServers(MissionControl.getProxies().values().stream().filter(info -> info.getNetwork() == network).collect(Collectors.toList()));
+        if (serversToRestart.size() > 10) {
+            for (int i = 0;i < 5;i++) {
+                queueForRestart(serversToRestart.remove(0));
+            }
+        } else {
+            queueForRestart(serversToRestart.remove(0));
+        }
         while (true) {
             RestartServerResponse response;
             try {
