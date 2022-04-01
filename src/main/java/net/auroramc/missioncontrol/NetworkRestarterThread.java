@@ -75,7 +75,6 @@ public class NetworkRestarterThread extends Thread {
                 if (response.getProtocol() == RestartServerResponse.Type.CONFIRM_CLOSE) {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     info.setStatus(ServerInfo.ServerStatus.RESTARTING);
-                    MissionControl.getPanelManager().updateServer(info);
                     if (network != ServerInfo.Network.ALPHA) {
                         if (info.getBuildBuildNumber() > 0) {
                             info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
@@ -105,6 +104,7 @@ public class NetworkRestarterThread extends Thread {
                         }
                         info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
                     }
+                    MissionControl.getPanelManager().updateServer(info);
                 } else {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     serversPendingRestart.remove(info);
