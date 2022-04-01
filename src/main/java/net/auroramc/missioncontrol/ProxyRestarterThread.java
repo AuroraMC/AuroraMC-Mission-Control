@@ -58,12 +58,12 @@ public class ProxyRestarterThread extends Thread {
                 if (response.getProtocol() == RestartServerResponse.Type.CONFIRM_CLOSE) {
                     ProxyInfo info = (ProxyInfo) response.getInfo();
                     info.setStatus(ProxyInfo.ProxyStatus.RESTARTING);
-                    MissionControl.getPanelManager().updateProxy(info);
                     if (network == ServerInfo.Network.ALPHA) {
                         info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.PROXY));
                     } else {
                         info.setBuildNumber(NetworkManager.getCurrentProxyBuildNumber());
                     }
+                    MissionControl.getPanelManager().updateProxy(info);
                 } else {
                     ProxyInfo info = (ProxyInfo) response.getInfo();
                     serversPendingRestart.remove(info);
