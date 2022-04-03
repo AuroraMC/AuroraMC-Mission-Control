@@ -116,6 +116,7 @@ public class NetworkRestarterThread extends Thread {
                     } else {
                         if (serversPendingRestart.size() == 0) {
                             NetworkManager.updateComplete();
+                            return;
                         }
                     }
                 }
