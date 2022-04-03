@@ -4,6 +4,7 @@
 
 package net.auroramc.missioncontrol.backend.communication;
 
+import net.auroramc.core.api.backend.communication.Protocol;
 import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.MissionControl;
@@ -54,9 +55,10 @@ public class ServerMessageHandler {
                 //This is a restart initiated by the server.
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
-                info.setStatus(ServerInfo.ServerStatus.RESTARTING);
-                MissionControl.getPanelManager().closeServer(info.getName(), network);
-                MissionControl.getPanelManager().openServer(info.getName(), network);
+                info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
+
+                ProtocolMessage protocolMessage = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, info.getName(), "restart", "Mission Control", "");
+                ServerCommunicationUtils.sendMessage(protocolMessage, network);
                 break;
             }
             case CONFIRM_SHUTDOWN: {
