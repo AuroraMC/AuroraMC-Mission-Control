@@ -54,7 +54,7 @@ public class ServerMessageHandler {
             case SHUTDOWN: {
                 //This is a restart initiated by the server.
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
-                ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
+                ServerInfo info = MissionControl.getServers().get(network).get(message.getCommand());
                 info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
 
                 ProtocolMessage protocolMessage = new ProtocolMessage(Protocol.EMERGENCY_SHUTDOWN, info.getName(), "restart", "Mission Control", "");
