@@ -146,7 +146,6 @@ public class PanelMessageHandler {
 
                     info.setStatus(ServerInfo.ServerStatus.PENDING_RESTART);
 
-                    NetworkManager.removeServerFromRotation(info);
                     net.auroramc.core.api.backend.communication.ProtocolMessage protocolMessage = new net.auroramc.core.api.backend.communication.ProtocolMessage(net.auroramc.core.api.backend.communication.Protocol.EMERGENCY_SHUTDOWN, info.getName(), "restart", "Mission Control", "");
                     ServerCommunicationUtils.sendMessage(protocolMessage, network);
                     return "Restart request sent. Please be patient, it can take some time for a server to be ready to restart.";
