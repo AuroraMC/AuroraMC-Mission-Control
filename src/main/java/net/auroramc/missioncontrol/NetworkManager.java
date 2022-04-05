@@ -334,7 +334,7 @@ public class NetworkManager {
             }
         }
 
-        logger.info("Update complete.");
+        logger.info("Proxy uSpdate complete.");
 
         //Update the MOTD to what it was before.
         for (ProxyInfo uuid : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == network).collect(Collectors.toList())) {
