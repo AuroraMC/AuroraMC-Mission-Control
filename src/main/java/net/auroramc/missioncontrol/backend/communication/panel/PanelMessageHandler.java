@@ -344,6 +344,9 @@ public class PanelMessageHandler {
                         } catch (NumberFormatException e) {
                             return "One of your build numbers is not in the correct format. Please fix this error and try again.";
                         }
+                        if (!MissionControl.getJenkinsManager().buildExists(module, build)) {
+                            return "Build " + build + " for module " + module.name() + " does not exist.";
+                        }
                         modulesToUpdate.put(module, build);
                     }
                     NetworkManager.pushUpdate(modulesToUpdate, ServerInfo.Network.MAIN);
