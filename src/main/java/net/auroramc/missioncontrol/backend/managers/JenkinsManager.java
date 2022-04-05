@@ -68,6 +68,10 @@ public class JenkinsManager {
         return sendGetRequest("job/" + module.getDevCIName() + "/job/" + branch + "/" + build + "/api/json?pretty=true", null) != null;
     }
 
+    public boolean buildExists(Module module, int build) {
+        return sendGetRequest("job/" + module.getProductionCIName() + "/" + build + "/api/json?pretty=true", null) != null;
+    }
+
     private JSONObject sendGetRequest(String endpoint, String body) {
         try {
             URL url = new URL(baseURL + "/" + endpoint);
