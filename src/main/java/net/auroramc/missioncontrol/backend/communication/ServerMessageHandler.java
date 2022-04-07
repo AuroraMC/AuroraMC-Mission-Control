@@ -75,9 +75,13 @@ public class ServerMessageHandler {
                         if (info.getStatus() == ServerInfo.ServerStatus.ONLINE) {
                             NetworkManager.closeServer(info);
                             if (network == ServerInfo.Network.ALPHA) {
-                                NetworkManager.getAlphaMonitorRunnable().serverConfirmClose(info);
+                                if (NetworkManager.isAlphaEnabled() && NetworkManager.isServerMonitoringEnabled(ServerInfo.Network.ALPHA)) {
+                                    NetworkManager.getAlphaMonitorRunnable().serverConfirmClose(info);
+                                }
                             } else if (network == ServerInfo.Network.MAIN) {
-                                NetworkManager.getMonitorRunnable().serverConfirmClose(info);
+                                if (NetworkManager.isServerMonitoringEnabled(ServerInfo.Network.MAIN)) {
+                                    NetworkManager.getMonitorRunnable().serverConfirmClose(info);
+                                }
                             }
                         }
                     } else {
