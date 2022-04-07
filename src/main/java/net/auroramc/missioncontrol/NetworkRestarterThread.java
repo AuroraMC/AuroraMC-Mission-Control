@@ -110,14 +110,29 @@ public class NetworkRestarterThread extends Thread {
                     serversPendingRestart.remove(info);
                     info.setPlayerCount((byte)0);
                     info.setStatus(ServerInfo.ServerStatus.ONLINE);
-                    if (serversToRestart.size() > 0) {
+                    while (serversToRestart.size() > 0) {
                         info = serversToRestart.remove(0);
-                        queueForRestart(info);
-                    } else {
-                        if (serversPendingRestart.size() == 0) {
-                            NetworkManager.updateComplete();
-                            return;
+                        boolean restart = false;
+                        if (info.getBuildBuildNumber() > 0) {
+                            restart = info.getBuildBuildNumber() != NetworkManager.getCurrentBuildBuildNumber();
                         }
+                        if (info.getEngineBuildNumber() > 0) {
+                            restart = restart || info.getBuildBuildNumber() != NetworkManager.getCurrentEngineBuildNumber();
+                        }
+                        if (info.getGameBuildNumber() > 0) {
+                            restart = restart || info.getBuildBuildNumber() != NetworkManager.getCurrentGameBuildNumber();
+                        }
+                        if (info.getLobbyBuildNumber() > 0) {
+                            restart = restart || info.getBuildBuildNumber() != NetworkManager.getCurrentLobbyBuildNumber();
+                        }
+                        restart = restart || info.getBuildBuildNumber() != NetworkManager.getCurrentCoreBuildNumber();
+                        if (restart) {
+                            queueForRestart(info);
+                        }
+                    }
+                    if (serversPendingRestart.size() == 0) {
+                        NetworkManager.updateComplete();
+                        return;
                     }
                 }
             } else {
