@@ -11,7 +11,8 @@ public enum Module {
     ENGINE("AuroraMC-Game-Engine", "AuroraMC-Game-Engine-Dev"),
     PROXY("AuroraMC-Proxy", "AuroraMC-Proxy-Dev"),
     BUILD("AuroraMC-Build", "AuroraMC-Build-Dev"),
-    EVENT("AuroraMC-Event", "AuroraMC-Event-Dev");
+    EVENT("AuroraMC-Event", "AuroraMC-Event-Dev"),
+    DUELS("AuroraMC-Duels", "AuroraMC-Duels-Dev");
 
     private final String productionCIName,devCIName;
 

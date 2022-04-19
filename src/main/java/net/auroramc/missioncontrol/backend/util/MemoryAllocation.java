@@ -10,6 +10,7 @@ public enum MemoryAllocation {
     PROXY(1024),
     EVENT(3072),
     GAME(1024),
+    DUELS(1536),
     BUILD(1024);
 
     private final long megaBytes;
