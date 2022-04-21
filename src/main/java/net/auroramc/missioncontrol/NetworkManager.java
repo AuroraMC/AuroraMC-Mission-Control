@@ -77,8 +77,8 @@ public class NetworkManager {
     private static NetworkMonitorRunnable monitorRunnable;
     private static NetworkMonitorRunnable alphaMonitorRunnable;
 
-    private static Map<ServerInfo.Network, Map<Game, Boolean>> gameEnabled;
-    private static Map<ServerInfo.Network, Map<Game, Boolean>> gameMonitor;
+    private static Map<ServerInfo.Network, Map<ServerType, Boolean>> gameEnabled;
+    private static Map<ServerInfo.Network, Map<ServerType, Boolean>> gameMonitor;
 
     private static Map<Module, String> alphaBranches;
     private static Map<Module, Integer> alphaBuilds;
@@ -466,19 +466,19 @@ public class NetworkManager {
         nodes = MissionControl.getPanelManager().getAllNodes();
     }
 
-    public static ServerInfo createServer(String serverName, Game game, boolean forced, ServerInfo.Network network, boolean block) {
+    public static ServerInfo createServer(String serverName, ServerType serverType, boolean forced, ServerInfo.Network network, boolean block) {
         boolean update = false;
 
         ServerInfo serverInfo = null;
 
         int coreBuild = ((network == ALPHA)?alphaBuilds.get(Module.CORE):currentCoreBuildNumber);
-        int lobbyBuild = ((game.getModules().contains(Module.LOBBY)?((network == ALPHA)?alphaBuilds.get(Module.LOBBY):currentLobbyBuildNumber):0));
-        int engineBuild = ((game.getModules().contains(Module.ENGINE)?((network == ALPHA)?alphaBuilds.get(Module.ENGINE):currentEngineBuildNumber):0));
-        int gameBuild = ((game.getModules().contains(Module.GAME)?((network == ALPHA)?alphaBuilds.get(Module.GAME):currentGameBuildNumber):0));
-        int buildBuild = ((game.getModules().contains(Module.BUILD)?((network == ALPHA)?alphaBuilds.get(Module.BUILD):currentBuildBuildNumber):0));
+        int lobbyBuild = ((serverType.getModules().contains(Module.LOBBY)?((network == ALPHA)?alphaBuilds.get(Module.LOBBY):currentLobbyBuildNumber):0));
+        int engineBuild = ((serverType.getModules().contains(Module.ENGINE)?((network == ALPHA)?alphaBuilds.get(Module.ENGINE):currentEngineBuildNumber):0));
+        int gameBuild = ((serverType.getModules().contains(Module.GAME)?((network == ALPHA)?alphaBuilds.get(Module.GAME):currentGameBuildNumber):0));
+        int buildBuild = ((serverType.getModules().contains(Module.BUILD)?((network == ALPHA)?alphaBuilds.get(Module.BUILD):currentBuildBuildNumber):0));
 
         for (Node node : nodes) {
-            if (node.getMemoryLong() - node.getAllocatedMemoryLong() > game.getMemoryAllocation().getMegaBytes()) {
+            if (node.getMemoryLong() - node.getAllocatedMemoryLong() > serverType.getMemoryAllocation().getMegaBytes()) {
                 //There is enough memory in this node
                 List<ApplicationAllocation> allocations = node.retrieveAllocations().all().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
@@ -487,9 +487,9 @@ public class NetworkManager {
                     ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
-                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, game.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, authKey);
+                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
-                    MissionControl.getPanelManager().createServer(serverInfo, game.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation);
+                    MissionControl.getPanelManager().createServer(serverInfo, serverType.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);
                     update = true;
                 }
@@ -541,13 +541,13 @@ public class NetworkManager {
         }
     }
 
-    public static ServerInfo createServer(String serverName, Game game, boolean forced, ServerInfo.Network network, int coreBuild, String coreBranch, int lobbyBuild, String lobbybranch, int buildBuild, String buildBranch, int gameBuild, String gameBranch, int engineBuild, String engineBranch, boolean block) {
+    public static ServerInfo createServer(String serverName, ServerType serverType, boolean forced, ServerInfo.Network network, int coreBuild, String coreBranch, int lobbyBuild, String lobbybranch, int buildBuild, String buildBranch, int gameBuild, String gameBranch, int engineBuild, String engineBranch, boolean block) {
         boolean update = false;
 
         ServerInfo serverInfo = null;
 
         for (Node node : nodes) {
-            if (node.getMemoryLong() - node.getAllocatedMemoryLong() > game.getMemoryAllocation().getMegaBytes()) {
+            if (node.getMemoryLong() - node.getAllocatedMemoryLong() > serverType.getMemoryAllocation().getMegaBytes()) {
                 //There is enough memory in this node
                 List<ApplicationAllocation> allocations = node.retrieveAllocations().all().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
                 if (allocations.size() > 0) {
@@ -556,9 +556,9 @@ public class NetworkManager {
                     ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
-                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, game.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, authKey);
+                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
-                    MissionControl.getPanelManager().createServer(serverInfo, game.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation, coreBranch, lobbybranch, buildBranch, gameBranch, engineBranch);
+                    MissionControl.getPanelManager().createServer(serverInfo, serverType.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation, coreBranch, lobbybranch, buildBranch, gameBranch, engineBranch);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);
                     update = true;
                 }
@@ -708,12 +708,12 @@ public class NetworkManager {
         return serverMonitorEnabled.get(network);
     }
 
-    public static boolean isGameEnabled(Game game, ServerInfo.Network network) {
-        return gameEnabled.get(network).get(game);
+    public static boolean isGameEnabled(ServerType serverType, ServerInfo.Network network) {
+        return gameEnabled.get(network).get(serverType);
     }
 
-    public static boolean isGameMonitored(Game game, ServerInfo.Network network) {
-        return gameMonitor.get(network).get(game);
+    public static boolean isGameMonitored(ServerType serverType, ServerInfo.Network network) {
+        return gameMonitor.get(network).get(serverType);
     }
 
     public static void setAlphaEnabled(boolean enabled) {
@@ -803,44 +803,44 @@ public class NetworkManager {
         return alphaBranches;
     }
 
-    public static void enableGame(Game game, ServerInfo.Network network) {
+    public static void enableGame(ServerType serverType, ServerInfo.Network network) {
         if (network == null) {
             for (ServerInfo.Network net : ServerInfo.Network.values()) {
-                gameEnabled.get(net).put(game, true);
-                dbManager.setGameEnabled(game, net, true);
+                gameEnabled.get(net).put(serverType, true);
+                dbManager.setGameEnabled(serverType, net, true);
             }
         } else {
-            gameEnabled.get(network).put(game, true);
-            dbManager.setGameEnabled(game, network, true);
+            gameEnabled.get(network).put(serverType, true);
+            dbManager.setGameEnabled(serverType, network, true);
         }
     }
 
-    public static void disableGame(Game game, ServerInfo.Network network) {
+    public static void disableGame(ServerType serverType, ServerInfo.Network network) {
         if (network == null) {
             for (ServerInfo.Network net : ServerInfo.Network.values()) {
-                gameEnabled.get(net).put(game, false);
-                dbManager.setGameEnabled(game, net, false);
-                Collection<ServerInfo> infos = MissionControl.getServers().get(net).values().stream().filter(serverInfo -> serverInfo.getServerType().getString("game").equalsIgnoreCase(game.name())).collect(Collectors.toList());
+                gameEnabled.get(net).put(serverType, false);
+                dbManager.setGameEnabled(serverType, net, false);
+                Collection<ServerInfo> infos = MissionControl.getServers().get(net).values().stream().filter(serverInfo -> serverInfo.getServerType().getString("game").equalsIgnoreCase(serverType.name())).collect(Collectors.toList());
                 for (ServerInfo info : infos) {
                     ProtocolMessage message = new ProtocolMessage(Protocol.SHUTDOWN ,info.getName(), "shutdown", "Mission Control", "");
                     ServerCommunicationUtils.sendMessage(message, info.getNetwork());
                 }
             }
         } else {
-            gameEnabled.get(network).put(game, false);
-            dbManager.setGameEnabled(game, network, false);
+            gameEnabled.get(network).put(serverType, false);
+            dbManager.setGameEnabled(serverType, network, false);
         }
     }
 
-    public static void setMonitored(Game game, ServerInfo.Network network, boolean monitored) {
+    public static void setMonitored(ServerType serverType, ServerInfo.Network network, boolean monitored) {
         if (network == null) {
             for (ServerInfo.Network net : ServerInfo.Network.values()) {
-                gameMonitor.get(net).put(game, monitored);
-                dbManager.setMonitoringEnabled(game, net, monitored);
+                gameMonitor.get(net).put(serverType, monitored);
+                dbManager.setMonitoringEnabled(serverType, net, monitored);
             }
         } else {
-            gameMonitor.get(network).put(game, monitored);
-            dbManager.setMonitoringEnabled(game, network, monitored);
+            gameMonitor.get(network).put(serverType, monitored);
+            dbManager.setMonitoringEnabled(serverType, network, monitored);
         }
     }
 }

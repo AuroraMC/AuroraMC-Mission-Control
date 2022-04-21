@@ -8,9 +8,8 @@ import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.NetworkMonitorRunnable;
-import net.auroramc.missioncontrol.NetworkRestarterThread;
 import net.auroramc.missioncontrol.backend.util.DiscordWebhook;
-import net.auroramc.missioncontrol.backend.util.Game;
+import net.auroramc.missioncontrol.backend.util.ServerType;
 import net.auroramc.missioncontrol.backend.util.MaintenanceMode;
 import net.auroramc.missioncontrol.backend.util.Module;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
@@ -43,9 +42,9 @@ public class PanelMessageHandler {
                         return "An invalid network was inputted.";
                     }
 
-                    Game game;
+                    ServerType serverType;
                     try {
-                        game = Game.valueOf(args.get(1));
+                        serverType = ServerType.valueOf(args.get(1));
                     } catch (IllegalArgumentException e) {
                         return "An invalid game was inputted.";
                     }
@@ -80,7 +79,7 @@ public class PanelMessageHandler {
                                 return "Module '" + moduleArg[0] + "' does not exist.";
                             }
 
-                            if (!game.getModules().contains(module)) {
+                            if (!serverType.getModules().contains(module)) {
                                 continue;
                             }
 
@@ -96,11 +95,11 @@ public class PanelMessageHandler {
                             moduleBuilds.put(module, build);
                         }
 
-                        if (moduleBranches.size() != game.getModules().size()) {
+                        if (moduleBranches.size() != serverType.getModules().size()) {
                             return "You have not specified the branch and build number for all modules. Aborting.";
                         }
 
-                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network, moduleBuilds.getOrDefault(Module.CORE, -1), moduleBranches.get(Module.CORE), moduleBuilds.getOrDefault(Module.LOBBY, -1), moduleBranches.get(Module.LOBBY), moduleBuilds.getOrDefault(Module.BUILD, -1), moduleBranches.get(Module.BUILD), moduleBuilds.getOrDefault(Module.GAME, -1), moduleBranches.get(Module.GAME), moduleBuilds.getOrDefault(Module.ENGINE, -1), moduleBranches.get(Module.ENGINE), false);
+                        ServerInfo info = NetworkManager.createServer(serverName, serverType, true, network, moduleBuilds.getOrDefault(Module.CORE, -1), moduleBranches.get(Module.CORE), moduleBuilds.getOrDefault(Module.LOBBY, -1), moduleBranches.get(Module.LOBBY), moduleBuilds.getOrDefault(Module.BUILD, -1), moduleBranches.get(Module.BUILD), moduleBuilds.getOrDefault(Module.GAME, -1), moduleBranches.get(Module.GAME), moduleBuilds.getOrDefault(Module.ENGINE, -1), moduleBranches.get(Module.ENGINE), false);
                         if (info != null) {
                             return "Server '" + serverName + "' successfully created on network '" + network.name() + "'. Please give the server time to start up properly.";
                         } else {
@@ -112,13 +111,13 @@ public class PanelMessageHandler {
                         }
 
                         if (serverName == null) {
-                            int id = NetworkMonitorRunnable.findLowestAvailableServerID(game, network);
-                            serverName = game.getServerCode() + "-" + id;
+                            int id = NetworkMonitorRunnable.findLowestAvailableServerID(serverType, network);
+                            serverName = serverType.getServerCode() + "-" + id;
                         } else if (MissionControl.getServers().get(network).containsKey(serverName)) {
                             return "That server already exists on that network.";
                         }
 
-                        ServerInfo info = NetworkManager.createServer(serverName, game, true, network, false);
+                        ServerInfo info = NetworkManager.createServer(serverName, serverType, true, network, false);
                         if (info != null) {
                             return "Server '" + serverName + "' successfully created on network '" + network.name() + "'. Please give the server time to start up properly.";
                         } else {
@@ -414,9 +413,9 @@ public class PanelMessageHandler {
             }
             case "enablegame": {
                 if (args.size() == 2) {
-                    Game game;
+                    ServerType serverType;
                     try {
-                        game = Game.valueOf(args.get(1));
+                        serverType = ServerType.valueOf(args.get(1));
                     } catch (IllegalArgumentException e) {
                         return "That is not a valid game.";
                     }
@@ -428,21 +427,21 @@ public class PanelMessageHandler {
                         return "That is not a valid network.";
                     }
 
-                    if (NetworkManager.isGameEnabled(game, network)) {
+                    if (NetworkManager.isGameEnabled(serverType, network)) {
                         return "That game is already enabled!";
                     }
 
-                    NetworkManager.enableGame(game, network);
-                    return "Game '" + game.name() + "' has been enabled on network '" + network.name() + "'.";
+                    NetworkManager.enableGame(serverType, network);
+                    return "Game '" + serverType.name() + "' has been enabled on network '" + network.name() + "'.";
                 } else {
                     return "The command executed does not have correct arguments. Please try again.";
                 }
             }
             case "disablegame": {
                 if (args.size() == 2) {
-                    Game game;
+                    ServerType serverType;
                     try {
-                        game = Game.valueOf(args.get(1));
+                        serverType = ServerType.valueOf(args.get(1));
                     } catch (IllegalArgumentException e) {
                         return "That is not a valid game.";
                     }
@@ -454,21 +453,21 @@ public class PanelMessageHandler {
                         return "That is not a valid network.";
                     }
 
-                    if (!NetworkManager.isGameEnabled(game, network)) {
+                    if (!NetworkManager.isGameEnabled(serverType, network)) {
                         return "That game is already disabled!";
                     }
 
-                    NetworkManager.disableGame(game, network);
-                    return "Game '" + game.name() + "' has been disabled on network '" + network.name() + "'.";
+                    NetworkManager.disableGame(serverType, network);
+                    return "Game '" + serverType.name() + "' has been disabled on network '" + network.name() + "'.";
                 } else {
                     return "The command executed does not have correct arguments. Please try again.";
                 }
             }
             case "monitorgame": {
                 if (args.size() == 3) {
-                    Game game;
+                    ServerType serverType;
                     try {
-                        game = Game.valueOf(args.get(1));
+                        serverType = ServerType.valueOf(args.get(1));
                     } catch (IllegalArgumentException e) {
                         return "That is not a valid game.";
                     }
@@ -482,12 +481,12 @@ public class PanelMessageHandler {
                         return "That is not a valid network.";
                     }
 
-                    if (NetworkManager.isGameMonitored(game, network) == monitor) {
+                    if (NetworkManager.isGameMonitored(serverType, network) == monitor) {
                         return "That game is already " + ((monitor)?"enabled":"disabled") + "!";
                     }
 
-                    NetworkManager.setMonitored(game, network, monitor);
-                    return "Monitoring for game '" + game.name() + "' has been " + ((monitor)?"enabled":"disabled") + " on network '" + network.name() + "'.";
+                    NetworkManager.setMonitored(serverType, network, monitor);
+                    return "Monitoring for game '" + serverType.name() + "' has been " + ((monitor)?"enabled":"disabled") + " on network '" + network.name() + "'.";
                 } else {
                     return "The command executed does not have correct arguments. Please try again.";
                 }

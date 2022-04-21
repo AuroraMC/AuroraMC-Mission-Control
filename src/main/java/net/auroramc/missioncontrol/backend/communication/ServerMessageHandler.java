@@ -9,10 +9,8 @@ import net.auroramc.core.api.backend.communication.ProtocolMessage;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
-import net.auroramc.missioncontrol.backend.util.Game;
-import net.auroramc.missioncontrol.entities.ProxyInfo;
+import net.auroramc.missioncontrol.backend.util.ServerType;
 import net.auroramc.missioncontrol.entities.ServerInfo;
-import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 
 import java.util.stream.Collectors;
 
@@ -24,7 +22,7 @@ public class ServerMessageHandler {
                 String[] args = message.getExtraInfo().split("\n");
                 if (args.length == 2) {
                     ServerInfo.Network network = ServerInfo.Network.valueOf(args[0]);
-                    Game game = Game.valueOf(args[1]);
+                    ServerType serverType = ServerType.valueOf(args[1]);
                     String server = message.getSender();
                     if (message.getCommand().equalsIgnoreCase("join")) {
                         NetworkManager.playerJoinedServer(server, network);

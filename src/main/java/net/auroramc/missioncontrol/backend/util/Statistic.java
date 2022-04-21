@@ -4,12 +4,12 @@
 
 package net.auroramc.missioncontrol.backend.util;
 
-import com.mattmalec.pterodactyl4j.entities.Server;
 import net.auroramc.missioncontrol.MissionControl;
-import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.backend.runnables.StatUpdateRunnable;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
+
+import java.util.ArrayList;
 
 public enum Statistic {
 
@@ -52,7 +52,7 @@ public enum Statistic {
             case GAME_PLAYER_TOTAL: {
                 int amount = 0;
                 for (ServerInfo info : MissionControl.getServers().get(ServerInfo.Network.MAIN).values()) {
-                    if (info.getServerType().getString("game").equals(game.name())) {
+                    if (info.getServerType().getString("game").equals(game.name()) || (info.getServerType().has("rotation") && info.getServerType().getJSONArray("rotation").toList().contains(game.name()))) {
                         amount += info.getPlayerCount();
                     }
                 }
@@ -63,7 +63,7 @@ public enum Statistic {
             case UNIQUE_PLAYER_TOTALS:
                 return MissionControl.getDbManager().getUniquePlayerTotals();
             case NETWORK_SERVER_TOTALS:
-                return (int) MissionControl.getServers().get(ServerInfo.Network.MAIN).values().stream().filter(serverInfo -> serverInfo.getServerType().getString("game").equalsIgnoreCase(game.name())).count();
+                return (int) MissionControl.getServers().get(ServerInfo.Network.MAIN).values().stream().filter(serverInfo -> serverInfo.getServerType().getString("game").equalsIgnoreCase(game.name()) || (serverInfo.getServerType().has("rotation") && serverInfo.getServerType().getJSONArray("rotation").toList().contains(game.name()))).count();
             default:
                 return 0;
         }
