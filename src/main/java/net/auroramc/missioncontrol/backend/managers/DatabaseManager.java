@@ -658,87 +658,87 @@ public class DatabaseManager {
         }
     }
 
-    public boolean isGameEnabled(Game game, ServerInfo.Network network) {
+    public boolean isGameEnabled(ServerType serverType, ServerInfo.Network network) {
         try (Jedis connection = jedis.getResource()) {
-            if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()))) {
-                connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()), "false");
+            if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", serverType.name()))) {
+                connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", serverType.name()), "false");
                 return false;
             }
-            return Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name())));
+            return Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", serverType.name())));
         }
     }
 
-    public Map<Game, Boolean> getGameEnabled(ServerInfo.Network network) {
+    public Map<ServerType, Boolean> getGameEnabled(ServerInfo.Network network) {
         try (Jedis connection = jedis.getResource()) {
             if (!connection.exists(String.format("missioncontrol.%s", network.name()))) {
-                Map<Game, Boolean> enabled = new HashMap<>();
+                Map<ServerType, Boolean> enabled = new HashMap<>();
                 Pipeline pipeline = connection.pipelined();
-                for (Game game : Game.values()) {
-                    enabled.put(game, false);
-                    pipeline.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()), "false");
+                for (ServerType serverType : ServerType.values()) {
+                    enabled.put(serverType, false);
+                    pipeline.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", serverType.name()), "false");
                 }
                 pipeline.sync();
                 return enabled;
             }
-            Map<Game, Boolean> enabled = new HashMap<>();
-            for (Game game : Game.values()) {
-                if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()))) {
-                    connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()), "false");
-                    enabled.put(game, false);
+            Map<ServerType, Boolean> enabled = new HashMap<>();
+            for (ServerType serverType : ServerType.values()) {
+                if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", serverType.name()))) {
+                    connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", serverType.name()), "false");
+                    enabled.put(serverType, false);
                     continue;
                 }
-                Boolean enable = Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name())));
-                enabled.put(game, enable);
+                Boolean enable = Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", serverType.name())));
+                enabled.put(serverType, enable);
             }
             return enabled;
         }
     }
 
-    public void setGameEnabled(Game game, ServerInfo.Network network, boolean enabled) {
+    public void setGameEnabled(ServerType serverType, ServerInfo.Network network, boolean enabled) {
         try (Jedis connection = jedis.getResource()) {
-            connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", game.name()), enabled + "");
+            connection.hset(String.format("missioncontrol.%s", network.name()), String.format("enabled.%s", serverType.name()), enabled + "");
         }
     }
 
-    public boolean isMonitoringEnabled(Game game, ServerInfo.Network network) {
+    public boolean isMonitoringEnabled(ServerType serverType, ServerInfo.Network network) {
         try (Jedis connection = jedis.getResource()) {
-            if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", game.name()))) {
-                connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", game.name()), "false");
+            if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", serverType.name()))) {
+                connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", serverType.name()), "false");
                 return false;
             }
-            return Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", game.name())));
+            return Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", serverType.name())));
         }
     }
 
-    public Map<Game, Boolean> getMonitoring(ServerInfo.Network network) {
+    public Map<ServerType, Boolean> getMonitoring(ServerInfo.Network network) {
         try (Jedis connection = jedis.getResource()) {
             if (!connection.exists(String.format("missioncontrol.%s", network.name()))) {
-                Map<Game, Boolean> monitoring = new HashMap<>();
+                Map<ServerType, Boolean> monitoring = new HashMap<>();
                 Pipeline pipeline = connection.pipelined();
-                for (Game game : Game.values()) {
-                    monitoring.put(game, false);
-                    pipeline.hset(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", game.name()), "false");
+                for (ServerType serverType : ServerType.values()) {
+                    monitoring.put(serverType, false);
+                    pipeline.hset(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", serverType.name()), "false");
                 }
                 pipeline.sync();
                 return monitoring;
             }
-            Map<Game, Boolean> monitoring = new HashMap<>();
-            for (Game game : Game.values()) {
-                if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", game.name()))) {
-                    connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", game.name()), "false");
-                    monitoring.put(game, false);
+            Map<ServerType, Boolean> monitoring = new HashMap<>();
+            for (ServerType serverType : ServerType.values()) {
+                if (!connection.hexists(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", serverType.name()))) {
+                    connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", serverType.name()), "false");
+                    monitoring.put(serverType, false);
                     continue;
                 }
-                Boolean enable = Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", game.name())));
-                monitoring.put(game, enable);
+                Boolean enable = Boolean.parseBoolean(connection.hget(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", serverType.name())));
+                monitoring.put(serverType, enable);
             }
             return monitoring;
         }
     }
 
-    public void setMonitoringEnabled(Game game, ServerInfo.Network network, boolean enabled) {
+    public void setMonitoringEnabled(ServerType serverType, ServerInfo.Network network, boolean enabled) {
         try (Jedis connection = jedis.getResource()) {
-            connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", game.name()), enabled + "");
+            connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", serverType.name()), enabled + "");
         }
     }
 

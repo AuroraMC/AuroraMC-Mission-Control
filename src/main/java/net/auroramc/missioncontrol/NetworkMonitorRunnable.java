@@ -5,7 +5,7 @@
 package net.auroramc.missioncontrol;
 
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
-import net.auroramc.missioncontrol.backend.util.Game;
+import net.auroramc.missioncontrol.backend.util.ServerType;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.Protocol;
@@ -97,26 +97,26 @@ public class NetworkMonitorRunnable implements Runnable {
             }
 
             //Now that all proxies are created/deleted, check all gamemodes, making sure that all games have at least 2 servers open.
-            for (Game game : Game.values()) {
-                if (!NetworkManager.isGameEnabled(game, network) || !NetworkManager.isGameMonitored(game, network)) {
+            for (ServerType serverType : ServerType.values()) {
+                if (!NetworkManager.isGameEnabled(serverType, network) || !NetworkManager.isGameMonitored(serverType, network)) {
                     continue;
                 }
 
                 int gameTotal = 0;
                 for (ServerInfo info : MissionControl.getServers().get(network).values()) {
-                    if (info.getServerType().getString("game").equals(game.name())) {
+                    if (info.getServerType().getString("game").equals(serverType.name())) {
                         gameTotal += info.getPlayerCount();
                     }
                 }
 
-                List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getNetwork() == network && info.getServerType().getString("type").equalsIgnoreCase("game") && info.getServerType().getString("game").equalsIgnoreCase(game.name())).collect(Collectors.toList());
-                int serversNeeded = (gameTotal / game.getMaxPlayers()) + ((gameTotal % game.getMaxPlayers() > (game.getMaxPlayers()/2))?1:0) + 1;
-                long serversOpen = infos.size() - serversPendingRestart.stream().filter(info -> info.getServerType().getString("game").equalsIgnoreCase(game.name())).count();
+                List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getNetwork() == network && info.getServerType().getString("type").equalsIgnoreCase("game") && info.getServerType().getString("game").equalsIgnoreCase(serverType.name())).collect(Collectors.toList());
+                int serversNeeded = (gameTotal / serverType.getMaxPlayers()) + ((gameTotal % serverType.getMaxPlayers() > (serverType.getMaxPlayers()/2))?1:0) + 1;
+                long serversOpen = infos.size() - serversPendingRestart.stream().filter(info -> info.getServerType().getString("game").equalsIgnoreCase(serverType.name())).count();
                 if (gameTotal > 0) {
                     int i = (int) serversOpen;
                     if (serversNeeded < serversOpen) {
                         //Too many servers are open, close as many are needed.
-                        logger.info("Too many servers are open on network '" + network.name() + "' for game '" + game.name() + "'. Destroying " +  (serversOpen - serversNeeded) + " servers.");
+                        logger.info("Too many servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Destroying " +  (serversOpen - serversNeeded) + " servers.");
                         do {
                             ServerInfo info = findHighestServerID(infos);
                             infos.remove(info);
@@ -128,10 +128,10 @@ public class NetworkMonitorRunnable implements Runnable {
                         } while (serversNeeded < i);
                     } else if (serversNeeded > serversOpen) {
                         //Not enough are open, open as many are needed.
-                        logger.info("Not enough servers are open on network '" + network.name() + "' for game '" + game.name() + "'. Creating " +  (serversNeeded - serversOpen) + " servers.");
+                        logger.info("Not enough servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Creating " +  (serversNeeded - serversOpen) + " servers.");
                         do {
-                            int id = findLowestAvailableServerID(game, network);
-                            NetworkManager.createServer(game.getServerCode() + "-" + id, game, false, network, true);
+                            int id = findLowestAvailableServerID(serverType, network);
+                            NetworkManager.createServer(serverType.getServerCode() + "-" + id, serverType, false, network, true);
                             i++;
                         } while (serversNeeded > i);
                     }
@@ -150,8 +150,8 @@ public class NetworkMonitorRunnable implements Runnable {
                     } else if (serversOpen < 2) {
                         //Open as many servers is necessary.
                         do {
-                            int id = findLowestAvailableServerID(game, network);
-                            NetworkManager.createServer(game.getServerCode() + "-" + id, game, false, network, true);
+                            int id = findLowestAvailableServerID(serverType, network);
+                            NetworkManager.createServer(serverType.getServerCode() + "-" + id, serverType, false, network, true);
                             i++;
                         } while (i < 2);
                     }
@@ -175,9 +175,9 @@ public class NetworkMonitorRunnable implements Runnable {
         return highest;
     }
 
-    public static int findLowestAvailableServerID(Game game, ServerInfo.Network network) {
+    public static int findLowestAvailableServerID(ServerType serverType, ServerInfo.Network network) {
         for (int i = 1;i <= 1000;i++) {
-            if (!MissionControl.getServers().get(network).containsKey(game.getServerCode() + "-" + i)) {
+            if (!MissionControl.getServers().get(network).containsKey(serverType.getServerCode() + "-" + i)) {
                 return i;
             }
         }

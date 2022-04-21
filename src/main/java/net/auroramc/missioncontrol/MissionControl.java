@@ -8,7 +8,7 @@ import com.mattmalec.pterodactyl4j.application.entities.ApplicationServer;
 import jline.console.ConsoleReader;
 import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.backend.communication.panel.PanelCommunicationUtils;
-import net.auroramc.missioncontrol.backend.util.Game;
+import net.auroramc.missioncontrol.backend.util.ServerType;
 import net.auroramc.missioncontrol.backend.managers.DatabaseManager;
 import net.auroramc.missioncontrol.backend.managers.HaProxyManager;
 import net.auroramc.missioncontrol.backend.managers.JenkinsManager;
@@ -208,7 +208,7 @@ public class MissionControl {
             for (ServerInfo.Network network : ServerInfo.Network.values()) {
                 for (String server : serverNameSets.get(network)) {
                     logger.fine("Creating server " + server + " on the panel for network " + network.name() + ".");
-                    panelManager.createServer(servers.get(network).get(server), Game.valueOf(servers.get(network).get(server).getServerType().getString("game").toUpperCase(Locale.ROOT)).getMemoryAllocation());
+                    panelManager.createServer(servers.get(network).get(server), ServerType.valueOf(servers.get(network).get(server).getServerType().getString("game").toUpperCase(Locale.ROOT)).getMemoryAllocation());
                 }
             }
 

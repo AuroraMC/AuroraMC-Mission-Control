@@ -6,6 +6,7 @@ package net.auroramc.missioncontrol.backend.runnables;
 
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.backend.util.Game;
+import net.auroramc.missioncontrol.backend.util.ServerType;
 import net.auroramc.missioncontrol.backend.util.Statistic;
 
 public class StatUpdateRunnable implements Runnable {
