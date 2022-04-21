@@ -32,7 +32,11 @@ public class StatUpdateRunnable implements Runnable {
                     if (statistic == Statistic.GAMES_STARTED) {
                         totals.put(game, stat);
                     } if (statistic == Statistic.PLAYERS_PER_GAME) {
-                        avgPlayerPerGame.put(game, totals.get(game) / stat);
+                        if (totals.get(game) == 0) {
+                            avgPlayerPerGame.put(game, 0);
+                            continue;
+                        }
+                        avgPlayerPerGame.put(game, stat / totals.get(game));
                         continue;
                     }
                     MissionControl.getDbManager().insertStatistic(statistic, frequency, timestamp, stat, game);
