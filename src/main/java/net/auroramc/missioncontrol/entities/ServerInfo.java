@@ -11,7 +11,7 @@ public class ServerInfo implements Info {
     private final String name, ip;
     private final JSONObject serverType;
     private final int protocolPort, port;
-    private int buildNumber, lobbyBuildNumber, gameBuildNumber, engineBuildNumber, buildBuildNumber;
+    private int buildNumber, lobbyBuildNumber, gameBuildNumber, engineBuildNumber, buildBuildNumber, duelsBuildNumber;
     private final Network network;
     private final boolean forced;
     private final String authKey;
@@ -19,7 +19,7 @@ public class ServerInfo implements Info {
     private byte playerCount;
     private ServerStatus status;
 
-    public ServerInfo(String name, String ip, int port, Network network, boolean forced, JSONObject serverType, int protocolPort, int buildNumber, int lobbyBuildNumber, int engineBuildNumber, int gameBuildNumber, int buildBuildNumber, String authKey) {
+    public ServerInfo(String name, String ip, int port, Network network, boolean forced, JSONObject serverType, int protocolPort, int buildNumber, int lobbyBuildNumber, int engineBuildNumber, int gameBuildNumber, int buildBuildNumber, int duelsBuildNumber, String authKey) {
         this.name = name;
         this.ip = ip;
         this.port = port;
@@ -35,6 +35,7 @@ public class ServerInfo implements Info {
         this.authKey = authKey;
         this.playerCount = -1;
         this.status = ServerStatus.STARTING;
+        this.duelsBuildNumber = duelsBuildNumber;
     }
 
     public String getName() {
@@ -103,6 +104,14 @@ public class ServerInfo implements Info {
 
     public void setLobbyBuildNumber(int lobbyBuildNumber) {
         this.lobbyBuildNumber = lobbyBuildNumber;
+    }
+
+    public int getDuelsBuildNumber() {
+        return duelsBuildNumber;
+    }
+
+    public void setDuelsBuildNumber(int duelsBuildNumber) {
+        this.duelsBuildNumber = duelsBuildNumber;
     }
 
     public String getAuthKey() {
