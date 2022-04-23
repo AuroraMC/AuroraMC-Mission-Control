@@ -996,6 +996,12 @@ public class DatabaseManager {
         }
     }
 
+    public void insertStatistic(Statistic statistic, StatUpdateRunnable.StatisticPeriod period, long timestamp, int value, ServerType game) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.sadd("stat." + statistic.name() + "." + period, timestamp + ";" + value + ";" + game.name());
+        }
+    }
+
     public void setPanelCode(UUID uuid, String code) {
         try (Jedis connection = jedis.getResource()) {
             connection.set("panel.code." + uuid.toString(), code);
