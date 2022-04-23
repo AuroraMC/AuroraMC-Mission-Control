@@ -132,6 +132,17 @@ public class PanelManager {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
             }
         }
+        if (serverInfo.getEngineBuildNumber() != -1) {
+            environment.put("DUELS_VERSION", EnvironmentValue.ofString(serverInfo.getDuelsBuildNumber() + ""));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
+            }
+        } else {
+            environment.put("DUELS_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
+            }
+        }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
 
@@ -187,7 +198,7 @@ public class PanelManager {
         } else {
             environment.put("BUILD_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
-                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.BUILD) + ""));
             }
         }
         if (serverInfo.getGameBuildNumber() != -1) {
@@ -198,7 +209,7 @@ public class PanelManager {
         } else {
             environment.put("GAME_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
-                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.GAME) + ""));
             }
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
@@ -209,7 +220,18 @@ public class PanelManager {
         } else {
             environment.put("ENGINE_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
-                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
+            }
+        }
+        if (serverInfo.getEngineBuildNumber() != -1) {
+            environment.put("DUELS_VERSION", EnvironmentValue.ofString(serverInfo.getDuelsBuildNumber() + ""));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
+            }
+        } else {
+            environment.put("DUELS_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
             }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -242,7 +264,7 @@ public class PanelManager {
 
     }
 
-    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch) {
+    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch, String duelsBranch) {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
@@ -291,6 +313,17 @@ public class PanelManager {
             environment.put("ENGINE_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString("na"));
+            }
+        }
+        if (serverInfo.getDuelsBuildNumber() != -1) {
+            environment.put("DUELS_VERSION", EnvironmentValue.ofString(serverInfo.getDuelsBuildNumber() + ""));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(duelsBranch));
+            }
+        } else {
+            environment.put("DUELS_VERSION", EnvironmentValue.ofString("-1"));
+            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString("na"));
             }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -355,6 +388,12 @@ public class PanelManager {
             environment.put("ENGINE_VERSION", EnvironmentValue.ofString(info.getEngineBuildNumber() + ""));
             if (info.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
+            }
+        }
+        if (info.getEngineBuildNumber() != -1) {
+            environment.put("DUELS_VERSION", EnvironmentValue.ofString(info.getDuelsBuildNumber() + ""));
+            if (info.getNetwork() == ServerInfo.Network.ALPHA) {
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
             }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));

@@ -61,6 +61,7 @@ public class NetworkManager {
     private static int currentProxyBuildNumber;
     private static int currentEngineBuildNumber;
     private static int currentGameBuildNumber;
+    private static int currentDuelsBuildNumber;
 
     private static final Logger logger;
     private static final DatabaseManager dbManager;
@@ -114,6 +115,7 @@ public class NetworkManager {
         currentGameBuildNumber = dbManager.getCurrentGameBuildNumber();
         currentLobbyBuildNumber = dbManager.getCurrentLobbyBuildNumber();
         currentProxyBuildNumber = dbManager.getCurrentProxyBuildNumber();
+        currentDuelsBuildNumber = dbManager.getCurrentDuelsBuildNumber();
 
         motd = dbManager.getMotd();
         maintenance = dbManager.getMaintenance();
@@ -287,6 +289,10 @@ public class NetworkManager {
             if (modules.containsKey(Module.PROXY)) {
                 currentProxyBuildNumber = modules.get(Module.PROXY);
                 MissionControl.getDbManager().setCurrentProxyBuildNumber(currentProxyBuildNumber);
+            }
+            if (modules.containsKey(Module.DUELS)) {
+                currentDuelsBuildNumber = modules.get(Module.DUELS);
+                MissionControl.getDbManager().setCurrentDuelsBuildNumber(currentDuelsBuildNumber);
             }
         }
         if (modules.containsKey(Module.PROXY)) {
@@ -476,6 +482,7 @@ public class NetworkManager {
         int engineBuild = ((serverType.getModules().contains(Module.ENGINE)?((network == ALPHA)?alphaBuilds.get(Module.ENGINE):currentEngineBuildNumber):0));
         int gameBuild = ((serverType.getModules().contains(Module.GAME)?((network == ALPHA)?alphaBuilds.get(Module.GAME):currentGameBuildNumber):0));
         int buildBuild = ((serverType.getModules().contains(Module.BUILD)?((network == ALPHA)?alphaBuilds.get(Module.BUILD):currentBuildBuildNumber):0));
+        int duelsBuild = ((serverType.getModules().contains(Module.DUELS)?((network == ALPHA)?alphaBuilds.get(Module.DUELS):currentDuelsBuildNumber):0));
 
         for (Node node : nodes) {
             if (node.getMemoryLong() - node.getAllocatedMemoryLong() > serverType.getMemoryAllocation().getMegaBytes()) {
@@ -487,7 +494,7 @@ public class NetworkManager {
                     ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
-                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, authKey);
+                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, duelsBuild, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
                     MissionControl.getPanelManager().createServer(serverInfo, serverType.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);
@@ -541,7 +548,7 @@ public class NetworkManager {
         }
     }
 
-    public static ServerInfo createServer(String serverName, ServerType serverType, boolean forced, ServerInfo.Network network, int coreBuild, String coreBranch, int lobbyBuild, String lobbybranch, int buildBuild, String buildBranch, int gameBuild, String gameBranch, int engineBuild, String engineBranch, boolean block) {
+    public static ServerInfo createServer(String serverName, ServerType serverType, boolean forced, ServerInfo.Network network, int coreBuild, String coreBranch, int lobbyBuild, String lobbybranch, int buildBuild, String buildBranch, int gameBuild, String gameBranch, int engineBuild, String engineBranch, int duelsBuild, String duelsBranch, boolean block) {
         boolean update = false;
 
         ServerInfo serverInfo = null;
@@ -556,9 +563,9 @@ public class NetworkManager {
                     ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
-                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, authKey);
+                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, duelsBuild, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
-                    MissionControl.getPanelManager().createServer(serverInfo, serverType.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation, coreBranch, lobbybranch, buildBranch, gameBranch, engineBranch);
+                    MissionControl.getPanelManager().createServer(serverInfo, serverType.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation, coreBranch, lobbybranch, buildBranch, gameBranch, engineBranch, duelsBranch);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);
                     update = true;
                 }
