@@ -54,6 +54,9 @@ public class NetworkRestarterThread extends Thread {
             if (modules.contains(Module.BUILD)) {
                 addServers(MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equals("build")).collect(Collectors.toList()));
             }
+            if (modules.contains(Module.DUELS)) {
+                addServers(MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equals("duels")).collect(Collectors.toList()));
+            }
         }
         if (serversToRestart.size() > 10) {
             for (int i = 0;i < 5;i++) {
@@ -63,6 +66,7 @@ public class NetworkRestarterThread extends Thread {
             queueForRestart(serversToRestart.remove(0));
         }
 
+        outer:
         while (true) {
             RestartServerResponse response;
             try {
@@ -88,6 +92,9 @@ public class NetworkRestarterThread extends Thread {
                         if (info.getLobbyBuildNumber() > 0) {
                             info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                         }
+                        if (info.getDuelsBuildNumber() > 0) {
+                            info.setLobbyBuildNumber(NetworkManager.getCurrentDuelsBuildNumber());
+                        }
                         info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
                     } else {
                         if (info.getBuildBuildNumber() > 0) {
@@ -101,6 +108,9 @@ public class NetworkRestarterThread extends Thread {
                         }
                         if (info.getLobbyBuildNumber() > 0) {
                             info.setLobbyBuildNumber(NetworkManager.getAlphaBuilds().get(Module.LOBBY));
+                        }
+                        if (info.getDuelsBuildNumber() > 0) {
+                            info.setLobbyBuildNumber(NetworkManager.getAlphaBuilds().get(Module.DUELS));
                         }
                         info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
                     }
@@ -125,9 +135,13 @@ public class NetworkRestarterThread extends Thread {
                         if (info.getLobbyBuildNumber() > 0) {
                             restart = restart || info.getBuildBuildNumber() != NetworkManager.getCurrentLobbyBuildNumber();
                         }
+                        if (info.getDuelsBuildNumber() > 0) {
+                            restart = restart || info.getDuelsBuildNumber() != NetworkManager.getCurrentDuelsBuildNumber();
+                        }
                         restart = restart || info.getBuildBuildNumber() != NetworkManager.getCurrentCoreBuildNumber();
                         if (restart) {
                             queueForRestart(info);
+                            continue outer;
                         }
                     }
                     if (serversPendingRestart.size() == 0) {
@@ -163,6 +177,12 @@ public class NetworkRestarterThread extends Thread {
                                 break;
                             }
                         }
+                        if (modules.contains(Module.DUELS)) {
+                            if (info.getDuelsBuildNumber() != NetworkManager.getCurrentDuelsBuildNumber()) {
+                                more  = true;
+                                break;
+                            }
+                        }
                     }
                 } else {
                     for (ServerInfo info : serversToRestart) {
@@ -186,6 +206,12 @@ public class NetworkRestarterThread extends Thread {
                         }
                         if (modules.contains(Module.BUILD)) {
                             if (info.getBuildBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.BUILD)) {
+                                more  = true;
+                                break;
+                            }
+                        }
+                        if (modules.contains(Module.DUELS)) {
+                            if (info.getDuelsBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.DUELS)) {
                                 more  = true;
                                 break;
                             }
