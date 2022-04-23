@@ -691,6 +691,10 @@ public class NetworkManager {
         return currentProxyBuildNumber;
     }
 
+    public static int getCurrentDuelsBuildNumber() {
+        return currentDuelsBuildNumber;
+    }
+
     public static NetworkMonitorRunnable getAlphaMonitorRunnable() {
         return alphaMonitorRunnable;
     }
