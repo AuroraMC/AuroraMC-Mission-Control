@@ -27,8 +27,15 @@ public class StatUpdateRunnable implements Runnable {
         Map<Game, Integer> avgPlayerPerGame = new HashMap<>();
         for (Statistic statistic : Statistic.values()) {
             if (statistic.isSplitIntoGame()) {
+                if (statistic == Statistic.NETWORK_SERVER_TOTALS) {
+                    for (ServerType type : ServerType.values()) {
+                        int stat = statistic.getStat(null, frequency, type);
+                        MissionControl.getDbManager().insertStatistic(statistic, frequency, timestamp, stat, type);
+                    }
+                    return;
+                }
                 for (Game game : Game.values()) {
-                    int stat = statistic.getStat(game, frequency);
+                    int stat = statistic.getStat(game, frequency, null);
                     if (statistic == Statistic.GAMES_STARTED) {
                         totals.put(game, stat);
                     } if (statistic == Statistic.PLAYERS_PER_GAME) {
@@ -47,7 +54,7 @@ public class StatUpdateRunnable implements Runnable {
                     }
                 }
             } else {
-                MissionControl.getDbManager().insertStatistic(statistic, frequency, timestamp, statistic.getStat(null, frequency));
+                MissionControl.getDbManager().insertStatistic(statistic, frequency, timestamp, statistic.getStat(null, frequency, null));
             }
         }
     }

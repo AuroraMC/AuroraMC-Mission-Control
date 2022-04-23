@@ -32,7 +32,7 @@ public enum Statistic {
         return splitIntoGame;
     }
 
-    public int getStat(Game game, StatUpdateRunnable.StatisticPeriod updateFrequency) {
+    public int getStat(Game game, StatUpdateRunnable.StatisticPeriod updateFrequency, ServerType type) {
         switch (this) {
             case NETWORK_PLAYER_TOTALS: {
                 int amount = 0;
@@ -63,7 +63,7 @@ public enum Statistic {
             case UNIQUE_PLAYER_TOTALS:
                 return MissionControl.getDbManager().getUniquePlayerTotals();
             case NETWORK_SERVER_TOTALS:
-                return (int) MissionControl.getServers().get(ServerInfo.Network.MAIN).values().stream().filter(serverInfo -> serverInfo.getServerType().getString("game").equalsIgnoreCase(game.name()) || (serverInfo.getServerType().has("rotation") && serverInfo.getServerType().getJSONArray("rotation").toList().contains(game.name()))).count();
+                return (int) MissionControl.getServers().get(ServerInfo.Network.MAIN).values().stream().filter(serverInfo -> serverInfo.getServerType().getString("game").equalsIgnoreCase(type.name())).count();
             default:
                 return 0;
         }
