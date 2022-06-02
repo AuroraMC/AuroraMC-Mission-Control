@@ -390,7 +390,7 @@ public class PanelManager {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
             }
         }
-        if (info.getEngineBuildNumber() != -1) {
+        if (info.getDuelsBuildNumber() != -1) {
             environment.put("DUELS_VERSION", EnvironmentValue.ofString(info.getDuelsBuildNumber() + ""));
             if (info.getNetwork() == ServerInfo.Network.ALPHA) {
                 environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
