@@ -454,7 +454,7 @@ public class DatabaseManager {
             } else {
                 statement.setInt(12, info.getBuildBuildNumber());
             }
-            if (info.getBuildBuildNumber() == 0) {
+            if (info.getDuelsBuildNumber() == 0) {
                 statement.setNull(13, Types.INTEGER);
             } else {
                 statement.setInt(13, info.getDuelsBuildNumber());
