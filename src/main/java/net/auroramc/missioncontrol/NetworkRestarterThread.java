@@ -93,7 +93,7 @@ public class NetworkRestarterThread extends Thread {
                             info.setLobbyBuildNumber(NetworkManager.getCurrentLobbyBuildNumber());
                         }
                         if (info.getDuelsBuildNumber() > 0) {
-                            info.setLobbyBuildNumber(NetworkManager.getCurrentDuelsBuildNumber());
+                            info.setDuelsBuildNumber(NetworkManager.getCurrentDuelsBuildNumber());
                         }
                         info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
                     } else {
@@ -110,7 +110,7 @@ public class NetworkRestarterThread extends Thread {
                             info.setLobbyBuildNumber(NetworkManager.getAlphaBuilds().get(Module.LOBBY));
                         }
                         if (info.getDuelsBuildNumber() > 0) {
-                            info.setLobbyBuildNumber(NetworkManager.getAlphaBuilds().get(Module.DUELS));
+                            info.setDuelsBuildNumber(NetworkManager.getAlphaBuilds().get(Module.DUELS));
                         }
                         info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
                     }
