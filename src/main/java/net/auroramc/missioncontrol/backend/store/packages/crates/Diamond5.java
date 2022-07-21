@@ -19,7 +19,7 @@ public class Diamond5 extends Package {
 
 
     public Diamond5() {
-        super(21);
+        super(11);
     }
 
     @Override

@@ -19,7 +19,7 @@ public class Iron5 extends Package {
 
 
     public Iron5() {
-        super(21);
+        super(9);
     }
 
     @Override

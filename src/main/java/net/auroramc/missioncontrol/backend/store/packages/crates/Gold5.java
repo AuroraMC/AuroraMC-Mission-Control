@@ -19,7 +19,7 @@ public class Gold5 extends Package {
 
 
     public Gold5() {
-        super(21);
+        super(10);
     }
 
     @Override
