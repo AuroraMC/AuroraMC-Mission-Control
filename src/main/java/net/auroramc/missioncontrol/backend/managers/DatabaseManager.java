@@ -1038,4 +1038,16 @@ public class DatabaseManager {
         }
     }
 
+    public void newCrate(UUID uuid, String type, int id) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO crates(uuid, type, amc_id) VALUES (?,?,?)");
+            statement.setString(1, uuid.toString());
+            statement.setString(2, type);
+            statement.setInt(3, id);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

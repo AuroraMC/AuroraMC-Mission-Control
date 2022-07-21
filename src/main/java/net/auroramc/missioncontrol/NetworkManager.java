@@ -18,6 +18,9 @@ import net.auroramc.missioncontrol.backend.runnables.StoreCommandProcessRunnable
 import net.auroramc.missioncontrol.backend.store.PaymentProcessor;
 import net.auroramc.missioncontrol.backend.store.packages.bundles.Celebration;
 import net.auroramc.missioncontrol.backend.store.packages.bundles.Starter;
+import net.auroramc.missioncontrol.backend.store.packages.crates.Diamond5;
+import net.auroramc.missioncontrol.backend.store.packages.crates.Gold5;
+import net.auroramc.missioncontrol.backend.store.packages.crates.Iron5;
 import net.auroramc.missioncontrol.backend.store.packages.plus.Plus180;
 import net.auroramc.missioncontrol.backend.store.packages.plus.Plus30;
 import net.auroramc.missioncontrol.backend.store.packages.plus.Plus365;
@@ -134,6 +137,9 @@ public class NetworkManager {
         PaymentProcessor.registerPackage("plus365", new Plus365());
         PaymentProcessor.registerPackage("celebration", new Celebration());
         PaymentProcessor.registerPackage("starter", new Starter());
+        PaymentProcessor.registerPackage("iron5", new Iron5());
+        PaymentProcessor.registerPackage("gold5", new Gold5());
+        PaymentProcessor.registerPackage("diamond5", new Diamond5());
 
         gameEnabled = new HashMap<>();
         for (ServerInfo.Network network : ServerInfo.Network .values()) {
