@@ -40,7 +40,7 @@ public class NetworkMonitorRunnable implements Runnable {
     public void run() {
         //If an update is not in progress, check player counts.
         if (!update && enabled) {
-            logger.info("Checking servers for network '" + network.name() + "'.");
+            logger.fine("Checking servers for network '" + network.name() + "'.");
             int networkTotal = 0;
             for (ProxyInfo info : MissionControl.getProxies().values()) {
                 if (info.getNetwork() == ServerInfo.Network.MAIN) {
@@ -51,12 +51,13 @@ public class NetworkMonitorRunnable implements Runnable {
             if (networkTotal > 0) {
                 List<UUID> uuids = MissionControl.getProxies().keySet().stream().filter(uuid -> MissionControl.getProxies().get(uuid).getNetwork() == network).collect(Collectors.toList());
                 int totalProxiesNeeded = (networkTotal / 200) + ((networkTotal % 200 > 100)?1:0) + 1;
+                if (totalProxiesNeeded < 2) totalProxiesNeeded = 2;
                 if (uuids.size() - proxiesPendingRestart.size() != totalProxiesNeeded) {
                     //There are not enough/too many proxies open. Close/open some.
                     int i = uuids.size() - proxiesPendingRestart.size();
                     if (totalProxiesNeeded < i) {
                         //Too many proxies.
-                        logger.info("Too many proxies are open for network '" + network.name() + "'. Destroying " +  (i - totalProxiesNeeded) + " proxies.");
+                        logger.fine("Too many proxies are open for network '" + network.name() + "'. Destroying " +  (i - totalProxiesNeeded) + " proxies.");
                         do {
                             ProxyInfo info = MissionControl.getProxies().get(uuids.remove(0));
                             NetworkManager.removeProxyFromRotation(info);
@@ -68,7 +69,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         } while (totalProxiesNeeded > i);
                     } else {
                         //Not enough proxies.
-                        logger.info("Not enough proxies are open for network '" + network.name() + "'. Creating " +  (totalProxiesNeeded - i) + " proxies.");
+                        logger.fine("Not enough proxies are open for network '" + network.name() + "'. Creating " +  (totalProxiesNeeded - i) + " proxies.");
                         do {
                             NetworkManager.createProxy(network, false, true);
                             i++;
@@ -80,6 +81,7 @@ public class NetworkMonitorRunnable implements Runnable {
                 List<UUID> uuids = MissionControl.getProxies().keySet().stream().filter(uuid -> MissionControl.getProxies().get(uuid).getNetwork() == network).collect(Collectors.toList());
                 if (uuids.size() - proxiesPendingRestart.size() > 2) {
                     int i = uuids.size() - proxiesPendingRestart.size();
+                    logger.fine("Too many proxies are open for network '" + network.name() + "'. Destroying " +  (i - 2) + " proxies.");
                     do {
                         ProxyInfo info = MissionControl.getProxies().get(uuids.remove(0));
                         NetworkManager.removeProxyFromRotation(info);
@@ -89,6 +91,7 @@ public class NetworkMonitorRunnable implements Runnable {
                 } else if (uuids.size() - proxiesPendingRestart.size()  < 2) {
                     //While this should technically never be possible, if the network is just starting after all servers were closed, the servers need to be opened.
                     int i = uuids.size() - proxiesPendingRestart.size();
+                    logger.fine("Not enough proxies are open for network '" + network.name() + "'. Creating " +  (2 - i) + " proxies.");
                     do {
                         NetworkManager.createProxy(network, false, true);
                         i++;
@@ -109,14 +112,15 @@ public class NetworkMonitorRunnable implements Runnable {
                     }
                 }
 
-                List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getNetwork() == network && info.getServerType().getString("type").equalsIgnoreCase("game") && info.getServerType().getString("game").equalsIgnoreCase(serverType.name())).collect(Collectors.toList());
+                List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getNetwork() == network && info.getServerType().getString("game").equalsIgnoreCase(serverType.name())).collect(Collectors.toList());
                 int serversNeeded = (gameTotal / serverType.getMaxPlayers()) + ((gameTotal % serverType.getMaxPlayers() > (serverType.getMaxPlayers()/2))?1:0) + 1;
                 long serversOpen = infos.size() - serversPendingRestart.stream().filter(info -> info.getServerType().getString("game").equalsIgnoreCase(serverType.name())).count();
+                if (serversNeeded < 2) serversNeeded = 2;
                 if (gameTotal > 0) {
                     int i = (int) serversOpen;
                     if (serversNeeded < serversOpen) {
                         //Too many servers are open, close as many are needed.
-                        logger.info("Too many servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Destroying " +  (serversOpen - serversNeeded) + " servers.");
+                        logger.fine("Too many servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Destroying " +  (serversOpen - serversNeeded) + " servers.");
                         do {
                             ServerInfo info = findHighestServerID(infos);
                             infos.remove(info);
@@ -128,7 +132,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         } while (serversNeeded < i);
                     } else if (serversNeeded > serversOpen) {
                         //Not enough are open, open as many are needed.
-                        logger.info("Not enough servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Creating " +  (serversNeeded - serversOpen) + " servers.");
+                        logger.fine("Not enough servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Creating " +  (serversNeeded - serversOpen) + " servers.");
                         do {
                             int id = findLowestAvailableServerID(serverType, network);
                             NetworkManager.createServer(serverType.getServerCode() + "-" + id, serverType, false, network, true);
@@ -138,6 +142,7 @@ public class NetworkMonitorRunnable implements Runnable {
                 } else {
                     //No-one is in these servers, just make sure 2 servers are ready to go.
                     int i = (int) serversOpen;
+                    logger.fine("Too many servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Destroying " +  (serversOpen - serversNeeded) + " servers.");
                     if (serversOpen > 2) {
                         //Close as many servers is necessary.
                         do {
@@ -149,6 +154,7 @@ public class NetworkMonitorRunnable implements Runnable {
                         } while (i > 2);
                     } else if (serversOpen < 2) {
                         //Open as many servers is necessary.
+                        logger.fine("Not enough servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Creating " +  (serversNeeded - serversOpen) + " servers.");
                         do {
                             int id = findLowestAvailableServerID(serverType, network);
                             NetworkManager.createServer(serverType.getServerCode() + "-" + id, serverType, false, network, true);
@@ -157,7 +163,7 @@ public class NetworkMonitorRunnable implements Runnable {
                     }
                 }
             }
-            logger.info("Monitoring round for network '" + network.name() + "' complete.");
+            logger.fine("Monitoring round for network '" + network.name() + "' complete.");
         }
     }
 
