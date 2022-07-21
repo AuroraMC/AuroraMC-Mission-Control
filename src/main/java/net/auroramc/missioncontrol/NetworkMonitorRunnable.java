@@ -142,9 +142,9 @@ public class NetworkMonitorRunnable implements Runnable {
                 } else {
                     //No-one is in these servers, just make sure 2 servers are ready to go.
                     int i = (int) serversOpen;
-                    logger.fine("Too many servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Destroying " +  (serversOpen - serversNeeded) + " servers.");
                     if (serversOpen > 2) {
                         //Close as many servers is necessary.
+                        logger.fine("Too many servers are open on network '" + network.name() + "' for game '" + serverType.name() + "'. Destroying " +  (serversOpen - serversNeeded) + " servers.");
                         do {
                             ServerInfo info = findHighestServerID(infos);
                             infos.remove(info);
