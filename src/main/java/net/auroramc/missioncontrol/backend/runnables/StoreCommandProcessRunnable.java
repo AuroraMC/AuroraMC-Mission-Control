@@ -66,7 +66,7 @@ public class StoreCommandProcessRunnable implements Runnable {
                     //Issue ban and let proxy know if they're offline.
                     MissionControl.getDbManager().chargebackPayment(Integer.parseInt(payment.meta.paymentId));
                     String code = RandomStringUtils.randomAlphanumeric(8).toUpperCase();
-                    MissionControl.getDbManager().issuePunishment(code, id, 26, "Forced chargeback on store purchase.", 1, System.currentTimeMillis(), -1, 1, uuid.toString());
+                    MissionControl.getDbManager().issuePunishment(code, id, 24, "Forced chargeback on store purchase.", 1, System.currentTimeMillis(), -1, 1, uuid.toString());
                     if (MissionControl.getDbManager().hasActiveSession(uuid)) {
                         ProtocolMessage message = new ProtocolMessage(Protocol.PUNISH, MissionControl.getDbManager().getProxy(uuid).toString(), "ban", "Mission Control", code);
                         ProxyCommunicationUtils.sendMessage(message);
