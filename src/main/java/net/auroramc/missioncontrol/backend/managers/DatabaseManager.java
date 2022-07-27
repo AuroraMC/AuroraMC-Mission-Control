@@ -767,7 +767,7 @@ public class DatabaseManager {
 
     public void setMonitoringEnabled(ServerType serverType, ServerInfo.Network network, boolean enabled) {
         try (Jedis connection = jedis.getResource()) {
-            connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitor.%s", serverType.name()), enabled + "");
+            connection.hset(String.format("missioncontrol.%s", network.name()), String.format("monitoring.%s", serverType.name()), enabled + "");
         }
     }
 
