@@ -32,8 +32,17 @@ public class Starter extends Package {
                 ProxyCommunicationUtils.sendMessage(message);
             }
         }
+        MissionControl.getDbManager().addCosmetic(uuid, 8);
         MissionControl.getDbManager().addCosmetic(uuid, 121);
         MissionControl.getDbManager().addCosmetic(uuid, 122);
+        MissionControl.getDbManager().addCosmetic(uuid, 209);
+        MissionControl.getDbManager().addCosmetic(uuid, 347);
+        MissionControl.getDbManager().addCosmetic(uuid, 508);
+        MissionControl.getDbManager().addCosmetic(uuid, 602);
+        MissionControl.getDbManager().addCosmetic(uuid, 701);
+        MissionControl.getDbManager().addCosmetic(uuid, 801);
+        MissionControl.getDbManager().addCosmetic(uuid, 901);
+        MissionControl.getDbManager().addCosmetic(uuid, 1001);
         ProtocolMessage message = new ProtocolMessage(Protocol.UPDATE_PROFILE, MissionControl.getDbManager().getProxy(uuid).toString(), "add_cosmetic", "Mission Control", uuid.toString() + "\n" + 122);
         ProxyCommunicationUtils.sendMessage(message);
         message = new ProtocolMessage(Protocol.UPDATE_PROFILE, MissionControl.getDbManager().getProxy(uuid).toString(), "add_cosmetic", "Mission Control", uuid.toString() + "\n" + 121);
@@ -53,8 +62,17 @@ public class Starter extends Package {
                 ProxyCommunicationUtils.sendMessage(message);
             }
         }
+        MissionControl.getDbManager().removeCosmetic(uuid, 8);
         MissionControl.getDbManager().removeCosmetic(uuid, 121);
         MissionControl.getDbManager().removeCosmetic(uuid, 122);
+        MissionControl.getDbManager().removeCosmetic(uuid, 209);
+        MissionControl.getDbManager().removeCosmetic(uuid, 347);
+        MissionControl.getDbManager().removeCosmetic(uuid, 508);
+        MissionControl.getDbManager().removeCosmetic(uuid, 602);
+        MissionControl.getDbManager().removeCosmetic(uuid, 701);
+        MissionControl.getDbManager().removeCosmetic(uuid, 801);
+        MissionControl.getDbManager().removeCosmetic(uuid, 901);
+        MissionControl.getDbManager().removeCosmetic(uuid, 1001);
         ProtocolMessage message = new ProtocolMessage(Protocol.UPDATE_PROFILE, MissionControl.getDbManager().getProxy(uuid).toString(), "remove_cosmetic", "Mission Control", uuid.toString() + "\n" + 122);
         ProxyCommunicationUtils.sendMessage(message);
         message = new ProtocolMessage(Protocol.UPDATE_PROFILE, MissionControl.getDbManager().getProxy(uuid).toString(), "remove_cosmetic", "Mission Control", uuid.toString() + "\n" + 121);
