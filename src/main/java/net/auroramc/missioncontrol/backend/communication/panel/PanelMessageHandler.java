@@ -52,7 +52,7 @@ public class PanelMessageHandler {
                     String serverName = null;
                     List<String> extraArgs = null;
 
-                    if (args.size() >= 3) {
+                    if (args.size() >= 3 && !args.get(2).equals("")) {
                         serverName = args.get(2);
                     }
 
