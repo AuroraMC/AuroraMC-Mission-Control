@@ -95,7 +95,7 @@ public class PanelMessageHandler {
                             moduleBuilds.put(module, build);
                         }
 
-                        if (moduleBranches.size() != serverType.getModules().size()) {
+                        if (moduleBranches.size() != serverType.getModules().size() + 1) {
                             return "You have not specified the branch and build number for all modules. Aborting.";
                         }
 
