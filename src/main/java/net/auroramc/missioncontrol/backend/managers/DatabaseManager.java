@@ -468,8 +468,9 @@ public class DatabaseManager {
 
     public void deleteServer(ServerInfo info) {
         try (Connection connection = mysql.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("DELETE FROM servers WHERE servername = ?");
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM servers WHERE servername = ? AND network = ?");
             statement.setString(1, info.getName());
+            statement.setString(2, info.getNetwork().name());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
