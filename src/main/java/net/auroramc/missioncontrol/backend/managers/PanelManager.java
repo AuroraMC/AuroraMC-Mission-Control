@@ -62,7 +62,7 @@ public class PanelManager {
     }
 
     public List<ApplicationServer> getAllServers() {
-        return api.retrieveServers().execute();
+        return api.retrieveServers().stream().collect(Collectors.toList());
     }
 
     public void deleteServer(String name, ServerInfo.Network network) {
