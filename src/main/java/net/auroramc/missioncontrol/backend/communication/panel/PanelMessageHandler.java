@@ -99,6 +99,13 @@ public class PanelMessageHandler {
                             return "You have not specified the branch and build number for all modules. Aborting.";
                         }
 
+                        if (serverName == null) {
+                            int id = NetworkMonitorRunnable.findLowestAvailableServerID(serverType, network);
+                            serverName = serverType.getServerCode() + "-" + id;
+                        } else if (MissionControl.getServers().get(network).containsKey(serverName)) {
+                            return "That server already exists on that network.";
+                        }
+
                         ServerInfo info = NetworkManager.createServer(serverName, serverType, true, network, moduleBuilds.getOrDefault(Module.CORE, -1), moduleBranches.get(Module.CORE), moduleBuilds.getOrDefault(Module.LOBBY, -1), moduleBranches.get(Module.LOBBY), moduleBuilds.getOrDefault(Module.BUILD, -1), moduleBranches.get(Module.BUILD), moduleBuilds.getOrDefault(Module.GAME, -1), moduleBranches.get(Module.GAME), moduleBuilds.getOrDefault(Module.ENGINE, -1), moduleBranches.get(Module.ENGINE), moduleBuilds.getOrDefault(Module.DUELS, -1), moduleBranches.get(Module.DUELS), false);
                         if (info != null) {
                             return "Server '" + serverName + "' successfully created on network '" + network.name() + "'. Please give the server time to start up properly.";
