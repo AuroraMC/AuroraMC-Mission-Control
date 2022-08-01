@@ -79,7 +79,7 @@ public class PanelMessageHandler {
                                 return "Module '" + moduleArg[0] + "' does not exist.";
                             }
 
-                            if (!serverType.getModules().contains(module)) {
+                            if (!serverType.getModules().contains(module) && module != Module.CORE && !moduleBranches.containsKey(module)) {
                                 continue;
                             }
 
