@@ -605,10 +605,10 @@ public class NetworkManager {
     }
 
     public static void removeServerFromRotation(ServerInfo server) {
-        List<ServerInfo> infos = MissionControl.getServers().get(server.getNetwork()).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby")).collect(Collectors.toList());
+        List<ServerInfo> infos = MissionControl.getServers().get(server.getNetwork()).values().stream().filter(info -> info.getServerType().getString("type").equalsIgnoreCase("lobby") && info.getNetwork() == server.getNetwork()).collect(Collectors.toList());
         for (ServerInfo info : infos) {
             ProtocolMessage message = new ProtocolMessage(Protocol.REMOVE_SERVER ,info.getName(), "remove", "Mission Control", server.getName());
-            ServerCommunicationUtils.sendMessage(message, info.getNetwork());
+            ServerCommunicationUtils.sendMessage(message, server.getNetwork());
         }
         for (ProxyInfo info : MissionControl.getProxies().values().stream().filter(proxyInfo -> proxyInfo.getNetwork() == server.getNetwork()).collect(Collectors.toList())) {
             net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.SERVER_OFFLINE, info.getUuid().toString(), "remove", "Mission Control", server.getName());
