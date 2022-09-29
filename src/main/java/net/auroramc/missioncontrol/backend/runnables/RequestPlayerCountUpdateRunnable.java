@@ -16,6 +16,7 @@ public class RequestPlayerCountUpdateRunnable implements Runnable {
 
     @Override
     public void run() {
+        MissionControl.getLogger().fine("Requesting updated player counts for all servers.");
         for (ServerInfo.Network network : ServerInfo.Network.values()) {
             for (ServerInfo info : MissionControl.getServers().get(network).values()) {
                 ProtocolMessage message = new ProtocolMessage(Protocol.UPDATE_PLAYER_COUNT, info.getName(), "update", "MissionControl", "");

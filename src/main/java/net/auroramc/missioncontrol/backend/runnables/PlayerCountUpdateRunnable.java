@@ -12,10 +12,11 @@ import net.auroramc.missioncontrol.entities.ServerInfo;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlayerCountUpdateRunnable implements Runnable{
+public class PlayerCountUpdateRunnable implements Runnable {
 
     @Override
     public void run() {
+        MissionControl.getLogger().fine("Updating Player Counts");
         Map<ServerInfo.Network, Integer> counts = new HashMap<>();
         for (ProxyInfo info : MissionControl.getProxies().values()) {
             if (!counts.containsKey(info.getNetwork())) {
