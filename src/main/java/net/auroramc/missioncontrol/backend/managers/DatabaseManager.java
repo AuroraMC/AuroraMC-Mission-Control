@@ -17,10 +17,7 @@ import redis.clients.jedis.Pipeline;
 
 import java.sql.*;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class DatabaseManager {
 
@@ -1029,6 +1026,18 @@ public class DatabaseManager {
     public void insertStatistic(Statistic statistic, StatUpdateRunnable.StatisticPeriod period, long timestamp, int value, ServerType game) {
         try (Jedis connection = jedis.getResource()) {
             connection.sadd("stat." + statistic.name() + "." + period, timestamp + ";" + value + ";" + game.name());
+        }
+    }
+
+    public Set<String> getStat(Statistic statistic, StatUpdateRunnable.StatisticPeriod period) {
+        try (Jedis connection = jedis.getResource()) {
+            return connection.smembers("stat." + statistic.name() + "." + period);
+        }
+    }
+
+    public void removeStat(Statistic statistic, StatUpdateRunnable.StatisticPeriod period, String stat) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.srem("stat." + statistic.name() + "." + period, stat);
         }
     }
 

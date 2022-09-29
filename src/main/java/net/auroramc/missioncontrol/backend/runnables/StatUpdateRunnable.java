@@ -11,6 +11,7 @@ import net.auroramc.missioncontrol.backend.util.Statistic;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class StatUpdateRunnable implements Runnable {
 
@@ -22,10 +23,23 @@ public class StatUpdateRunnable implements Runnable {
 
     @Override
     public void run() {
+
         long timestamp = System.currentTimeMillis();
         Map<Game, Integer> totals = new HashMap<>();
         Map<Game, Integer> avgPlayerPerGame = new HashMap<>();
         for (Statistic statistic : Statistic.values()) {
+
+            if (frequency != StatisticPeriod.ALLTIME) {
+                Set<String> stats = MissionControl.getDbManager().getStat(statistic, frequency);
+                for (String stat : stats) {
+                    String[] args = stat.split(";");
+                    long time = Long.parseLong(args[0]);
+                    if ((frequency == StatisticPeriod.DAILY && timestamp - time >= 86400000) || (frequency == StatisticPeriod.WEEKLY && timestamp - time >= 604800000)) {
+                        MissionControl.getDbManager().removeStat(statistic, frequency, stat);
+                    }
+                }
+            }
+
             if (statistic.isSplitIntoGame()) {
                 if (statistic == Statistic.NETWORK_SERVER_TOTALS) {
                     for (ServerType type : ServerType.values()) {
