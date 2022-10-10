@@ -39,7 +39,6 @@ public class ServerCommunicationUtils {
                 return message.getUuid();
             } catch (Exception e) {
                 if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isUpdate()) {
-                    MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact server " + info.getName() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
                     return sendMessage(message, network, 1);
                 }
                 return null;
