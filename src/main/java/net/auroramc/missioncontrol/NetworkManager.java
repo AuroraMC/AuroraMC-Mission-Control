@@ -182,11 +182,11 @@ public class NetworkManager {
         //Statistics updater
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.DAILY), 0, 10, TimeUnit.MINUTES);
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.WEEKLY), 0, 1, TimeUnit.HOURS);
-        scheduler.scheduleWithFixedDelay(() -> {
+        scheduler.schedule(() -> {
             new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.ALLTIME).run();
             MissionControl.getLogger().info("Performing Mission Control Restart...");
             interrupt();
-        }, 0, 1, TimeUnit.DAYS);
+        }, 1,TimeUnit.DAYS);
 
         CommandManager commandManager = new CommandManager(storeApiKey, storeURL);
         scheduler.scheduleWithFixedDelay(new StoreCommandProcessRunnable(commandManager), 0, 10, TimeUnit.MINUTES);
