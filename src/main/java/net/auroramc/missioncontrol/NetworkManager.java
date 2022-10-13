@@ -200,7 +200,8 @@ public class NetworkManager {
         try {
             while (!shutdown) {
                 synchronized (lock3) {
-                    lock3.wait();
+                    //Add a timeout in-case interrupting didnt work. Checks once every hour.
+                    lock3.wait(3600000L);
                 }
             }
         } catch (InterruptedException e) {
