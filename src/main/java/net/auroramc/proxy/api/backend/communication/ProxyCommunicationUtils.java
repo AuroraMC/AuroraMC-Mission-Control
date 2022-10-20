@@ -36,6 +36,7 @@ public class ProxyCommunicationUtils {
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 outputStream.writeObject(message);
                 outputStream.flush();
+                info.ping();
                 return message.getUuid();
             } catch (Exception e) {
                 if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isProxyUpdate()) {
@@ -58,11 +59,17 @@ public class ProxyCommunicationUtils {
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 outputStream.writeObject(message);
                 outputStream.flush();
+                info.ping();
                 return message.getUuid();
             } catch (Exception e) {
                 if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isProxyUpdate()) {
                     if (level > 4) {
-                        MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact proxy " + info.getUuid().toString() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
+                        if (System.currentTimeMillis() - info.getLastPing() > 300000) {
+                            MissionControl.getLogger().log(Level.WARNING, "Last successful ping to proxy " + info.getUuid().toString() + " on network " + info.getNetwork().name() + " was over 5 minutes ago, restarting proxy. Stack Trace:", e);
+                            MissionControl.getPanelManager().updateProxy(info);
+                        } else {
+                            MissionControl.getLogger().log(Level.WARNING, "An error occurred when attempting to contact proxy " + info.getUuid().toString() + " on network " + info.getNetwork().name() + ". Stack Trace:", e);
+                        }
                         return null;
                     }
                     return sendMessage(message, level + 1);
