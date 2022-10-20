@@ -18,6 +18,7 @@ public class ProxyInfo implements Info {
     private final String authKey;
     private byte playerCount;
     private ProxyStatus status;
+    private long lastPing;
 
     public ProxyInfo(UUID uuid, String ip, int port, ServerInfo.Network network, boolean forced, int protocolPort, int buildNumber, String authKey) {
         this.uuid = uuid;
@@ -30,6 +31,7 @@ public class ProxyInfo implements Info {
         this.authKey = authKey;
         this.playerCount = -1;
         this.status = ProxyStatus.STARTING;
+        this.lastPing = -1;
     }
 
     public UUID getUuid() {
@@ -93,4 +95,12 @@ public class ProxyInfo implements Info {
     }
 
     public enum ProxyStatus {STARTING, ONLINE, PENDING_RESTART, RESTARTING}
+
+    public void ping() {
+        this.lastPing = System.currentTimeMillis();
+    }
+
+    public long getLastPing() {
+        return lastPing;
+    }
 }
