@@ -37,7 +37,7 @@ public class ServerInfo implements Info {
         this.playerCount = -1;
         this.status = ServerStatus.STARTING;
         this.duelsBuildNumber = duelsBuildNumber;
-        this.lastPing = -1;
+        this.lastPing = System.currentTimeMillis();
     }
 
     public String getName() {

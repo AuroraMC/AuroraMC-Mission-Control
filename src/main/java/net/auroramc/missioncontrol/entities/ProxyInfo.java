@@ -31,7 +31,7 @@ public class ProxyInfo implements Info {
         this.authKey = authKey;
         this.playerCount = -1;
         this.status = ProxyStatus.STARTING;
-        this.lastPing = -1;
+        this.lastPing = System.currentTimeMillis();
     }
 
     public UUID getUuid() {
