@@ -24,7 +24,8 @@ public enum ServerType {
     ARCADE_MODE(16, "Arcade", new JSONObject().put("type", "game").put("game", "ARCADE_MODE").put("rotation", new JSONArray().put("SPLEEF").put("FFA").put("HOT_POTATO").put("TAG").put("RUN")).put("max_players", 16).put("min_players", 8), MemoryAllocation.GAME, Arrays.asList(Module.ENGINE, Module.GAME)),
     DUELS(32, "Duels", new JSONObject().put("type", "duels").put("game", "DUELS").put("max_players", 32), MemoryAllocation.DUELS, Collections.singletonList(Module.DUELS)),
     BUILD(32, "Build", new JSONObject().put("type", "build").put("game", "BUILD").put("max_players", 32), MemoryAllocation.GAME, Collections.singletonList(Module.BUILD)),
-    STAFF(80, "Staff", new JSONObject().put("type", "staff").put("game", "STAFF").put("rotation", new JSONArray()).put("max_players", 80).put("min_players", 40), MemoryAllocation.LOBBY, Arrays.asList(Module.ENGINE, Module.GAME));
+    STAFF(80, "Staff", new JSONObject().put("type", "staff").put("game", "STAFF").put("rotation", new JSONArray()).put("max_players", 80).put("min_players", 40), MemoryAllocation.LOBBY, Arrays.asList(Module.ENGINE, Module.GAME)),
+    PATHFINDER(32, null /* Pathfinder server codes will differ, Pathfinder MC will deal with that. */, new JSONObject().put("type", "lobby").put("game", "PATHFINDER").put("max_players", 32), MemoryAllocation.GAME, Collections.singletonList(Module.PATHFINDER));
 
     private final int maxPlayers;
     private final String serverCode;

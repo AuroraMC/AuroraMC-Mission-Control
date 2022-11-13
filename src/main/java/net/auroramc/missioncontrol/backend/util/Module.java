@@ -12,7 +12,8 @@ public enum Module {
     PROXY("AuroraMC-Proxy", "AuroraMC-Proxy-Dev"),
     BUILD("AuroraMC-Build", "AuroraMC-Build-Dev"),
     EVENT("AuroraMC-Event", "AuroraMC-Event-Dev"),
-    DUELS("AuroraMC-Duels", "AuroraMC-Duels-Dev");
+    DUELS("AuroraMC-Duels", "AuroraMC-Duels-Dev"),
+    PATHFINDER("AuroraMC-Pathfinder", "AuroraMC-Pathfinder-Dev");
 
     private final String productionCIName,devCIName;
 

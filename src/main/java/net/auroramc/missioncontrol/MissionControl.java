@@ -81,9 +81,8 @@ public class MissionControl {
         String loadBalancerBaseURL = prefs.get("loadBalancerBaseURL", null);
         String loadBalancerAuth = prefs.get("loadBalancerAuth", null);
         String storeApiKey = prefs.get("storeApiKey", null);
-        String storeURL = prefs.get("storeURL", null);
 
-        if (mysqlHost == null || mysqlPort == null || mysqlDb == null || mysqlUsername == null || mysqlPassword == null || redisHost == null || redisAuth == null || ciBaseURL == null || panelBaseURL == null || loadBalancerBaseURL == null || ciAPIKey == null || panelAPIKey == null || loadBalancerAuth == null || panelUserAPIKey == null || storeApiKey == null || storeURL == null) {
+        if (mysqlHost == null || mysqlPort == null || mysqlDb == null || mysqlUsername == null || mysqlPassword == null || redisHost == null || redisAuth == null || ciBaseURL == null || panelBaseURL == null || loadBalancerBaseURL == null || ciAPIKey == null || panelAPIKey == null || loadBalancerAuth == null || panelUserAPIKey == null || storeApiKey == null) {
             logger.info("\n" +
                     "===================================================\n" +
                     "AuroraMC Mission Control First Time Setup\n" +
@@ -124,8 +123,6 @@ public class MissionControl {
             loadBalancerBaseURL = consoleReader.readLine(">");
             logger.info("Now, we need the password for the HaProxy API?\n");
             loadBalancerAuth = consoleReader.readLine(">");
-            logger.info("Now, we need the base URL for the store API?\n");
-            storeURL = consoleReader.readLine(">");
             logger.info("Now, we need the API key for the store?\n");
             storeApiKey = consoleReader.readLine(">");
             logger.info("That's now everything! First time setup is complete!\n" +
@@ -149,7 +146,6 @@ public class MissionControl {
             prefs.put("loadBalancerBaseURL", loadBalancerBaseURL);
             prefs.put("loadBalancerAuth", loadBalancerAuth);
             prefs.put("storeApiKey", storeApiKey);
-            prefs.put("storeURL", storeURL);
         }
 
         dbManager = new DatabaseManager(mysqlHost, mysqlPort, mysqlDb, mysqlUsername, mysqlPassword, redisHost, redisAuth);
@@ -232,7 +228,7 @@ public class MissionControl {
 
         logger.fine("Server/proxy messaging protocol listeners successfully started.");
         logger.info("AuroraMC Mission Control successfully started. Handing off to the network manager...");
-        NetworkManager.handoff(storeURL, storeApiKey);
+        NetworkManager.handoff(storeApiKey);
     }
 
     private static void checkMissingProxies(JSONObject object, ServerInfo.Network network) {

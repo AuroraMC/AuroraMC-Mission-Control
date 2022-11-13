@@ -4,86 +4,109 @@
 
 package net.auroramc.missioncontrol.backend.runnables;
 
-import com.mysql.cj.util.StringUtils;
+import com.google.common.base.Preconditions;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.backend.store.CommandResponse;
+import net.auroramc.missioncontrol.backend.store.Payment;
 import net.auroramc.missioncontrol.backend.store.PaymentProcessor;
 import net.auroramc.proxy.api.backend.communication.Protocol;
 import net.auroramc.proxy.api.backend.communication.ProtocolMessage;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
-import net.donationstore.commands.CommandManager;
-import net.donationstore.http.WebstoreHTTPClient;
-import net.donationstore.models.Command;
-import net.donationstore.models.request.UpdateCommandExecutedRequest;
-import net.donationstore.models.response.PaymentsResponse;
-import net.donationstore.models.response.QueueResponse;
+import net.buycraft.plugin.BuyCraftAPI;
+import net.buycraft.plugin.UuidUtil;
+import net.buycraft.plugin.data.QueuedCommand;
+import net.buycraft.plugin.data.QueuedPlayer;
+import net.buycraft.plugin.data.responses.DueQueueInformation;
+import net.buycraft.plugin.data.responses.QueueInformation;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
 
 public class StoreCommandProcessRunnable implements Runnable {
 
-    private final CommandManager commandManager;
+    private final BuyCraftAPI api;
 
-    public StoreCommandProcessRunnable(CommandManager commandManager) {
-        this.commandManager = commandManager;
+    public StoreCommandProcessRunnable(BuyCraftAPI api) {
+        this.api = api;
     }
 
     @Override
     public void run() {
+        QueueInformation information;
         try {
-            UpdateCommandExecutedRequest updateCommandExecutedRequest = new UpdateCommandExecutedRequest();
-            QueueResponse response = commandManager.getCommands();
+            information = api.retrieveOfflineQueue().execute().body();
+            if (information == null) {
+                return;
+            }
+        } catch (IOException e) {
+            MissionControl.getLogger().log(Level.SEVERE, "Could not fetch due players queue", e);
+            return;
+        }
 
-            for (PaymentsResponse payment : response.payments) {
-                UUID uuid = UUID.fromString(payment.meta.uuid);
-                int id = MissionControl.getDbManager().getAuroraMCID(uuid);
-                if (id < 0) {
-                    id = MissionControl.getDbManager().newUser(uuid, payment.meta.user);
-                }
-                List<String> packages = new ArrayList<>();
-                List<String> crates = new ArrayList<>();
-                boolean chargeback = false;
-                boolean refund = false;
-                double amount = 0;
-                for (Command command : payment.commands) {
-                    CommandResponse response1 = PaymentProcessor.onCommand(command.command, id, uuid);
-                    amount += Double.parseDouble(command.amount);
-                    for (UUID uuid1 : response1.getCratesGiven()) {
-                        crates.add(uuid1.toString());
-                    }
-                    packages.add(response1.getCommandId() + "");
-                    chargeback = response1.isChargeback() || chargeback;
-                    refund = response1.isRefund() || refund;
-                    updateCommandExecutedRequest.getCommands().add(command.id);
-                }
+        Map<Integer, Payment> payments = new HashMap<>();
 
-                if (refund) {
-                    MissionControl.getDbManager().refundPayment(Integer.parseInt(payment.meta.paymentId));
-                } else if (chargeback) {
-                    //Issue ban and let proxy know if they're offline.
-                    MissionControl.getDbManager().chargebackPayment(Integer.parseInt(payment.meta.paymentId));
-                    String code = RandomStringUtils.randomAlphanumeric(8).toUpperCase();
-                    MissionControl.getDbManager().issuePunishment(code, id, 24, "Forced chargeback on store purchase.", 1, System.currentTimeMillis(), -1, 1, uuid.toString());
-                    if (MissionControl.getDbManager().hasActiveSession(uuid)) {
-                        ProtocolMessage message = new ProtocolMessage(Protocol.PUNISH, MissionControl.getDbManager().getProxy(uuid).toString(), "ban", "Mission Control", code);
-                        ProxyCommunicationUtils.sendMessage(message);
-                    }
+        List<Integer> toDelete = new ArrayList<>();
+
+        for (QueuedCommand payment : information.getCommands()) {
+            UUID uuid = UuidUtil.mojangUuidToJavaUuid(payment.getPlayer().getUuid());
+            int id = MissionControl.getDbManager().getAuroraMCID(uuid);
+            if (id < 0) {
+                id = MissionControl.getDbManager().newUser(uuid, payment.getPlayer().getName());
+            }
+
+            String[] args = payment.getCommand().split(" ");
+            String command = args[0];
+            String transaction = args[1];
+            String price = args[2];
+
+            if (command.equals("chargeback")) {
+                if (!payments.containsKey(payment.getPaymentId())) {
+                    payments.put(payment.getPaymentId(), new Payment(id, uuid, payment.getPaymentId(), args[2]).chargeback());
+                }
+                command = transaction;
+            } else if (command.equals("refund")) {
+                if (!payments.containsKey(payment.getPaymentId())) {
+                    payments.put(payment.getPaymentId(), new Payment(id, uuid, payment.getPaymentId(), args[2]).refund());
+                }
+                command = transaction;
+            } else {
+                if (payments.containsKey(payment.getPaymentId())) {
+                    payments.get(payment.getPaymentId()).addAmount(Double.parseDouble(price));
                 } else {
-                    MissionControl.getDbManager().insertPayment(Integer.parseInt(payment.meta.paymentId), payment.meta.transactionId, id, amount, packages, crates);
-                    if (MissionControl.getDbManager().hasActiveSession(uuid)) {
-                        ProtocolMessage message = new ProtocolMessage(Protocol.MESSAGE, MissionControl.getDbManager().getProxy(uuid).toString(), uuid.toString(), "Mission Control", "store");
-                        ProxyCommunicationUtils.sendMessage(message);
-                    }
+                    payments.put(payment.getPaymentId(), new Payment(id, uuid, payment.getPaymentId(), transaction).addAmount(Double.parseDouble(price)));
                 }
             }
 
-            commandManager.updateCommandsToExecuted(updateCommandExecutedRequest);
-        } catch (Exception e) {
-            e.printStackTrace();
+            toDelete.add(payment.getId());
+
+            CommandResponse response1 = PaymentProcessor.onCommand(command, id, uuid, command.equals("chargeback"), command.equals("refund"));
+            for (UUID uuid1 : response1.getCratesGiven()) {
+                payments.get(payment.getPaymentId()).addCrate(uuid1.toString());
+            }
+            payments.get(payment.getPaymentId()).addPackage(response1.getCommandId() + "");
         }
+        for (Payment payment : payments.values()) {
+            if (payment.isRefund()) {
+                MissionControl.getDbManager().refundPayment(payment.getPaymentId());
+            } else if (payment.isChargeback()) {
+                MissionControl.getDbManager().chargebackPayment(payment.getPaymentId());
+                String code = RandomStringUtils.randomAlphanumeric(8).toUpperCase();
+                MissionControl.getDbManager().issuePunishment(code, payment.getAmcId(), 24, "Forced chargeback on store purchase.", 1, System.currentTimeMillis(), -1, 1, payment.getUuid().toString());
+                if (MissionControl.getDbManager().hasActiveSession(payment.getUuid())) {
+                    ProtocolMessage message = new ProtocolMessage(Protocol.PUNISH, MissionControl.getDbManager().getProxy(payment.getUuid()).toString(), "ban", "Mission Control", code);
+                    ProxyCommunicationUtils.sendMessage(message);
+                }
+            } else {
+                MissionControl.getDbManager().insertPayment(payment.getPaymentId(), payment.getTransactionId(), payment.getAmcId(), payment.getAmount(), payment.getPackages(), payment.getCrates());
+                if (MissionControl.getDbManager().hasActiveSession(payment.getUuid())) {
+                    ProtocolMessage message = new ProtocolMessage(Protocol.MESSAGE, MissionControl.getDbManager().getProxy(payment.getUuid()).toString(), payment.getUuid().toString(), "Mission Control", "store");
+                    ProxyCommunicationUtils.sendMessage(message);
+                }
+            }
+        }
+        api.deleteCommands(toDelete);
     }
 }
 

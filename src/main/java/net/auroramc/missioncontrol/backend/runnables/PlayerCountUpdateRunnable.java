@@ -5,7 +5,6 @@
 package net.auroramc.missioncontrol.backend.runnables;
 
 import net.auroramc.missioncontrol.MissionControl;
-import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 
