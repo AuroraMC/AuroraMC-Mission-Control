@@ -34,6 +34,7 @@ public class StoreCommandProcessRunnable implements Runnable {
 
     @Override
     public void run() {
+        MissionControl.getLogger().log(Level.FINEST, "Retrieving store purchases.");
         QueueInformation information;
         try {
             information = api.retrieveOfflineQueue().execute().body();
@@ -106,7 +107,11 @@ public class StoreCommandProcessRunnable implements Runnable {
                 }
             }
         }
-        api.deleteCommands(toDelete);
+        try {
+            api.deleteCommands(toDelete).execute();
+        } catch (IOException e) {
+            MissionControl.getLogger().log(Level.SEVERE, "Could not delete executed commands.", e);
+        }
     }
 }
 
