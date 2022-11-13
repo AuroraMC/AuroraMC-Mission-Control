@@ -41,6 +41,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static net.auroramc.missioncontrol.entities.ServerInfo.Network.*;
@@ -151,54 +152,15 @@ public class NetworkManager {
             gameMonitor.put(network, dbManager.getMonitoring(network));
         }
 
-        logger.info("Requesting player counts from servers...");
-        for (ServerInfo.Network network : ServerInfo.Network.values()) {
-            for (ServerInfo info : MissionControl.getServers().get(network).values()) {
-                ProtocolMessage message = new ProtocolMessage(Protocol.UPDATE_PLAYER_COUNT, info.getName(), "update", "MissionControl", "");
-                ServerCommunicationUtils.sendMessage(message, network);
-            }
-        }
-        for (ProxyInfo info : MissionControl.getProxies().values()) {
-            net.auroramc.proxy.api.backend.communication.ProtocolMessage message = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.UPDATE_PLAYER_COUNT, info.getUuid().toString(), "update", "MissionControl", "");
-            ProxyCommunicationUtils.sendMessage(message);
-        }
-        logger.info("Requests sent. Awaiting responses...");
-
-        //Wait for a response from all of the servers (max 1 minute wait)
-        try {
-            synchronized (lock2) {
-                for (int i = 0;i <= 6;i++) {
-                    int leftToReceive = 0;
-
-                    for (ServerInfo.Network network : ServerInfo.Network.values()) {
-                        for (ServerInfo info : MissionControl.getServers().get(network).values()) {
-                                if (info.getPlayerCount() == -1) {
-                                    leftToReceive++;
-                                }
-                        }
-                    }
-
-                    for (ProxyInfo info : MissionControl.getProxies().values()) {
-                        if (info.getPlayerCount() == -1) {
-                            leftToReceive++;
-                        }
-                    }
-
-                    if (leftToReceive == 0) {
-                        logger.info("All responses received, starting network monitoring thread...");
-                        break;
-                    }
-                    if (i == 6) {
-                        logger.info("Not all responses received but timeout reached, starting network monitoring thread...");
-                    } else {
-                        logger.info("Still waiting for " + leftToReceive + " responses...");
-                        lock2.wait(10000);
-                    }
-                }
-            }
-
-        } catch (InterruptedException e) {
-            logger.log(Level.WARNING,"Waiting for responses was interrupted. Starting network monitoring thread... ", e);
+        if (MissionControl.isClean()) {
+            logger.info("Restarting all servers...");
+            Map<Module, Integer> modules = new HashMap<>();
+            modules.put(Module.PROXY, currentProxyBuildNumber);
+            modules.put(Module.CORE, currentCoreBuildNumber);
+            pushUpdate(modules, MAIN);
+            logger.info("All servers queued for restart, starting network monitoring thread...");
+        } else {
+            logger.info("Mission Control did not restart cleanly so servers were not queued for restart. Starting network monitoring thread...");
         }
 
 
@@ -220,7 +182,11 @@ public class NetworkManager {
         //Statistics updater
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.DAILY), 0, 10, TimeUnit.MINUTES);
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.WEEKLY), 0, 1, TimeUnit.HOURS);
-        scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.ALLTIME), 0, 1, TimeUnit.DAYS);
+        scheduler.schedule(() -> {
+            new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.ALLTIME).run();
+            MissionControl.getLogger().info("Performing Mission Control Restart...");
+            interrupt();
+        }, 1,TimeUnit.DAYS);
 
         BuyCraftAPI api = BuyCraftAPI.create(storeApiKey);
         scheduler.scheduleWithFixedDelay(new StoreCommandProcessRunnable(api), 0, 10, TimeUnit.MINUTES);
@@ -234,7 +200,8 @@ public class NetworkManager {
         try {
             while (!shutdown) {
                 synchronized (lock3) {
-                    lock3.wait();
+                    //Add a timeout in-case interrupting didnt work. Checks once every hour.
+                    lock3.wait(3600000L);
                 }
             }
         } catch (InterruptedException e) {
@@ -632,6 +599,8 @@ public class NetworkManager {
     }
 
     public static void shutdown() {
+        Preferences prefs = Preferences.userNodeForPackage(MissionControl.class);
+        prefs.putBoolean("clean", true);
         logger.info("Shutting down scheduler...");
         scheduler.shutdown();
         logger.info("Shutting down protocol threads...");
