@@ -18,6 +18,7 @@ public class ServerInfo implements Info {
     //Any playercount value of -1 means the value has yet to be sent back to mission control.
     private byte playerCount;
     private ServerStatus status;
+    private long lastPing;
 
     public ServerInfo(String name, String ip, int port, Network network, boolean forced, JSONObject serverType, int protocolPort, int buildNumber, int lobbyBuildNumber, int engineBuildNumber, int gameBuildNumber, int buildBuildNumber, int duelsBuildNumber, String authKey) {
         this.name = name;
@@ -36,6 +37,7 @@ public class ServerInfo implements Info {
         this.playerCount = -1;
         this.status = ServerStatus.STARTING;
         this.duelsBuildNumber = duelsBuildNumber;
+        this.lastPing = System.currentTimeMillis();
     }
 
     public String getName() {
@@ -145,4 +147,12 @@ public class ServerInfo implements Info {
 
     public enum Network {MAIN, TEST, ALPHA}
     public enum ServerStatus {STARTING, ONLINE, PENDING_RESTART, RESTARTING}
+
+    public void ping() {
+        this.lastPing = System.currentTimeMillis();
+    }
+
+    public long getLastPing() {
+        return lastPing;
+    }
 }

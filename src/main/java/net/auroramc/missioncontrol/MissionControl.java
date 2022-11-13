@@ -43,6 +43,8 @@ public class MissionControl {
     private static Map<UUID, ProxyInfo> proxies;
     private static Map<String, Command> commands;
 
+    private static boolean clean;
+
     public static void main(String[] args) throws Exception {
         System.setProperty( "library.jansi.version", "BungeeCord" );
 
@@ -64,6 +66,7 @@ public class MissionControl {
         commands = new HashMap<>();
 
         Preferences prefs = Preferences.userNodeForPackage(MissionControl.class);
+        clean = prefs.getBoolean("clean", true);
         String mysqlHost = prefs.get("mysqlHost", null);
         String mysqlPort = prefs.get("mysqlPort", null);
         String mysqlDb = prefs.get("mysqlDb", null);
@@ -147,6 +150,8 @@ public class MissionControl {
             prefs.put("loadBalancerAuth", loadBalancerAuth);
             prefs.put("storeApiKey", storeApiKey);
         }
+
+        prefs.putBoolean("clean", false);
 
         dbManager = new DatabaseManager(mysqlHost, mysqlPort, mysqlDb, mysqlUsername, mysqlPassword, redisHost, redisAuth);
 
@@ -305,5 +310,9 @@ public class MissionControl {
 
     public static ConsoleReader getConsoleReader() {
         return consoleReader;
+    }
+
+    public static boolean isClean() {
+        return clean;
     }
 }
