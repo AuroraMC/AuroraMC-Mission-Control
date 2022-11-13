@@ -31,7 +31,7 @@ import net.auroramc.missioncontrol.backend.util.*;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
-import net.donationstore.commands.CommandManager;
+import net.buycraft.plugin.BuyCraftAPI;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.*;
@@ -110,7 +110,7 @@ public class NetworkManager {
     }
 
 
-    public static void handoff(String storeURL, String storeApiKey) {
+    public static void handoff(String storeApiKey) {
         logger.info("Fetching pushed builds...");
         currentCoreBuildNumber = dbManager.getCurrentCoreBuildNumber();
         currentBuildBuildNumber = dbManager.getCurrentBuildBuildNumber();
@@ -222,8 +222,8 @@ public class NetworkManager {
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.WEEKLY), 0, 1, TimeUnit.HOURS);
         scheduler.scheduleWithFixedDelay(new StatUpdateRunnable(StatUpdateRunnable.StatisticPeriod.ALLTIME), 0, 1, TimeUnit.DAYS);
 
-        CommandManager commandManager = new CommandManager(storeApiKey, storeURL);
-        scheduler.scheduleWithFixedDelay(new StoreCommandProcessRunnable(commandManager), 0, 10, TimeUnit.MINUTES);
+        BuyCraftAPI api = BuyCraftAPI.create(storeApiKey);
+        scheduler.scheduleWithFixedDelay(new StoreCommandProcessRunnable(api), 0, 10, TimeUnit.MINUTES);
 
         done();
     }

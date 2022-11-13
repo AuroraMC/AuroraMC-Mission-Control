@@ -17,6 +17,7 @@ public enum Game {
     BUILD,
     STAFF,
     LOBBY,
-    DUELS
+    DUELS,
+    PATHFINDER
 
 }

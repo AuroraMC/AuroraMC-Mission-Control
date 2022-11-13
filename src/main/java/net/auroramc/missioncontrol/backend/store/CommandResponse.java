@@ -11,14 +11,10 @@ public class CommandResponse {
 
     private final int commandId;
     private final List<UUID> cratesGiven;
-    private final boolean chargeback;
-    private final boolean refund;
 
-    public CommandResponse(int commandId, List<UUID> cratesGiven, boolean chargeback, boolean refund) {
+    public CommandResponse(int commandId, List<UUID> cratesGiven) {
         this.commandId = commandId;
         this.cratesGiven = cratesGiven;
-        this.chargeback = chargeback;
-        this.refund = refund;
     }
 
     public int getCommandId() {
@@ -27,13 +23,5 @@ public class CommandResponse {
 
     public List<UUID> getCratesGiven() {
         return cratesGiven;
-    }
-
-    public boolean isChargeback() {
-        return chargeback;
-    }
-
-    public boolean isRefund() {
-        return refund;
     }
 }
