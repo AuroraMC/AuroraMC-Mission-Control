@@ -34,11 +34,12 @@ public class StoreCommandProcessRunnable implements Runnable {
 
     @Override
     public void run() {
-        MissionControl.getLogger().log(Level.FINEST, "Retrieving store purchases.");
+        MissionControl.getLogger().log(Level.FINEST, "Retrieving store purchases...");
         QueueInformation information;
         try {
             information = api.retrieveOfflineQueue().execute().body();
             if (information == null) {
+                MissionControl.getLogger().log(Level.FINEST, "No commands to process.");
                 return;
             }
         } catch (IOException e) {
@@ -107,11 +108,14 @@ public class StoreCommandProcessRunnable implements Runnable {
                 }
             }
         }
-        try {
-            api.deleteCommands(toDelete).execute();
-        } catch (IOException e) {
-            MissionControl.getLogger().log(Level.SEVERE, "Could not delete executed commands.", e);
+        if (payments.size() > 0) {
+            try {
+                api.deleteCommands(toDelete).execute();
+            } catch (IOException e) {
+                MissionControl.getLogger().log(Level.SEVERE, "Could not delete executed commands.", e);
+            }
         }
+        MissionControl.getLogger().log(Level.FINEST, "Store retrieval finished.");
     }
 }
 
