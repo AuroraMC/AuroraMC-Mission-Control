@@ -66,6 +66,7 @@ public class NetworkManager {
     private static int currentEngineBuildNumber;
     private static int currentGameBuildNumber;
     private static int currentDuelsBuildNumber;
+    private static int currentPathfinderBuildNumber;
 
     private static final Logger logger;
     private static final DatabaseManager dbManager;
@@ -120,6 +121,7 @@ public class NetworkManager {
         currentLobbyBuildNumber = dbManager.getCurrentLobbyBuildNumber();
         currentProxyBuildNumber = dbManager.getCurrentProxyBuildNumber();
         currentDuelsBuildNumber = dbManager.getCurrentDuelsBuildNumber();
+        currentDuelsBuildNumber = dbManager.getCurrentPathfinderBuildNumber();
 
         motd = dbManager.getMotd();
         maintenance = dbManager.getMaintenance();
@@ -445,6 +447,59 @@ public class NetworkManager {
         nodes = MissionControl.getPanelManager().getAllNodes();
     }
 
+    public static ServerInfo createPathfinderServer(String serverName, ServerType serverType, boolean forced, ServerInfo.Network network, boolean block) {
+        boolean update = false;
+
+        ServerInfo serverInfo = null;
+
+        int coreBuild = ((network == ALPHA)?alphaBuilds.get(Module.CORE):currentCoreBuildNumber);
+        int pathfinderBuild = ((network == ALPHA)?alphaBuilds.get(Module.PATHFINDER):currentPathfinderBuildNumber);
+
+        for (Node node : nodes) {
+            if (node.getMemoryLong() - node.getAllocatedMemoryLong() > serverType.getMemoryAllocation().getMegaBytes()) {
+                //There is enough memory in this node
+                List<ApplicationAllocation> allocations = node.retrieveAllocations().all().execute().stream().filter(allocation -> !allocation.isAssigned() && Integer.parseInt(allocation.getPort()) < 25660 && !allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList());
+                if (allocations.size() > 0) {
+                    ApplicationAllocation allocation = allocations.get(0);
+                    ApplicationAllocation protocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> (Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100) && !allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
+                    String authKey = RandomStringUtils.randomAscii(36);
+                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, 0, 0, 0, 0, 0, pathfinderBuild, authKey);
+                    MissionControl.getDbManager().createServer(serverInfo);
+                    MissionControl.getPanelManager().createPathfinderServer(serverInfo, serverType.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation);
+                    MissionControl.getServers().get(network).put(serverName, serverInfo);
+                    update = true;
+                }
+            }
+        }
+
+        if (update) {
+            //Node was found, update the node list.
+            nodes = MissionControl.getPanelManager().getAllNodes();
+            try {
+                if (block) {
+                    waitForServerResponse(network);
+                } else {
+                    new Thread(() -> {
+                        try {
+                            waitForServerResponse(network);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return serverInfo;
+        }
+
+        //No nodes were found with enough memory. Ignore request.
+        logger.info("A server was attempted to be created but a node was not found with enough memory to create it.");
+        return null;
+    }
+
     public static ServerInfo createServer(String serverName, ServerType serverType, boolean forced, ServerInfo.Network network, boolean block) {
         boolean update = false;
 
@@ -467,7 +522,7 @@ public class NetworkManager {
                     ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
-                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, duelsBuild, authKey);
+                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, duelsBuild, 0, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
                     MissionControl.getPanelManager().createServer(serverInfo, serverType.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);
@@ -536,7 +591,7 @@ public class NetworkManager {
                     ApplicationAllocation altAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     ApplicationAllocation altProtocolAllocation = node.retrieveAllocations().all().execute().stream().filter(allocation1 -> Integer.parseInt(allocation1.getPort()) == Integer.parseInt(allocation.getPort()) + 100 && allocation1.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0);
                     String authKey = RandomStringUtils.randomAscii(36);
-                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, duelsBuild, authKey);
+                    serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType.getServerTypeInformation(), allocation.getPortInt() + 100, coreBuild, lobbyBuild, engineBuild, gameBuild, buildBuild, duelsBuild, 0, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
                     MissionControl.getPanelManager().createServer(serverInfo, serverType.getMemoryAllocation(), allocation, protocolAllocation, altAllocation, altProtocolAllocation, coreBranch, lobbybranch, buildBranch, gameBranch, engineBranch, duelsBranch);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);

@@ -395,7 +395,7 @@ public class DatabaseManager {
             servers.put(ServerInfo.Network.TEST, new HashMap<>());
             servers.put(ServerInfo.Network.ALPHA, new HashMap<>());
             while (set.next()) {
-                servers.get(ServerInfo.Network.valueOf(set.getString(4))).put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12), set.getInt(13), set.getString(14)));
+                servers.get(ServerInfo.Network.valueOf(set.getString(4))).put(set.getString(1), new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12), set.getInt(13), set.getInt(14), set.getString(15)));
             }
             return servers;
         } catch (SQLException e) {
@@ -422,7 +422,7 @@ public class DatabaseManager {
 
     public void createServer(ServerInfo info) {
         try (Connection connection = mysql.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             statement.setString(1, info.getName());
             statement.setString(2, info.getIp());
             statement.setInt(3, info.getPort());
@@ -456,7 +456,12 @@ public class DatabaseManager {
             } else {
                 statement.setInt(13, info.getDuelsBuildNumber());
             }
-            statement.setString(14, info.getAuthKey());
+            if (info.getPathfinderBuildNumber() == 0) {
+                statement.setNull(14, Types.INTEGER);
+            } else {
+                statement.setInt(14, info.getPathfinderBuildNumber());
+            }
+            statement.setString(15, info.getAuthKey());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -507,7 +512,7 @@ public class DatabaseManager {
             statement.setString(1, name);
             ResultSet set = statement.executeQuery();
             if (set.next()) {
-                return new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12), set.getInt(13), set.getString(14));
+                return new ServerInfo(set.getString(1), set.getString(2), set.getInt(3), ServerInfo.Network.valueOf(set.getString(4)), set.getBoolean(5), new JSONObject(set.getString(6)), set.getInt(7), set.getInt(8), set.getInt(9), set.getInt(10), set.getInt(11), set.getInt(12), set.getInt(13),set.getInt(14), set.getString(15));
             } else {
                 return null;
             }
@@ -594,6 +599,17 @@ public class DatabaseManager {
         }
     }
 
+    public int getCurrentPathfinderBuildNumber() {
+        try (Jedis connection = jedis.getResource()) {
+            String buildNumber = connection.get("build.pathfinder");
+            if (buildNumber != null) {
+                return Integer.parseInt(buildNumber);
+            } else {
+                return 0;
+            }
+        }
+    }
+
     public void setCurrentBuildBuildNumber(int buildNumber) {
         try (Jedis connection = jedis.getResource()) {
             connection.set("build.build", buildNumber + "");
@@ -665,6 +681,18 @@ public class DatabaseManager {
         }
         try (Connection connection = mysql.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("UPDATE servers SET lobby_buildNumber = ? WHERE servers.lobby_buildNumber IS NOT NULL");
+            statement.setInt(1, buildNumber);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public void setCurrentPathfinderBuildNumber(int buildNumber) {
+        try (Jedis connection = jedis.getResource()) {
+            connection.set("build.pathfinder", buildNumber + "");
+        }
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE servers SET pathfinder_buildNumber = ? WHERE servers.pathfinder_buildNumber IS NOT NULL");
             statement.setInt(1, buildNumber);
             statement.execute();
         } catch (SQLException e) {
