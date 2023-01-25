@@ -172,6 +172,48 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
+    public void createPathfinderServer(ServerInfo serverInfo, MemoryAllocation assignedMemory) {
+
+        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
+        environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+        }
+        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("pathfinder_type") + ""));
+        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+        }
+
+        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
+        environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
+
+        //Adding in database details.
+        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
+        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
+        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
+        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
+        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
+        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
+        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+        environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
+
+        ApplicationServer server = api.createServer()
+                .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
+                .setDescription("Server")
+                .setOwner(api.retrieveUserById(6).execute())
+                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?35:34)).execute())
+                .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0),api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0))
+                .setDatabases(0)
+                .setCPU(0)
+                .setDisk(5, DataType.GB)
+                .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
+                .setDockerImage("quay.io/pterodactyl/core:java")
+                .startOnCompletion(true)
+                .skipScripts(false)
+                .setEnvironment(environment).execute();
+    }
+
     public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation) {
 
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
@@ -233,6 +275,49 @@ public class PanelManager {
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
                 environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
             }
+        }
+        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
+        environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
+
+        //Adding in database details.
+        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
+        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
+        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
+        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
+        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
+        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
+        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+        environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
+
+        ApplicationServer server = api.createServer()
+                .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
+                .setDescription("Server")
+                .setOwner(api.retrieveUserById(6).execute())
+                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
+                .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
+                .setDatabases(0)
+                .setCPU(0)
+                .setDisk(5, DataType.GB)
+                .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
+                .setDockerImage("quay.io/pterodactyl/core:java")
+                .startOnCompletion(true)
+                .skipScripts(false)
+                .setEnvironment(environment).execute();
+
+    }
+
+    public void createPathfinderServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation) {
+
+        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
+        environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+        }
+
+        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("pathfinder_type") + ""));
+        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
@@ -355,6 +440,49 @@ public class PanelManager {
                 .setEnvironment(environment).execute();
     }
 
+    public void createPathfinderServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation, String coreBranch, String pathfinderBranch) {
+
+        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
+        environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(coreBranch));
+        }
+
+        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("pathfinder_type") + ""));
+        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
+            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(pathfinderBranch));
+        }
+
+        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
+        environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
+
+        //Adding in database details.
+        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
+        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
+        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
+        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
+        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
+        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
+        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+        environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
+
+        ApplicationServer server = api.createServer()
+                .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
+                .setDescription("Server")
+                .setOwner(api.retrieveUserById(6).execute())
+                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
+                .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
+                .setDatabases(0)
+                .setCPU(0)
+                .setDisk(5, DataType.GB)
+                .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
+                .setDockerImage("quay.io/pterodactyl/core:java")
+                .startOnCompletion(true)
+                .skipScripts(false)
+                .setEnvironment(environment).execute();
+    }
+
     public void updateServer(ServerInfo info) {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
@@ -407,7 +535,37 @@ public class PanelManager {
         api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
         runSetup(info,0);
         startServer(info, 0);
+    }
 
+    public void updatePathfinderServer(ServerInfo info) {
+        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
+        environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        if (info.getNetwork() != ServerInfo.Network.MAIN) {
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+        }
+
+        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(info.getServerType().getString("pathfinder_type") + ""));
+        if (info.getNetwork() != ServerInfo.Network.MAIN) {
+            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+        }
+
+        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
+        environment.put("SERVER_NAME", EnvironmentValue.ofString(info.getName()));
+
+        //Adding in database details.
+        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
+        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
+        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
+        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
+        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
+        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
+        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+        environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
+
+        api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
+        runSetup(info,0);
+        startServer(info, 0);
     }
 
     private void runSetup(ServerInfo info, int attempts) {
