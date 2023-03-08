@@ -57,6 +57,9 @@ public class NetworkRestarterThread extends Thread {
             if (modules.contains(Module.DUELS)) {
                 addServers(MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equals("duels")).collect(Collectors.toList()));
             }
+            if (modules.contains(Module.PATHFINDER)) {
+                addServers(MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equals("pathfinder")).collect(Collectors.toList()));
+            }
         }
         if (serversToRestart.size() > 10) {
             for (int i = 0;i < 5;i++) {
@@ -95,6 +98,9 @@ public class NetworkRestarterThread extends Thread {
                         if (info.getDuelsBuildNumber() > 0) {
                             info.setDuelsBuildNumber(NetworkManager.getCurrentDuelsBuildNumber());
                         }
+                        if (info.getPathfinderBuildNumber() > 0) {
+                            info.setPathfinderBuildNumber(NetworkManager.getCurrentPathfinderBuildNumber());
+                        }
                         info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
                     } else {
                         if (info.getBuildBuildNumber() > 0) {
@@ -111,6 +117,9 @@ public class NetworkRestarterThread extends Thread {
                         }
                         if (info.getDuelsBuildNumber() > 0) {
                             info.setDuelsBuildNumber(NetworkManager.getAlphaBuilds().get(Module.DUELS));
+                        }
+                        if (info.getPathfinderBuildNumber() > 0) {
+                            info.setPathfinderBuildNumber(NetworkManager.getAlphaBuilds().get(Module.PATHFINDER));
                         }
                         info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
                     }
@@ -137,6 +146,9 @@ public class NetworkRestarterThread extends Thread {
                         }
                         if (info.getDuelsBuildNumber() > 0) {
                             restart = restart || info.getDuelsBuildNumber() != NetworkManager.getCurrentDuelsBuildNumber();
+                        }
+                        if (info.getPathfinderBuildNumber() > 0) {
+                            restart = restart || info.getPathfinderBuildNumber() != NetworkManager.getCurrentPathfinderBuildNumber();
                         }
                         restart = restart || info.getBuildBuildNumber() != NetworkManager.getCurrentCoreBuildNumber();
                         if (restart) {
@@ -183,6 +195,12 @@ public class NetworkRestarterThread extends Thread {
                                 break;
                             }
                         }
+                        if (modules.contains(Module.PATHFINDER)) {
+                            if (info.getPathfinderBuildNumber() != NetworkManager.getCurrentPathfinderBuildNumber()) {
+                                more  = true;
+                                break;
+                            }
+                        }
                     }
                 } else {
                     for (ServerInfo info : serversToRestart) {
@@ -212,6 +230,12 @@ public class NetworkRestarterThread extends Thread {
                         }
                         if (modules.contains(Module.DUELS)) {
                             if (info.getDuelsBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.DUELS)) {
+                                more  = true;
+                                break;
+                            }
+                        }
+                        if (modules.contains(Module.PATHFINDER)) {
+                            if (info.getPathfinderBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.PATHFINDER)) {
                                 more  = true;
                                 break;
                             }
