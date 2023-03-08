@@ -11,7 +11,12 @@ public enum MemoryAllocation {
     EVENT(3072),
     GAME(1024),
     DUELS(1536),
-    BUILD(1024);
+    BUILD(1024),
+    GENERIC_1G(1024),
+    GENERIC_1_5G(1536),
+    GENERIC_2G(2048),
+    GENERIC_2_5G(2560),
+    GENERIC_3G(3072);
 
     private final long megaBytes;
 
