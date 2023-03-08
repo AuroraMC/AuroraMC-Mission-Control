@@ -123,7 +123,11 @@ public class NetworkRestarterThread extends Thread {
                         }
                         info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
                     }
-                    MissionControl.getPanelManager().updateServer(info);
+                    if (info.getPathfinderBuildNumber() > 0) {
+                        MissionControl.getPanelManager().updatePathfinderServer(info);
+                    } else {
+                        MissionControl.getPanelManager().updateServer(info);
+                    }
                 } else {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     serversPendingRestart.remove(info);
