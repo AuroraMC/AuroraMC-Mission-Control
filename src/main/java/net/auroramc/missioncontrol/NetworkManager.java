@@ -30,6 +30,7 @@ import net.auroramc.missioncontrol.backend.store.packages.ranks.Master;
 import net.auroramc.missioncontrol.backend.util.*;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
+import net.auroramc.pathfinder.missioncontrol.backend.communication.PathfinderCommunicationUtils;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 import net.buycraft.plugin.BuyCraftAPI;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -647,6 +648,9 @@ public class NetworkManager {
         MissionControl.getPanelManager().deleteServer(info.getName(), info.getNetwork());
         MissionControl.getDbManager().deleteServer(info);
         MissionControl.getServers().get(info.getNetwork()).remove(info.getName());
+        if (info.getServerType().getString("type").equals("pathfinder")) {
+            PathfinderCommunicationUtils.sendMessage(new net.auroramc.pathfinder.missioncontrol.backend.communication.ProtocolMessage(net.auroramc.pathfinder.missioncontrol.backend.communication.Protocol.CONFIRM, "close", info.getName()));
+        }
         nodes = MissionControl.getPanelManager().getAllNodes();
     }
 
