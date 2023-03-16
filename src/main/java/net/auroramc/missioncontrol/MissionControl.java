@@ -15,6 +15,7 @@ import net.auroramc.missioncontrol.backend.managers.JenkinsManager;
 import net.auroramc.missioncontrol.backend.managers.PanelManager;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
+import net.auroramc.pathfinder.missioncontrol.backend.communication.PathfinderCommunicationUtils;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
 import net.md_5.bungee.log.MissionControlLogger;
 import net.md_5.bungee.log.LoggingOutputStream;
@@ -42,6 +43,8 @@ public class MissionControl {
     private static Map<ServerInfo.Network, Map<String, ServerInfo>> servers;
     private static Map<UUID, ProxyInfo> proxies;
     private static Map<String, Command> commands;
+
+    private static String authKey;
 
     private static boolean clean;
 
@@ -83,6 +86,7 @@ public class MissionControl {
         String panelUserAPIKey = prefs.get("panelUserAPIKey", null);
         String loadBalancerBaseURL = prefs.get("loadBalancerBaseURL", null);
         String loadBalancerAuth = prefs.get("loadBalancerAuth", null);
+        authKey = prefs.get("authKey", null);
         String storeApiKey = prefs.get("storeApiKey", null);
 
         if (mysqlHost == null || mysqlPort == null || mysqlDb == null || mysqlUsername == null || mysqlPassword == null || redisHost == null || redisAuth == null || ciBaseURL == null || panelBaseURL == null || loadBalancerBaseURL == null || ciAPIKey == null || panelAPIKey == null || loadBalancerAuth == null || panelUserAPIKey == null || storeApiKey == null) {
@@ -230,6 +234,7 @@ public class MissionControl {
         ServerCommunicationUtils.init();
         ProxyCommunicationUtils.init();
         PanelCommunicationUtils.init();
+        PathfinderCommunicationUtils.init();
 
         logger.fine("Server/proxy messaging protocol listeners successfully started.");
         logger.info("AuroraMC Mission Control successfully started. Handing off to the network manager...");
@@ -314,5 +319,9 @@ public class MissionControl {
 
     public static boolean isClean() {
         return clean;
+    }
+
+    public static String getAuthKey() {
+        return authKey;
     }
 }

@@ -420,6 +420,25 @@ public class DatabaseManager {
         }
     }
 
+    public String getNameFromUUID(String uuid) {
+        try (Connection connection = mysql.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT name FROM auroramc_players WHERE uuid = ?");
+            statement.setString(1, uuid);
+
+            ResultSet set = statement.executeQuery();
+            if (set.next()) {
+                return set.getString(1);
+            } else {
+                //NEW USER
+                return null;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public void createServer(ServerInfo info) {
         try (Connection connection = mysql.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
