@@ -330,6 +330,7 @@ public class PanelManager {
         environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
+        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
         ApplicationServer server = api.createServer()
@@ -466,6 +467,7 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
+        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
 
         ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
@@ -562,6 +564,7 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
+        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
 
         api.retrieveServersByName(info.getName() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
         runSetup(info,0);
@@ -611,6 +614,7 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
+        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
 
         api.retrieveServersByName(info.getUuid().toString() + "-" + info.getNetwork().name(), false).execute().get(0).getStartupManager().setEnvironment(environment).execute();
         runProxySetup(info, 0);
@@ -669,6 +673,7 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
+        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
 
 
 
@@ -706,6 +711,7 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
+        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
         MissionControl.getLogger().info("Creating proxy with IP: " + allocation.getIP() + ":" + allocation.getPort());
 
         ApplicationServer server = api.createServer()
@@ -742,6 +748,7 @@ public class PanelManager {
         environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
+        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
         MissionControl.getLogger().info("Creating proxy with IP: " + allocation.getIP() + ":" + allocation.getPort());
 
         ApplicationServer server = api.createServer()
