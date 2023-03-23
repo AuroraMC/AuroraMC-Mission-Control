@@ -112,7 +112,7 @@ public class NetworkMonitorRunnable implements Runnable {
                     }
                 }
 
-                List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getNetwork() == network && info.getServerType().getString("game").equalsIgnoreCase(serverType.name())).collect(Collectors.toList());
+                List<ServerInfo> infos = MissionControl.getServers().get(network).values().stream().filter(info -> info.getNetwork() == network && info.getServerType().getString("game").equalsIgnoreCase(serverType.name()) && !info.getServerType().getString("type").equalsIgnoreCase("pathfinder")).collect(Collectors.toList());
                 int serversNeeded = (gameTotal / serverType.getMaxPlayers()) + ((gameTotal % serverType.getMaxPlayers() > (serverType.getMaxPlayers()/2))?1:0) + 1;
                 long serversOpen = infos.size() - serversPendingRestart.stream().filter(info -> info.getServerType().getString("game").equalsIgnoreCase(serverType.name())).count();
                 if (serversNeeded < 2) serversNeeded = 2;
