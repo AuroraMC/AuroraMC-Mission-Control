@@ -19,7 +19,7 @@ public class PathfinderCommunicationUtils {
         if (task != null) {
             task.shutdown();
         }
-        task = new IncomingProtocolMessageThread(35568);
+        task = new IncomingProtocolMessageThread(35569);
         task.start();
     }
 
