@@ -481,6 +481,7 @@ public class NetworkManager {
         }
 
         if (update) {
+            PathfinderCommunicationUtils.sendMessage(new net.auroramc.pathfinder.missioncontrol.backend.communication.ProtocolMessage(net.auroramc.pathfinder.missioncontrol.backend.communication.Protocol.CONFIRM, "open", serverName))
             //Node was found, update the node list.
             nodes = MissionControl.getPanelManager().getAllNodes();
             try {
