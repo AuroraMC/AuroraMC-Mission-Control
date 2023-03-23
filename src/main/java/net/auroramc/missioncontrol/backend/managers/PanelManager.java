@@ -314,7 +314,7 @@ public class PanelManager {
             environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
         }
 
-        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
+        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(serverInfo.getPathfinderBuildNumber() + ""));
         environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("pathfinder_type") + ""));
         if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
             environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
