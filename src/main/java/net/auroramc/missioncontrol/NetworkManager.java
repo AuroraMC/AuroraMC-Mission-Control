@@ -473,7 +473,7 @@ public class NetworkManager {
                     String authKey = RandomStringUtils.randomAscii(36);
                     serverInfo = new ServerInfo(serverName, allocation.getIP(), allocation.getPortInt(), network, forced, serverType, allocation.getPortInt() + 100, coreBuild, 0, 0, 0, 0, 0, pathfinderBuild, authKey);
                     MissionControl.getDbManager().createServer(serverInfo);
-                    MissionControl.getPanelManager().createPathfinderServer(serverInfo, MemoryAllocation.valueOf(serverType.getString("memory_allocation")), allocation, protocolAllocation, altAllocation, altProtocolAllocation);
+                    MissionControl.getPanelManager().createPathfinderServer(serverInfo, MemoryAllocation.valueOf(serverType.getString("memory_allocation_enum")), allocation, protocolAllocation, altAllocation, altProtocolAllocation);
                     MissionControl.getServers().get(network).put(serverName, serverInfo);
                     update = true;
                 }
