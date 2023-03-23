@@ -42,7 +42,6 @@ public class MissionControlMessageHandler {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(args[2]);
 
                 NetworkManager.createPathfinderServer(name, type, forced, network, true);
-                PathfinderCommunicationUtils.sendMessage(new ProtocolMessage(net.auroramc.pathfinder.missioncontrol.backend.communication.Protocol.CONFIRM, "open", name));
             }
         }
     }
