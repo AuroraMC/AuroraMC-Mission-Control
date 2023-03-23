@@ -123,7 +123,7 @@ public class NetworkManager {
         currentLobbyBuildNumber = dbManager.getCurrentLobbyBuildNumber();
         currentProxyBuildNumber = dbManager.getCurrentProxyBuildNumber();
         currentDuelsBuildNumber = dbManager.getCurrentDuelsBuildNumber();
-        currentDuelsBuildNumber = dbManager.getCurrentPathfinderBuildNumber();
+        currentPathfinderBuildNumber = dbManager.getCurrentPathfinderBuildNumber();
 
         motd = dbManager.getMotd();
         maintenance = dbManager.getMaintenance();
