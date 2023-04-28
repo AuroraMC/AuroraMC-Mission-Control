@@ -9,7 +9,6 @@ public enum Module {
     LOBBY("AuroraMC-Lobby", "AuroraMC-Lobby-Dev"),
     GAME("AuroraMC-Games", "AuroraMC-Games-Dev"),
     ENGINE("AuroraMC-Game-Engine", "AuroraMC-Game-Engine-Dev"),
-    PROXY("AuroraMC-Proxy", "AuroraMC-Proxy-Dev"),
     BUILD("AuroraMC-Build", "AuroraMC-Build-Dev"),
     EVENT("AuroraMC-Event", "AuroraMC-Event-Dev"),
     DUELS("AuroraMC-Duels", "AuroraMC-Duels-Dev"),
