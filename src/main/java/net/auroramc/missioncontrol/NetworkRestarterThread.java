@@ -82,7 +82,7 @@ public class NetworkRestarterThread extends Thread {
                 if (response.getProtocol() == RestartServerResponse.Type.CONFIRM_CLOSE) {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     info.setStatus(ServerInfo.ServerStatus.RESTARTING);
-                    if (network != ServerInfo.Network.ALPHA) {
+                    if (network == ServerInfo.Network.MAIN) {
                         if (info.getBuildBuildNumber() > 0) {
                             info.setBuildBuildNumber(NetworkManager.getCurrentBuildBuildNumber());
                         }
@@ -102,26 +102,33 @@ public class NetworkRestarterThread extends Thread {
                             info.setPathfinderBuildNumber(NetworkManager.getCurrentPathfinderBuildNumber());
                         }
                         info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
-                    } else {
+                    } else if (network == ServerInfo.Network.ALPHA) {
                         if (info.getBuildBuildNumber() > 0) {
                             info.setBuildBuildNumber(NetworkManager.getAlphaBuilds().get(Module.BUILD));
+                            info.setBuildBranch(NetworkManager.getAlphaBranches().get(Module.BUILD));
                         }
                         if (info.getEngineBuildNumber() > 0) {
                             info.setEngineBuildNumber(NetworkManager.getAlphaBuilds().get(Module.ENGINE));
+                            info.setEngineBranch(NetworkManager.getAlphaBranches().get(Module.ENGINE));
                         }
                         if (info.getGameBuildNumber() > 0) {
                             info.setGameBuildNumber(NetworkManager.getAlphaBuilds().get(Module.GAME));
+                            info.setGameBranch(NetworkManager.getAlphaBranches().get(Module.GAME));
                         }
                         if (info.getLobbyBuildNumber() > 0) {
                             info.setLobbyBuildNumber(NetworkManager.getAlphaBuilds().get(Module.LOBBY));
+                            info.setLobbyBranch(NetworkManager.getAlphaBranches().get(Module.LOBBY));
                         }
                         if (info.getDuelsBuildNumber() > 0) {
                             info.setDuelsBuildNumber(NetworkManager.getAlphaBuilds().get(Module.DUELS));
+                            info.setDuelsBranch(NetworkManager.getAlphaBranches().get(Module.DUELS));
                         }
                         if (info.getPathfinderBuildNumber() > 0) {
                             info.setPathfinderBuildNumber(NetworkManager.getAlphaBuilds().get(Module.PATHFINDER));
+                            info.setPathfinderBranch(NetworkManager.getAlphaBranches().get(Module.PATHFINDER));
                         }
                         info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
+                        info.setCoreBranch(NetworkManager.getAlphaBranches().get(Module.CORE));
                     }
                     if (info.getPathfinderBuildNumber() > 0) {
                         MissionControl.getPanelManager().updatePathfinderServer(info);

@@ -204,11 +204,11 @@ public class PanelMessageHandler {
                         String branch = branchArg[0];
                         int build = Integer.parseInt(branchArg[1]);
 
-                        if (!MissionControl.getJenkinsManager().branchExists(Module.PROXY, branch)) {
+                        if (!MissionControl.getJenkinsManager().branchExists(Module.CORE, branch)) {
                             return "The branch '" + branch + "' does not exist for the PROXY module. If it should exist, make sure that the CI job has been executed before trying again.";
                         }
 
-                        if (!MissionControl.getJenkinsManager().buildExists(Module.PROXY, branch, build)) {
+                        if (!MissionControl.getJenkinsManager().buildExists(Module.CORE, branch, build)) {
                             return "The build '" + build + "' does not exist for the PROXY module on this branch. If it should exist, make sure that the CI job has been executed before trying again.";
                         }
 

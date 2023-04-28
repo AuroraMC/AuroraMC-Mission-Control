@@ -12,6 +12,7 @@ public class ServerInfo implements Info {
     private final JSONObject serverType;
     private final int protocolPort, port;
     private int buildNumber, lobbyBuildNumber, gameBuildNumber, engineBuildNumber, buildBuildNumber, duelsBuildNumber, pathfinderBuildNumber;
+    private String coreBranch, lobbyBranch, gameBranch, engineBranch, buildBranch, duelsBranch, pathfinderBranch;
     private final Network network;
     private final boolean forced;
     private final String authKey;
@@ -20,25 +21,93 @@ public class ServerInfo implements Info {
     private ServerStatus status;
     private long lastPing;
 
-    public ServerInfo(String name, String ip, int port, Network network, boolean forced, JSONObject serverType, int protocolPort, int buildNumber, int lobbyBuildNumber, int engineBuildNumber, int gameBuildNumber, int buildBuildNumber, int duelsBuildNumber, int pathfinderBuildNumber, String authKey) {
+    public ServerInfo(String name, String ip, int port, Network network, boolean forced, JSONObject serverType, int protocolPort, int buildNumber, int lobbyBuildNumber, int engineBuildNumber, int gameBuildNumber, int buildBuildNumber, int duelsBuildNumber, int pathfinderBuildNumber, String authKey, String coreBranch, String lobbyBranch, String gameBranch, String engineBranch, String buildBranch, String duelsBranch, String pathfinderBranch) {
         this.name = name;
         this.ip = ip;
         this.port = port;
         this.serverType = serverType;
         this.protocolPort = protocolPort;
+
+
         this.buildNumber = buildNumber;
         this.buildBuildNumber = buildBuildNumber;
         this.engineBuildNumber = engineBuildNumber;
         this.gameBuildNumber = gameBuildNumber;
         this.lobbyBuildNumber = lobbyBuildNumber;
         this.pathfinderBuildNumber = pathfinderBuildNumber;
+        this.duelsBuildNumber = duelsBuildNumber;
+
+        this.coreBranch = coreBranch;
+        this.lobbyBranch = lobbyBranch;
+        this.engineBranch = lobbyBranch;
+        this.gameBranch = gameBranch;
+        this.duelsBranch = duelsBranch;
+        this.pathfinderBranch = pathfinderBranch;
+        this.buildBranch = buildBranch;
+
+
         this.network = network;
         this.forced = forced;
         this.authKey = authKey;
         this.playerCount = -1;
         this.status = ServerStatus.STARTING;
-        this.duelsBuildNumber = duelsBuildNumber;
         this.lastPing = System.currentTimeMillis();
+    }
+
+    public String getBuildBranch() {
+        return buildBranch;
+    }
+
+    public String getCoreBranch() {
+        return coreBranch;
+    }
+
+    public String getDuelsBranch() {
+        return duelsBranch;
+    }
+
+    public String getEngineBranch() {
+        return engineBranch;
+    }
+
+    public String getGameBranch() {
+        return gameBranch;
+    }
+
+    public String getLobbyBranch() {
+        return lobbyBranch;
+    }
+
+    public String getPathfinderBranch() {
+        return pathfinderBranch;
+    }
+
+    public void setBuildBranch(String buildBranch) {
+        this.buildBranch = buildBranch;
+    }
+
+    public void setCoreBranch(String coreBranch) {
+        this.coreBranch = coreBranch;
+    }
+
+    public void setDuelsBranch(String duelsBranch) {
+        this.duelsBranch = duelsBranch;
+    }
+
+    public void setEngineBranch(String engineBranch) {
+        this.engineBranch = engineBranch;
+    }
+
+    public void setGameBranch(String gameBranch) {
+        this.gameBranch = gameBranch;
+    }
+
+    public void setPathfinderBranch(String pathfinderBranch) {
+        this.pathfinderBranch = pathfinderBranch;
+    }
+
+    public void setLobbyBranch(String lobbyBranch) {
+        this.lobbyBranch = lobbyBranch;
     }
 
     public String getName() {

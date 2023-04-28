@@ -13,6 +13,7 @@ public class ProxyInfo implements Info {
     private final int port;
     private final int protocolPort;
     private int buildNumber;
+    private String branch;
     private final ServerInfo.Network network;
     private final boolean forced;
     private final String authKey;
@@ -20,7 +21,7 @@ public class ProxyInfo implements Info {
     private ProxyStatus status;
     private long lastPing;
 
-    public ProxyInfo(UUID uuid, String ip, int port, ServerInfo.Network network, boolean forced, int protocolPort, int buildNumber, String authKey) {
+    public ProxyInfo(UUID uuid, String ip, int port, ServerInfo.Network network, boolean forced, int protocolPort, int buildNumber, String authKey, String branch) {
         this.uuid = uuid;
         this.ip = ip;
         this.port = port;
@@ -32,6 +33,15 @@ public class ProxyInfo implements Info {
         this.playerCount = -1;
         this.status = ProxyStatus.STARTING;
         this.lastPing = System.currentTimeMillis();
+        this.branch = branch;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 
     public UUID getUuid() {
