@@ -61,6 +61,12 @@ public class NetworkRestarterThread extends Thread {
                 addServers(MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equals("pathfinder")).collect(Collectors.toList()));
             }
         }
+        if (serversToRestart.size() == 0) {
+            logger.info("There are no servers to restart, aboring...");
+            return;
+        } else {
+            logger.info("Restarting " + serversToRestart.size() + " servers...");
+        }
         if (serversToRestart.size() > 10) {
             for (int i = 0;i < 5;i++) {
                 queueForRestart(serversToRestart.remove(0));
