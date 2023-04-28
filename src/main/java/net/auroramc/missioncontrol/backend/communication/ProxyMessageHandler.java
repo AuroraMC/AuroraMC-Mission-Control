@@ -4,6 +4,8 @@
 
 package net.auroramc.missioncontrol.backend.communication;
 
+import net.auroramc.core.api.backend.communication.Protocol;
+import net.auroramc.core.api.backend.communication.ServerCommunicationUtils;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.NetworkRestarterThread;
@@ -88,7 +90,7 @@ public class ProxyMessageHandler {
                 ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
                 info.setStatus(ProxyInfo.ProxyStatus.ONLINE);
                 MissionControl.getProxyManager().addServer(info);
-                if (NetworkManager.isProxyUpdate()) {
+                if (NetworkManager.isProxyUpdate() && NetworkManager.getProxyRestarterThread().getNetwork() == info.getNetwork()) {
                     NetworkManager.getProxyRestarterThread().proxyStartConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
                 } else {
                     if (info.getStatus() == ProxyInfo.ProxyStatus.STARTING) {
@@ -97,12 +99,21 @@ public class ProxyMessageHandler {
                 }
                 break;
             }
+            case SHUTDOWN: {
+                //This is a restart initiated by the proxy.
+                ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getCommand()));
+                info.setStatus(ProxyInfo.ProxyStatus.PENDING_RESTART);
+
+                net.auroramc.proxy.api.backend.communication.ProtocolMessage protocolMessage = new net.auroramc.proxy.api.backend.communication.ProtocolMessage(net.auroramc.proxy.api.backend.communication.Protocol.EMERGENCY_SHUTDOWN, info.getUuid().toString(), "restart", "Mission Control", "");
+                ProxyCommunicationUtils.sendMessage(protocolMessage);
+                break;
+            }
             case CONFIRM_SHUTDOWN: {
-                if (NetworkManager.isProxyUpdate()) {
-                    NetworkManager.getProxyRestarterThread().proxyCloseConfirm(MissionControl.getProxies().get(UUID.fromString(message.getSender())));
+                ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
+                if (NetworkManager.isProxyUpdate() && NetworkManager.getProxyRestarterThread().getNetwork() == info.getNetwork()) {
+                    NetworkManager.getProxyRestarterThread().proxyCloseConfirm(info);
                 } else {
                     ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
-                    ProxyInfo info = MissionControl.getProxies().get(UUID.fromString(message.getSender()));
                     if (message.getCommand().equalsIgnoreCase("restart")) {
                         MissionControl.getPanelManager().closeServer(info.getUuid().toString(), network);
                         MissionControl.getPanelManager().updateProxy(info);

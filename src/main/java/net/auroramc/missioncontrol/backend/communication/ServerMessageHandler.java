@@ -62,7 +62,7 @@ public class ServerMessageHandler {
             case CONFIRM_SHUTDOWN: {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
-                if (NetworkManager.isUpdate()) {
+                if (NetworkManager.isUpdate() && NetworkManager.getRestarterThread().getNetwork() == info.getNetwork()) {
                     NetworkManager.getRestarterThread().serverCloseConfirm(info);
                 } else {
                     if (message.getCommand().equalsIgnoreCase("restart")) {
@@ -91,7 +91,7 @@ public class ServerMessageHandler {
             case SERVER_ONLINE: {
                 ServerInfo.Network network = ServerInfo.Network.valueOf(message.getExtraInfo());
                 ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
-                if (NetworkManager.isUpdate()) {
+                if (NetworkManager.isUpdate() && NetworkManager.getRestarterThread().getNetwork() == info.getNetwork()) {
                     NetworkManager.reportServerTotal(info.getName(), 0, network);
                     NetworkManager.getRestarterThread().serverStartConfirm(info);
                 } else {

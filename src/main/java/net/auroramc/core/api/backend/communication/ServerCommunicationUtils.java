@@ -62,7 +62,7 @@ public class ServerCommunicationUtils {
             } catch (Exception e) {
                 if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isUpdate()) {
                     if (level > 4) {
-                        if (System.currentTimeMillis() - info.getLastPing() > 300000) {
+                        if (System.currentTimeMillis() - info.getLastPing() > 300000 && network != ServerInfo.Network.TEST) {
                             //Restart server as it has been unresponsive for at least the past 5 minutes.
                             MissionControl.getLogger().log(Level.WARNING, "Last successful ping to server " + info.getName() + " on network " + info.getNetwork().name() + " was over 5 minutes ago, restarting server. Stack Trace:", e);
                             MissionControl.getPanelManager().updateServer(info);

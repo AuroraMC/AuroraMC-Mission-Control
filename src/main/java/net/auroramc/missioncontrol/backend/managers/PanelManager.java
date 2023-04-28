@@ -86,61 +86,61 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
         if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
         }
         if (serverInfo.getLobbyBuildNumber() != -1) {
             environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(serverInfo.getLobbyBranch() + ""));
             }
         } else {
             environment.put("LOBBY_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         if (serverInfo.getBuildBuildNumber() != -1) {
             environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.BUILD) + ""));
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(serverInfo.getBuildBranch() + ""));
             }
         } else {
             environment.put("BUILD_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         if (serverInfo.getGameBuildNumber() != -1) {
             environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.GAME) + ""));
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString(serverInfo.getGameBranch() + ""));
             }
         } else {
             environment.put("GAME_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
             environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(serverInfo.getEngineBranch() + ""));
             }
         } else {
             environment.put("ENGINE_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
             environment.put("DUELS_VERSION", EnvironmentValue.ofString(serverInfo.getDuelsBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(serverInfo.getDuelsBranch() + ""));
             }
         } else {
             environment.put("DUELS_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -177,12 +177,12 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
         if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
         }
         environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
         environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("pathfinder_type") + ""));
         if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(serverInfo.getPathfinderBranch() + ""));
         }
 
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -219,61 +219,61 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
         if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
         }
         if (serverInfo.getLobbyBuildNumber() != -1) {
             environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(serverInfo.getLobbyBranch() + ""));
             }
         } else {
             environment.put("LOBBY_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         if (serverInfo.getBuildBuildNumber() != -1) {
             environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.BUILD) + ""));
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(serverInfo.getBuildBranch() + ""));
             }
         } else {
             environment.put("BUILD_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.BUILD) + ""));
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         if (serverInfo.getGameBuildNumber() != -1) {
             environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.GAME) + ""));
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString(serverInfo.getGameBranch() + ""));
             }
         } else {
             environment.put("GAME_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.GAME) + ""));
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
             environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(serverInfo.getEngineBranch() + ""));
             }
         } else {
             environment.put("ENGINE_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         if (serverInfo.getEngineBuildNumber() != -1) {
             environment.put("DUELS_VERSION", EnvironmentValue.ofString(serverInfo.getDuelsBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(serverInfo.getDuelsBranch() + ""));
             }
         } else {
             environment.put("DUELS_VERSION", EnvironmentValue.ofString("-1"));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -311,13 +311,13 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
         if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
         }
 
         environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(serverInfo.getPathfinderBuildNumber() + ""));
         environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("pathfinder_type") + ""));
         if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(serverInfo.getPathfinderBranch() + ""));
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
@@ -337,7 +337,7 @@ public class PanelManager {
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
-                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?35:34)).execute())
+                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN) ? 35 : 34)).execute())
                 .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)
@@ -348,177 +348,42 @@ public class PanelManager {
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
 
-    }
-
-    public void createServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation, String coreBranch, String lobbybranch, String buildBranch, String gameBranch, String engineBranch, String duelsBranch) {
-
-        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
-        environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
-        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(coreBranch));
-        }
-        if (serverInfo.getLobbyBuildNumber() != -1) {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString(serverInfo.getLobbyBuildNumber() + ""));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(lobbybranch));
-            }
-        } else {
-            environment.put("LOBBY_VERSION", EnvironmentValue.ofString("-1"));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString("na"));
-            }
-        }
-        if (serverInfo.getBuildBuildNumber() != -1) {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString(serverInfo.getBuildBuildNumber() + ""));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(buildBranch));
-            }
-        } else {
-            environment.put("BUILD_VERSION", EnvironmentValue.ofString("-1"));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("BUILD_BRANCH", EnvironmentValue.ofString("na"));
-            }
-        }
-        if (serverInfo.getGameBuildNumber() != -1) {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString(serverInfo.getGameBuildNumber() + ""));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("GAME_BRANCH", EnvironmentValue.ofString(gameBranch));
-            }
-        } else {
-            environment.put("GAME_VERSION", EnvironmentValue.ofString("-1"));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("GAME_BRANCH", EnvironmentValue.ofString("na"));
-            }
-        }
-        if (serverInfo.getEngineBuildNumber() != -1) {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString(serverInfo.getEngineBuildNumber() + ""));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(engineBranch));
-            }
-        } else {
-            environment.put("ENGINE_VERSION", EnvironmentValue.ofString("-1"));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString("na"));
-            }
-        }
-        if (serverInfo.getDuelsBuildNumber() != -1) {
-            environment.put("DUELS_VERSION", EnvironmentValue.ofString(serverInfo.getDuelsBuildNumber() + ""));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(duelsBranch));
-            }
-        } else {
-            environment.put("DUELS_VERSION", EnvironmentValue.ofString("-1"));
-            if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("DUELS_BRANCH", EnvironmentValue.ofString("na"));
-            }
-        }
-        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
-        environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
-
-        //Adding in database details.
-        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
-        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
-        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
-        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
-        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
-        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
-        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
-        environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
-
-        ApplicationServer server = api.createServer()
-                .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
-                .setDescription("Server")
-                .setOwner(api.retrieveUserById(6).execute())
-                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
-                .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
-                .setDatabases(0)
-                .setCPU(0)
-                .setDisk(5, DataType.GB)
-                .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
-                .setDockerImage("quay.io/pterodactyl/core:java")
-                .startOnCompletion(true)
-                .skipScripts(false)
-                .setEnvironment(environment).execute();
-    }
-
-    public void createPathfinderServer(ServerInfo serverInfo, MemoryAllocation assignedMemory, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altAllocation, ApplicationAllocation altProtocolAllocation, String coreBranch, String pathfinderBranch) {
-
-        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
-        environment.put("CORE_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
-        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(coreBranch));
-        }
-
-        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(serverInfo.getBuildNumber() + ""));
-        environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("pathfinder_type") + ""));
-        if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(pathfinderBranch));
-        }
-
-        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
-        environment.put("SERVER_NAME", EnvironmentValue.ofString(serverInfo.getName()));
-
-        //Adding in database details.
-        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
-        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
-        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
-        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
-        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
-        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
-        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
-        environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
-        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
-
-        ApplicationServer server = api.createServer()
-                .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
-                .setDescription("Server")
-                .setOwner(api.retrieveUserById(6).execute())
-                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?35:34)).execute())
-                .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
-                .setDatabases(0)
-                .setCPU(0)
-                .setDisk(5, DataType.GB)
-                .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
-                .setDockerImage("quay.io/pterodactyl/core:java")
-                .startOnCompletion(true)
-                .skipScripts(false)
-                .setEnvironment(environment).execute();
     }
 
     public void updateServer(ServerInfo info) {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(info.getCoreBranch() + ""));
         }
         if (info.getLobbyBuildNumber() != -1) {
             environment.put("LOBBY_VERSION", EnvironmentValue.ofString(info.getLobbyBuildNumber() + ""));
             if (info.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.LOBBY) + ""));
+                environment.put("LOBBY_BRANCH", EnvironmentValue.ofString(info.getLobbyBranch() + ""));
             }
         }
         if (info.getBuildBuildNumber() != -1) {
             environment.put("BUILD_VERSION", EnvironmentValue.ofString(info.getBuildBuildNumber() + ""));
             if (info.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.BUILD) + ""));
+                environment.put("BUILD_BRANCH", EnvironmentValue.ofString(info.getBuildBranch() + ""));
             }
         }
         if (info.getGameBuildNumber() != -1) {
             environment.put("GAME_VERSION", EnvironmentValue.ofString(info.getGameBuildNumber() + ""));
             if (info.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("GAME_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.GAME) + ""));
+                environment.put("GAME_BRANCH", EnvironmentValue.ofString(info.getGameBranch() + ""));
             }
         }
         if (info.getEngineBuildNumber() != -1) {
             environment.put("ENGINE_VERSION", EnvironmentValue.ofString(info.getEngineBuildNumber() + ""));
             if (info.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.ENGINE) + ""));
+                environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(info.getEngineBranch() + ""));
             }
         }
         if (info.getDuelsBuildNumber() != -1) {
             environment.put("DUELS_VERSION", EnvironmentValue.ofString(info.getDuelsBuildNumber() + ""));
             if (info.getNetwork() != ServerInfo.Network.MAIN) {
-                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.DUELS) + ""));
+                environment.put("DUELS_BRANCH", EnvironmentValue.ofString(info.getDuelsBranch() + ""));
             }
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -543,13 +408,13 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(info.getCoreBranch() + ""));
         }
 
-        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
+        environment.put("PATHFINDER_VERSION", EnvironmentValue.ofString(info.getPathfinderBuildNumber() + ""));
         environment.put("PATHFINDER_TYPE", EnvironmentValue.ofString(info.getServerType().getString("pathfinder_type") + ""));
         if (info.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.CORE) + ""));
+            environment.put("PATHFINDER_BRANCH", EnvironmentValue.ofString(info.getPathfinderBranch() + ""));
         }
 
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
@@ -600,7 +465,7 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.PROXY) + ""));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(info.getBranch() + ""));
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("PROXY_UUID", EnvironmentValue.ofString(info.getUuid().toString()));
@@ -659,7 +524,7 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.PROXY) + ""));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(info.getBranch() + ""));
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("PROXY_UUID", EnvironmentValue.ofString(info.getUuid().toString()));
@@ -697,44 +562,7 @@ public class PanelManager {
         Map<String, EnvironmentValue<?>> environment = new HashMap<>();
         environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
         if (info.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(NetworkManager.getAlphaBranches().get(Module.PROXY) + ""));
-        }
-        environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
-        environment.put("PROXY_UUID", EnvironmentValue.ofString(info.getUuid().toString()));
-
-        //Adding in database details.
-        environment.put("MYSQL_HOST", EnvironmentValue.ofString(mysqlHost));
-        environment.put("MYSQL_PORT", EnvironmentValue.ofString(mysqlPort));
-        environment.put("MYSQL_DB", EnvironmentValue.ofString(mysqlDb));
-        environment.put("MYSQL_USERNAME", EnvironmentValue.ofString(mysqlUsername));
-        environment.put("MYSQL_PASSWORD", EnvironmentValue.ofString(mysqlPassword));
-        environment.put("REDIS_HOST", EnvironmentValue.ofString(redisHost));
-        environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
-        environment.put("NETWORK", EnvironmentValue.ofString(info.getNetwork().name()));
-        environment.put("PATHFINDER_KEY", EnvironmentValue.ofString(MissionControl.getAuthKey()));
-        MissionControl.getLogger().info("Creating proxy with IP: " + allocation.getIP() + ":" + allocation.getPort());
-
-        ApplicationServer server = api.createServer()
-                .setName(info.getUuid().toString() + "-" + info.getNetwork().name())
-                .setDescription("Server")
-                .setOwner(api.retrieveUserById(6).execute())
-                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((info.getNetwork() != ServerInfo.Network.MAIN)?18:15)).execute())
-                .setAllocations(allocation, Arrays.asList(protocolAllocation, altProtocolAllocation))
-                .setDatabases(0)
-                .setCPU(0)
-                .setDisk(5, DataType.GB)
-                .setMemory(MemoryAllocation.PROXY.getMegaBytes(), DataType.MB)
-                .setDockerImage("quay.io/pterodactyl/core:java")
-                .startOnCompletion(true)
-                .skipScripts(false)
-                .setEnvironment(environment).execute();
-    }
-
-    public void createProxy(ProxyInfo info, ApplicationAllocation allocation, ApplicationAllocation protocolAllocation, ApplicationAllocation altProtocolAllocation, String branch) {
-        Map<String, EnvironmentValue<?>> environment = new HashMap<>();
-        environment.put("CORE_VERSION", EnvironmentValue.ofString(info.getBuildNumber() + ""));
-        if (info.getNetwork() != ServerInfo.Network.MAIN) {
-            environment.put("CORE_BRANCH", EnvironmentValue.ofString(branch));
+            environment.put("CORE_BRANCH", EnvironmentValue.ofString(info.getBranch() + ""));
         }
         environment.put("JENKINS_KEY", EnvironmentValue.ofString(jenkinsApiKey));
         environment.put("PROXY_UUID", EnvironmentValue.ofString(info.getUuid().toString()));

@@ -59,9 +59,10 @@ public class ProxyRestarterThread extends Thread {
                     ProxyInfo info = (ProxyInfo) response.getInfo();
                     info.setStatus(ProxyInfo.ProxyStatus.RESTARTING);
                     if (network == ServerInfo.Network.ALPHA) {
-                        info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.PROXY));
-                    } else {
-                        info.setBuildNumber(NetworkManager.getCurrentProxyBuildNumber());
+                        info.setBuildNumber(NetworkManager.getAlphaBuilds().get(Module.CORE));
+                        info.setBranch(NetworkManager.getAlphaBranches().get(Module.CORE));
+                    } else if (network == ServerInfo.Network.MAIN) {
+                        info.setBuildNumber(NetworkManager.getCurrentCoreBuildNumber());
                     }
                     MissionControl.getPanelManager().updateProxy(info);
                 } else {
@@ -82,10 +83,10 @@ public class ProxyRestarterThread extends Thread {
             } else {
                 boolean more = false;
                 for (ProxyInfo info : serversToRestart) {
-                    if (network == ServerInfo.Network.ALPHA && info.getBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.PROXY)) {
+                    if (network == ServerInfo.Network.ALPHA && info.getBuildNumber() != NetworkManager.getAlphaBuilds().get(Module.CORE)) {
                         more = true;
                         break;
-                    } else if (info.getBuildNumber() != NetworkManager.getCurrentProxyBuildNumber()) {
+                    } else if (info.getBuildNumber() != NetworkManager.getCurrentCoreBuildNumber()) {
                         more = true;
                         break;
                     }

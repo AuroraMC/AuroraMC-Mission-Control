@@ -7,6 +7,7 @@ package net.auroramc.proxy.api.backend.communication;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.NetworkManager;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
+import net.auroramc.missioncontrol.entities.ServerInfo;
 
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -64,7 +65,7 @@ public class ProxyCommunicationUtils {
             } catch (Exception e) {
                 if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isProxyUpdate()) {
                     if (level > 4) {
-                        if (System.currentTimeMillis() - info.getLastPing() > 300000) {
+                        if (System.currentTimeMillis() - info.getLastPing() > 300000 && info.getNetwork() != ServerInfo.Network.TEST) {
                             MissionControl.getLogger().log(Level.WARNING, "Last successful ping to proxy " + info.getUuid().toString() + " on network " + info.getNetwork().name() + " was over 5 minutes ago, restarting proxy. Stack Trace:", e);
                             MissionControl.getPanelManager().updateProxy(info);
                         } else {
