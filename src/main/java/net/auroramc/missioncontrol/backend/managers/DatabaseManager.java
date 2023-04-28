@@ -457,6 +457,7 @@ public class DatabaseManager {
             }
             if (info.getLobbyBuildNumber() == 0) {
                 statement.setNull(9, Types.INTEGER);
+                statement.setNull(17, Types.VARCHAR);
             } else {
                 statement.setInt(9, info.getLobbyBuildNumber());
                 if (info.getLobbyBranch() != null) {
@@ -467,6 +468,7 @@ public class DatabaseManager {
             }
             if (info.getEngineBuildNumber() == 0) {
                 statement.setNull(10, Types.INTEGER);
+                statement.setNull(18, Types.VARCHAR);
             } else {
                 statement.setInt(10, info.getEngineBuildNumber());
                 if (info.getEngineBranch() != null) {
@@ -477,6 +479,7 @@ public class DatabaseManager {
             }
             if (info.getGameBuildNumber() == 0) {
                 statement.setNull(11, Types.INTEGER);
+                statement.setNull(19, Types.VARCHAR);
             } else {
                 statement.setInt(11, info.getGameBuildNumber());
                 if (info.getGameBranch() != null) {
@@ -487,6 +490,7 @@ public class DatabaseManager {
             }
             if (info.getBuildBuildNumber() == 0) {
                 statement.setNull(12, Types.INTEGER);
+                statement.setNull(20, Types.VARCHAR);
             } else {
                 statement.setInt(12, info.getBuildBuildNumber());
                 if (info.getBuildBranch() != null) {
@@ -497,6 +501,7 @@ public class DatabaseManager {
             }
             if (info.getDuelsBuildNumber() == 0) {
                 statement.setNull(13, Types.INTEGER);
+                statement.setNull(21, Types.VARCHAR);
             } else {
                 statement.setInt(13, info.getDuelsBuildNumber());
                 if (info.getDuelsBranch() != null) {
@@ -507,6 +512,7 @@ public class DatabaseManager {
             }
             if (info.getPathfinderBuildNumber() == 0) {
                 statement.setNull(14, Types.INTEGER);
+                statement.setNull(22, Types.VARCHAR);
             } else {
                 statement.setInt(14, info.getPathfinderBuildNumber());
                 if (info.getPathfinderBranch() != null) {
