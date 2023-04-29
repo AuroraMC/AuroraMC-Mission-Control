@@ -39,7 +39,7 @@ public class ServerInfo implements Info {
 
         this.coreBranch = coreBranch;
         this.lobbyBranch = lobbyBranch;
-        this.engineBranch = lobbyBranch;
+        this.engineBranch = engineBranch;
         this.gameBranch = gameBranch;
         this.duelsBranch = duelsBranch;
         this.pathfinderBranch = pathfinderBranch;
