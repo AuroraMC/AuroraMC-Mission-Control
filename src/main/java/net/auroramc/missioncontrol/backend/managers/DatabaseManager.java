@@ -7,6 +7,7 @@ package net.auroramc.missioncontrol.backend.managers;
 import net.auroramc.missioncontrol.MissionControl;
 import net.auroramc.missioncontrol.backend.runnables.StatUpdateRunnable;
 import net.auroramc.missioncontrol.backend.util.*;
+import net.auroramc.missioncontrol.backend.util.Module;
 import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import org.json.JSONObject;
