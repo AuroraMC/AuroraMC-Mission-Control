@@ -32,6 +32,7 @@ import net.auroramc.missioncontrol.entities.ProxyInfo;
 import net.auroramc.missioncontrol.entities.ServerInfo;
 import net.auroramc.pathfinder.missioncontrol.backend.communication.PathfinderCommunicationUtils;
 import net.auroramc.proxy.api.backend.communication.ProxyCommunicationUtils;
+import net.auroramc.missioncontrol.backend.util.Module;
 import net.buycraft.plugin.BuyCraftAPI;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONObject;
