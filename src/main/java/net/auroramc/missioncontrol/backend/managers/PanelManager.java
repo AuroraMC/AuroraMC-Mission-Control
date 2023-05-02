@@ -156,8 +156,10 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
+        String docker = "quay.io/pterodactyl/core:java";
         int egg = 16;
         if (serverInfo.getServerType().getString("type").equalsIgnoreCase("smp")) {
+            docker = "ghcr.io/pterodactyl/yolks:java_17";
             environment.put("TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("smp_type")));
             egg = ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?37:36);
         } else if ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)) {
@@ -174,7 +176,7 @@ public class PanelManager {
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
-                .setDockerImage("quay.io/pterodactyl/core:java")
+                .setDockerImage(docker)
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
@@ -297,8 +299,10 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
+        String docker = "quay.io/pterodactyl/core:java";
         int egg = 16;
         if (serverInfo.getServerType().getString("type").equalsIgnoreCase("smp")) {
+            docker = "ghcr.io/pterodactyl/yolks:java_17";
             environment.put("TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("smp_type")));
             egg = ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?37:36);
         } else if ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)) {
@@ -315,7 +319,7 @@ public class PanelManager {
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
-                .setDockerImage("quay.io/pterodactyl/core:java")
+                .setDockerImage(docker)
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
