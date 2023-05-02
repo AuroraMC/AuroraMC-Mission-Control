@@ -18,6 +18,7 @@ public enum Game {
     STAFF,
     LOBBY,
     DUELS,
-    PATHFINDER
+    PATHFINDER,
+    SMP
 
 }
