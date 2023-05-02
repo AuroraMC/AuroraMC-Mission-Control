@@ -156,11 +156,19 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
+        int egg = 16;
+        if (serverInfo.getServerType().getString("type").equalsIgnoreCase("smp")) {
+            environment.put("TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("smp_type")));
+            egg = ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?37:36);
+        } else if ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)) {
+            egg = 19;
+        }
+
         ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
-                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
+                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), egg).execute())
                 .setAllocations(api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase(serverInfo.getIp())).collect(Collectors.toList()).get(0),api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0), api.retrieveAllocations().execute().stream().filter(allocation -> allocation.getPort().equals(serverInfo.getProtocolPort() + "") && allocation.getIP().equalsIgnoreCase("127.0.0.1")).collect(Collectors.toList()).get(0))
                 .setDatabases(0)
                 .setCPU(0)
@@ -289,11 +297,19 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
+        int egg = 16;
+        if (serverInfo.getServerType().getString("type").equalsIgnoreCase("smp")) {
+            environment.put("TYPE", EnvironmentValue.ofString(serverInfo.getServerType().getString("smp_type")));
+            egg = ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?37:36);
+        } else if ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)) {
+            egg = 19;
+        }
+
         ApplicationServer server = api.createServer()
                 .setName(serverInfo.getName() + "-" + serverInfo.getNetwork().name())
                 .setDescription("Server")
                 .setOwner(api.retrieveUserById(6).execute())
-                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), ((serverInfo.getNetwork() != ServerInfo.Network.MAIN)?19:16)).execute())
+                .setEgg(api.retrieveEggById(api.retrieveNestById(1).execute(), egg).execute())
                 .setAllocations(allocation, protocolAllocation, altAllocation, altProtocolAllocation)
                 .setDatabases(0)
                 .setCPU(0)

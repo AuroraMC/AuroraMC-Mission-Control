@@ -12,6 +12,7 @@ public enum MemoryAllocation {
     GAME(1024),
     DUELS(1536),
     BUILD(1024),
+    SMP(2048),
     GENERIC_1G(1024),
     GENERIC_1_5G(1536),
     GENERIC_2G(2048),
