@@ -41,7 +41,7 @@ public class NetworkRestarterThread extends Thread {
     public void run() {
         logger.info("Initiating restart for network '" + network.name() + "', restarting " + modules.size() + " modules.");
         if (modules.contains(Module.CORE)) {
-            serversToRestart.addAll(MissionControl.getServers().get(network).values());
+            serversToRestart.addAll(MissionControl.getServers().get(network).values().stream().filter(info -> !info.getServerType().getString("type").equals("smp")).collect(Collectors.toList()));
         } else {
             if (modules.contains(Module.GAME) || modules.contains(Module.ENGINE)) {
                 addServers(MissionControl.getServers().get(network).values().stream().filter(info -> info.getServerType().getString("type").equals("game") || info.getServerType().getString("type").equals("staff")).collect(Collectors.toList()));
@@ -144,6 +144,7 @@ public class NetworkRestarterThread extends Thread {
                 } else {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     serversPendingRestart.remove(info);
+                    serversToRestart.remove(info);
                     info.setPlayerCount((byte)0);
                     info.setStatus(ServerInfo.ServerStatus.ONLINE);
                     while (serversToRestart.size() > 0) {
