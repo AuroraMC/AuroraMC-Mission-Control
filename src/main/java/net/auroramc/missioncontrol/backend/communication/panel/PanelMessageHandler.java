@@ -327,7 +327,7 @@ public class PanelMessageHandler {
                 }
             }
             case "updatenetwork": {
-                if (args.size() == 1) {
+                if (args.size() == 2) {
                     if (NetworkManager.isUpdate() || NetworkManager.isProxyUpdate()) {
                         return "There is already an update in progress, please wait before starting another one.";
                     }
@@ -355,7 +355,8 @@ public class PanelMessageHandler {
                         }
                         modulesToUpdate.put(module, build);
                     }
-                    NetworkManager.pushUpdate(modulesToUpdate, ServerInfo.Network.MAIN);
+                    String[] args3 = args.get(1).split(",");
+                    NetworkManager.pushUpdate(modulesToUpdate, ServerInfo.Network.MAIN, args3);
                     return "Initiated update for " + modulesToUpdate.size() + " modules.";
                 } else {
                     return "The command executed does not have correct arguments. Please try again.";
@@ -412,7 +413,7 @@ public class PanelMessageHandler {
                             return "Your argument is not formatted properly. It should be formatted as: branch:build";
                         }
                     }
-                    NetworkManager.pushUpdate(modulesToUpdate, ServerInfo.Network.ALPHA);
+                    NetworkManager.pushUpdate(modulesToUpdate, ServerInfo.Network.ALPHA, new String[0]);
                     return "Builds updated and network restart initiated.";
                 } else {
                     return "The command executed does not have correct arguments. Please try again.";

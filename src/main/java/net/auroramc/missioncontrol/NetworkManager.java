@@ -159,7 +159,7 @@ public class NetworkManager {
             logger.info("Restarting all servers...");
             Map<Module, Integer> modules = new HashMap<>();
             modules.put(Module.CORE, currentCoreBuildNumber);
-            pushUpdate(modules, MAIN);
+            pushUpdate(modules, MAIN, new String[0]);
             logger.info("All servers queued for restart, starting network monitoring thread...");
         } else {
             logger.info("Mission Control did not restart cleanly so servers were not queued for restart. Starting network monitoring thread...");
@@ -220,7 +220,7 @@ public class NetworkManager {
         lock3.notifyAll();
     }
 
-    public static void pushUpdate(Map<Module, Integer> modules, ServerInfo.Network network) {
+    public static void pushUpdate(Map<Module, Integer> modules, ServerInfo.Network network, String[] args) {
         //Stop the network monitor from spinning up more servers.
         if (network == ServerInfo.Network.ALPHA) {
             if (alphaMonitorRunnable != null) {
@@ -270,12 +270,28 @@ public class NetworkManager {
                 MissionControl.getDbManager().setCurrentPathfinderBuildNumber(currentPathfinderBuildNumber);
             }
         }
-        if (modules.containsKey(Module.CORE)) {
+        boolean proxyOnly = false;
+        boolean serverOnly = false;
+        for (String arg : args) {
+            switch (arg.toUpperCase()) {
+                case "PROXYONLY": {
+                    proxyOnly = true;
+                    break;
+                }
+                case "SERVERONLY": {
+                    serverOnly = true;
+                    break;
+                }
+            }
+        }
+        if (modules.containsKey(Module.CORE) && !serverOnly) {
             proxyRestarterThread = new ProxyRestarterThread(network);
             proxyRestarterThread.start();
         }
-        serverRestarterThread = new NetworkRestarterThread(new ArrayList<>(modules.keySet()), network);
-        serverRestarterThread.start();
+        if (!proxyOnly) {
+            serverRestarterThread = new NetworkRestarterThread(new ArrayList<>(modules.keySet()), network);
+            serverRestarterThread.start();
+        }
     }
 
     public static void updateComplete() {
