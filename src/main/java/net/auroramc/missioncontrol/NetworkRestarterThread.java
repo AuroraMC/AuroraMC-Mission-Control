@@ -77,6 +77,10 @@ public class NetworkRestarterThread extends Thread {
 
         outer:
         while (true) {
+            if (serversPendingRestart.size() == 0 && serversToRestart.size() == 0) {
+                NetworkManager.updateComplete();
+                return;
+            }
             RestartServerResponse response;
             try {
                 response = queue.poll(10, TimeUnit.MINUTES);
@@ -85,7 +89,7 @@ public class NetworkRestarterThread extends Thread {
                 break;
             }
             if (response != null) {
-                if (response.getProtocol() == RestartServerResponse.Type.CONFIRM_CLOSE) {
+                if (response.getProtocol() == RestartServerResponse.Type.CONFIRM_CLOSE && ((ServerInfo)response.getInfo()).getStatus() == ServerInfo.ServerStatus.PENDING_RESTART) {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     info.setStatus(ServerInfo.ServerStatus.RESTARTING);
                     if (network == ServerInfo.Network.MAIN) {
@@ -141,12 +145,13 @@ public class NetworkRestarterThread extends Thread {
                     } else {
                         MissionControl.getPanelManager().updateServer(info);
                     }
-                } else {
+                } else if (response.getProtocol() == RestartServerResponse.Type.CONFIRM_OPEN && serversPendingRestart.contains((ServerInfo) response.getInfo())) {
                     ServerInfo info = (ServerInfo) response.getInfo();
                     serversPendingRestart.remove(info);
                     serversToRestart.remove(info);
                     info.setPlayerCount((byte)0);
                     info.setStatus(ServerInfo.ServerStatus.ONLINE);
+                    logger.info( serversToRestart.size() + " servers left to restart.");
                     while (serversToRestart.size() > 0) {
                         info = serversToRestart.remove(0);
                         boolean restart = false;
