@@ -25,9 +25,9 @@ public enum ServerType {
     DUELS(32, "Duels", new JSONObject().put("type", "duels").put("game", "DUELS").put("max_players", 32), MemoryAllocation.DUELS, Collections.singletonList(Module.DUELS)),
     BUILD(32, "Build", new JSONObject().put("type", "build").put("game", "BUILD").put("max_players", 32), MemoryAllocation.GAME, Collections.singletonList(Module.BUILD)),
     STAFF(80, "Staff", new JSONObject().put("type", "staff").put("game", "STAFF").put("rotation", new JSONArray()).put("max_players", 80).put("min_players", 40), MemoryAllocation.LOBBY, Arrays.asList(Module.ENGINE, Module.GAME)),
-    SMP_OVERWORLD(50, "SMP", new JSONObject().put("type", "smp").put("game", "SMP-Overworld").put("smp_type", "OVERWORLD").put("rotation", new JSONArray()).put("max_players", 50), MemoryAllocation.SMP, Collections.emptyList()),
-    SMP_NETHER(50, "SMP", new JSONObject().put("type", "smp").put("game", "SMP-Nether").put("smp_type", "NETHER").put("rotation", new JSONArray()).put("max_players", 50), MemoryAllocation.SMP, Collections.emptyList()),
-    SMP_END(50, "SMP", new JSONObject().put("type", "smp").put("game", "SMP-End").put("smp_type", "END").put("rotation", new JSONArray()).put("max_players", 50), MemoryAllocation.SMP, Collections.emptyList()),
+    SMP_OVERWORLD(50, "SMP", new JSONObject().put("type", "smp").put("game", "SMP_OVERWORLD").put("smp_type", "OVERWORLD").put("rotation", new JSONArray()).put("max_players", 50), MemoryAllocation.SMP, Collections.emptyList()),
+    SMP_NETHER(50, "SMP", new JSONObject().put("type", "smp").put("game", "SMP_NETHER").put("smp_type", "NETHER").put("rotation", new JSONArray()).put("max_players", 50), MemoryAllocation.SMP, Collections.emptyList()),
+    SMP_END(50, "SMP", new JSONObject().put("type", "smp").put("game", "SMP_END").put("smp_type", "END").put("rotation", new JSONArray()).put("max_players", 50), MemoryAllocation.SMP, Collections.emptyList()),
     PATHFINDER(32, null /* Pathfinder server codes will differ, Pathfinder MC will deal with that. */, new JSONObject().put("type", "lobby").put("game", "PATHFINDER").put("max_players", 32), MemoryAllocation.GAME, Collections.singletonList(Module.PATHFINDER));
 
     private final int maxPlayers;
