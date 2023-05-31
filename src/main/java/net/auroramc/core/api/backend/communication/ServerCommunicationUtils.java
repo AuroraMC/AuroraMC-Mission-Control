@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2021 AuroraMC Ltd. All Rights Reserved.
+ * Copyright (c) 2021-2023 AuroraMC Ltd. All Rights Reserved.
+ *
+ * PRIVATE AND CONFIDENTIAL - Distribution and usage outside the scope of your job description is explicitly forbidden except in circumstances where a company director has expressly given written permission to do so.
  */
 
 package net.auroramc.core.api.backend.communication;
@@ -62,7 +64,7 @@ public class ServerCommunicationUtils {
             } catch (Exception e) {
                 if (message.getProtocol() != Protocol.UPDATE_PLAYER_COUNT || !NetworkManager.isUpdate()) {
                     if (level > 4) {
-                        if (System.currentTimeMillis() - info.getLastPing() > 300000 && network != ServerInfo.Network.TEST) {
+                        if (System.currentTimeMillis() - info.getLastPing() > 300000 && network != ServerInfo.Network.TEST && !info.getServerType().getString("type").equals("smp")) {
                             //Restart server as it has been unresponsive for at least the past 5 minutes.
                             MissionControl.getLogger().log(Level.WARNING, "Last successful ping to server " + info.getName() + " on network " + info.getNetwork().name() + " was over 5 minutes ago, restarting server. Stack Trace:", e);
                             MissionControl.getPanelManager().updateServer(info);
