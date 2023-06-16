@@ -8,12 +8,12 @@ package net.auroramc.missioncontrol.backend.util;
 
 public enum MemoryAllocation {
 
-    LOBBY(2048),
+    LOBBY(1024),
     PROXY(1024),
     EVENT(3072),
-    GAME(1024),
-    DUELS(1536),
-    BUILD(1024),
+    GAME(2048),
+    DUELS(2048),
+    BUILD(2048),
     SMP(8192),
     GENERIC_1G(1024),
     GENERIC_1_5G(1536),
