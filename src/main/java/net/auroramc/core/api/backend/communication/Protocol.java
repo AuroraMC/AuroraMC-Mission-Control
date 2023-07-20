@@ -59,5 +59,9 @@ public enum Protocol {
     /**
      * Update to lobby versions.
      */
-    VERSION_UPDATE
+    VERSION_UPDATE,
+    /**
+     * Prompt mission control to create a server
+     */
+    CREATE_SERVER
 }
