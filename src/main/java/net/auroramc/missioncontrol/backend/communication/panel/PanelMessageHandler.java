@@ -329,7 +329,7 @@ public class PanelMessageHandler {
                 }
             }
             case "updatenetwork": {
-                if (args.size() == 3) {
+                if (args.size() == 2) {
                     if (NetworkManager.isUpdate() || NetworkManager.isProxyUpdate()) {
                         return "There is already an update in progress, please wait before starting another one.";
                     }
