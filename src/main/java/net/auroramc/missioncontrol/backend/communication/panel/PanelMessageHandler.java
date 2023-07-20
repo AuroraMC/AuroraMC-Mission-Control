@@ -337,7 +337,7 @@ public class PanelMessageHandler {
                     String[] args2 = args.get(0).split(" ");
                     for (String arg : args2) {
                         String[] moduleInfo = arg.split(":");
-                        if (moduleInfo.length != 2) {
+                        if (moduleInfo.length != 3) {
                             return "One of the arguments is formatted incorrectly. Please correct this error and try again.";
                         }
                         Module module;
