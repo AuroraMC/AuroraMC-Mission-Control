@@ -329,7 +329,7 @@ public class PanelMessageHandler {
                 }
             }
             case "updatenetwork": {
-                if (args.size() == 2) {
+                if (args.size() == 3) {
                     if (NetworkManager.isUpdate() || NetworkManager.isProxyUpdate()) {
                         return "There is already an update in progress, please wait before starting another one.";
                     }
@@ -337,7 +337,7 @@ public class PanelMessageHandler {
                     String[] args2 = args.get(0).split(" ");
                     for (String arg : args2) {
                         String[] moduleInfo = arg.split(":");
-                        if (moduleInfo.length != 3) {
+                        if (moduleInfo.length != 2) {
                             return "One of the arguments is formatted incorrectly. Please correct this error and try again.";
                         }
                         Module module;
