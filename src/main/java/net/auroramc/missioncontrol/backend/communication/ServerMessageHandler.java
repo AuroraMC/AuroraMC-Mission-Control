@@ -108,6 +108,19 @@ public class ServerMessageHandler {
                 }
                 break;
             }
+            case CREATE_SERVER: {
+                String[] args = message.getExtraInfo().split(";");
+                if (args.length == 2) {
+                    ServerInfo.Network network = ServerInfo.Network.valueOf(args[0]);
+                    if (message.getCommand().equalsIgnoreCase("eventopen")) {
+                        NetworkManager.createServer(args[1], ServerType.EVENT, true, network, false);
+                    } else if (message.getCommand().equalsIgnoreCase("eventclose")) {
+                        ServerInfo info = MissionControl.getServers().get(network).get(message.getSender());
+                        NetworkManager.removeServerFromRotation(info);
+                        NetworkManager.closeServer(info);
+                    }
+                }
+            }
         }
     }
 
