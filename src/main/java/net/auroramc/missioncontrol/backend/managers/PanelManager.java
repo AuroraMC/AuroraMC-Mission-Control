@@ -277,7 +277,7 @@ public class PanelManager {
                 environment.put("ENGINE_BRANCH", EnvironmentValue.ofString(serverInfo.getCoreBranch() + ""));
             }
         }
-        if (serverInfo.getEngineBuildNumber() != -1) {
+        if (serverInfo.getDuelsBuildNumber() != -1) {
             environment.put("DUELS_VERSION", EnvironmentValue.ofString(serverInfo.getDuelsBuildNumber() + ""));
             if (serverInfo.getNetwork() != ServerInfo.Network.MAIN) {
                 environment.put("DUELS_BRANCH", EnvironmentValue.ofString(serverInfo.getDuelsBranch() + ""));
