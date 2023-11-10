@@ -158,7 +158,7 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
-        String docker = "quay.io/pterodactyl/core:java";
+        String docker = "quay.io/pterodactyl/core:java-11";
         int egg = 16;
         if (serverInfo.getServerType().getString("type").equalsIgnoreCase("smp")) {
             docker = "ghcr.io/pterodactyl/yolks:java_17";
@@ -220,7 +220,7 @@ public class PanelManager {
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
-                .setDockerImage("quay.io/pterodactyl/core:java")
+                .setDockerImage("quay.io/pterodactyl/core:java-11")
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
@@ -301,7 +301,7 @@ public class PanelManager {
         environment.put("REDIS_AUTH", EnvironmentValue.ofString(redisAuth));
         environment.put("NETWORK", EnvironmentValue.ofString(serverInfo.getNetwork().name()));
 
-        String docker = "quay.io/pterodactyl/core:java";
+        String docker = "quay.io/pterodactyl/core:java-11";
         int egg = 16;
         if (serverInfo.getServerType().getString("type").equalsIgnoreCase("smp")) {
             docker = "ghcr.io/pterodactyl/yolks:java_17";
@@ -365,7 +365,7 @@ public class PanelManager {
                 .setCPU(0)
                 .setDisk(5, DataType.GB)
                 .setMemory(assignedMemory.getMegaBytes(), DataType.MB)
-                .setDockerImage("quay.io/pterodactyl/core:java")
+                .setDockerImage("quay.io/pterodactyl/core:java-11")
                 .startOnCompletion(true)
                 .skipScripts(false)
                 .setEnvironment(environment).execute();
