@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2021-2023 AuroraMC Ltd. All Rights Reserved.
- *
- * PRIVATE AND CONFIDENTIAL - Distribution and usage outside the scope of your job description is explicitly forbidden except in circumstances where a company director has expressly given written permission to do so.
+ * Copyright (c) 2021-2024 Ethan P-B. All Rights Reserved.
  */
 
 package net.auroramc.core.api.backend.communication;
