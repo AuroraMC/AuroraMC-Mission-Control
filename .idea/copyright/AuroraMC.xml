@@ -1,6 +1,6 @@
 <component name="CopyrightManager">
   <copyright>
-    <option name="notice" value="Copyright (c) &amp;#36;originalComment.match(&quot;Copyright \(c\) (\d+)&quot;, 1, &quot;-&quot;)&amp;#36;today.year AuroraMC Ltd. All Rights Reserved.&#10;&#10;PRIVATE AND CONFIDENTIAL - Distribution and usage outside the scope of your job description is explicitly forbidden except in circumstances where a company director has expressly given written permission to do so." />
+    <option name="notice" value="Copyright (c) &amp;#36;originalComment.match(&quot;Copyright \(c\) (\d+)&quot;, 1, &quot;-&quot;)&amp;#36;today.year Ethan P-B. All Rights Reserved." />
     <option name="myName" value="AuroraMC" />
   </copyright>
 </component>
